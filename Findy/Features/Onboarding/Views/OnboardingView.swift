@@ -94,8 +94,10 @@ struct OnboardingView: View {
 
     private var welcomeView: some View {
         VStack(spacing: FindyLayout.largeSpacing) {
-            Image(systemName: "film.fill")
-                .font(.system(size: 60))
+            Image(.findyIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150)
                 .foregroundColor(FindyColors.neonBlue)
                 .neonGlow()
 
