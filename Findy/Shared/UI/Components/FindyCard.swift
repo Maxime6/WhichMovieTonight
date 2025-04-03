@@ -23,7 +23,7 @@ struct FindyCard<Content: View>: View {
             .frame(minHeight: FindyLayout.cardMinHeight)
             .background(
                 RoundedRectangle(cornerRadius: FindyLayout.cornerRadius)
-                    .fill(Color.white.opacity(FindyEffects.cardOpacity))
+//                    .fill(Color.white.opacity(FindyEffects.cardOpacity))
                     .background(
                         RoundedRectangle(cornerRadius: FindyLayout.cornerRadius)
                             .fill(.ultraThinMaterial)
