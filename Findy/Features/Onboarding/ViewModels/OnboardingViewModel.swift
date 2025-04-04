@@ -10,6 +10,7 @@ final class OnboardingViewModel: ObservableObject {
     @Published var currentStep: OnboardingStep = .welcome
     @Published var nickname: String = ""
     @Published var birthDate: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @Published var isOnboardingCompleted = false
 
     // MARK: - Computed Properties
 
@@ -149,7 +150,7 @@ final class OnboardingViewModel: ObservableObject {
     func completeOnboarding() {
         // TODO: Save user preferences
         withAnimation {
-            currentStep = .completed
+            isOnboardingCompleted = true
         }
     }
 }
