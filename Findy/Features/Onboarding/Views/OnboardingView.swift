@@ -113,10 +113,10 @@ struct OnboardingView: View {
 
     private var nicknameView: some View {
         VStack(spacing: FindyLayout.largeSpacing) {
-            FindyCard(glowColor: .clear, isInteractive: false) {
+            FindyCard {
                 VStack(spacing: FindyLayout.spacing) {
                     TextField("Enter your nickname", text: $viewModel.nickname)
-                        .font(FindyTypography.body)
+                        .font(FindyTypography.title)
                         .foregroundColor(FindyColors.textPrimary)
                         .textFieldStyle(.plain)
                         .multilineTextAlignment(.center)
@@ -132,7 +132,7 @@ struct OnboardingView: View {
 
             if !viewModel.nickname.isEmpty {
                 Text("We'll call you \(viewModel.nickname)!")
-                    .font(FindyTypography.body)
+                    .font(FindyTypography.headline)
                     .foregroundColor(FindyColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
@@ -143,7 +143,7 @@ struct OnboardingView: View {
 
     private var birthDateView: some View {
         VStack(spacing: FindyLayout.largeSpacing) {
-            FindyCard {
+            FindyCard(isInteractive: false) {
                 DatePicker(
                     "Birth Date",
                     selection: $viewModel.birthDate,
@@ -158,7 +158,7 @@ struct OnboardingView: View {
 
             if viewModel.age > 0 {
                 Text("You are \(viewModel.age) years old")
-                    .font(FindyTypography.body)
+                    .font(FindyTypography.headline)
                     .foregroundColor(FindyColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
@@ -207,7 +207,7 @@ struct OnboardingView: View {
             ForEach(Mood.allCases) { mood in
                 FindyCard(
                     glowColor: viewModel.selectedMood == mood ? FindyColors.neonBlue : .clear,
-                    isInteractive: true
+                    isInteractive: false
                 ) {
                     HStack {
                         VStack(alignment: .leading, spacing: FindyLayout.spacing) {
