@@ -113,7 +113,7 @@ struct OnboardingView: View {
 
     private var nicknameView: some View {
         VStack(spacing: FindyLayout.largeSpacing) {
-            FindyCard {
+            FindyCard(glowColor: .clear, isInteractive: false) {
                 VStack(spacing: FindyLayout.spacing) {
                     TextField("Enter your nickname", text: $viewModel.nickname)
                         .font(FindyTypography.body)
@@ -260,4 +260,5 @@ struct OnboardingView: View {
 
 #Preview {
     OnboardingView()
+        .environmentObject(OnboardingViewModel())
 }

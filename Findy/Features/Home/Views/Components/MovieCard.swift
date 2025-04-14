@@ -7,7 +7,7 @@ struct MovieCard: View {
 
     var body: some View {
         FindyCard(
-            glowColor: FindyColors.neonBlue,
+            glowColor: isMainCard ? FindyColors.electricBlue : FindyColors.neonBlue,
             isInteractive: true
         ) {
             VStack(alignment: .leading, spacing: FindyLayout.spacing) {
@@ -15,12 +15,12 @@ struct MovieCard: View {
                 HStack {
                     Text("\(movie.matchPercentage)% Match")
                         .font(FindyTypography.caption)
-                        .foregroundColor(FindyColors.neonBlue)
+                        .foregroundColor(FindyColors.neonCyan)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .stroke(FindyColors.neonBlue, lineWidth: 1)
+                                .stroke(FindyColors.neonCyan, lineWidth: 1)
                         )
 
                     Spacer()
@@ -57,7 +57,7 @@ struct MovieCard: View {
                             String(format: "%.1f", movie.rating),
                             systemImage: "star.fill"
                         )
-                        .foregroundColor(.yellow)
+                        .foregroundColor(FindyColors.warning)
 
                         // Runtime
                         Label(
@@ -79,7 +79,7 @@ struct MovieCard: View {
                                     .padding(.vertical, 4)
                                     .background(
                                         RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color.white.opacity(0.1))
+                                            .fill(FindyColors.backgroundSecondary)
                                     )
                             }
                         }
@@ -96,7 +96,7 @@ struct MovieCard: View {
                                 String(format: "%.1f", movie.rating),
                                 systemImage: "star.fill"
                             )
-                            .foregroundColor(.yellow)
+                            .foregroundColor(FindyColors.warning)
                             .font(FindyTypography.caption)
 
                             Text("•")

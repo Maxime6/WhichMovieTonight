@@ -39,6 +39,10 @@ struct FindyButton: View {
                 .frame(height: FindyLayout.buttonHeight)
                 .background(backgroundView)
                 .cornerRadius(FindyLayout.buttonCornerRadius)
+                .overlay(
+                    RoundedRectangle(cornerRadius: FindyLayout.buttonCornerRadius)
+                        .stroke(borderColor, lineWidth: isPressed ? 2 : 1)
+                )
                 .neonGlow(color: glowColor, radius: isPressed ? FindyEffects.softGlow : FindyEffects.neonGlow)
                 .scaleEffect(isPressed ? 0.98 : 1.0)
         }
@@ -49,14 +53,14 @@ struct FindyButton: View {
         case .primary, .secondary:
             return FindyColors.textPrimary
         case .ghost:
-            return FindyColors.neonBlue
+            return FindyColors.electricBlue
         }
     }
 
     private var glowColor: Color {
         switch style {
         case .primary:
-            return FindyColors.neonBlue
+            return FindyColors.electricBlue
         case .secondary:
             return FindyColors.neonPurple
         case .ghost:
@@ -64,19 +68,26 @@ struct FindyButton: View {
         }
     }
 
+    private var borderColor: Color {
+        switch style {
+        case .primary:
+            return FindyColors.electricBlue
+        case .secondary:
+            return FindyColors.neonPurple
+        case .ghost:
+            return FindyColors.electricBlue.opacity(0.5)
+        }
+    }
+
     @ViewBuilder
     private var backgroundView: some View {
         switch style {
         case .primary:
-            FindyColors.neonGradient
+            FindyColors.primaryGradient
         case .secondary:
-            FindyColors.neonPurple.opacity(0.8)
+            FindyColors.subtleGradient
         case .ghost:
             Color.clear
-                .overlay(
-                    RoundedRectangle(cornerRadius: FindyLayout.buttonCornerRadius)
-                        .stroke(FindyColors.neonBlue, lineWidth: 1)
-                )
         }
     }
 }

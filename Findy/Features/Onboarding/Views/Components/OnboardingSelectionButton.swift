@@ -27,7 +27,7 @@ struct OnboardingSelectionButton: View {
             .frame(height: 52)
             .background(
                 RoundedRectangle(cornerRadius: FindyLayout.buttonCornerRadius)
-                    .fill(Color(uiColor: .systemBackground).opacity(0.05))
+                    .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: FindyLayout.buttonCornerRadius)
                             .fill(isSelected ? FindyColors.neonBlue.opacity(0.1) : .clear)
