@@ -34,7 +34,7 @@ struct Movie: Identifiable, Equatable {
             id: UUID(),
             title: "Inception",
             overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-            posterURL: URL(string: "https://example.com/inception-poster.jpg"),
+            posterURL: URL(string: "https://picsum.photos/300/450"),
             backdropURL: URL(string: "https://example.com/inception-backdrop.jpg"),
             releaseDate: Date(),
             genres: [.scienceFiction, .action, .thriller],
