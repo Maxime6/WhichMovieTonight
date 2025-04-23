@@ -9,17 +9,22 @@ import SwiftUI
 
 struct TestsUI: View {
     var body: some View {
-        VStack(spacing: 32) {
-                    Text("Tonight’s Movie")
-                        .font(.wmtTitle)
-                        .foregroundColor(.wmtTextPrimary)
-
-                    MovieCardTest(movie: .preview)
-
-                    WMTButton(title: "Watch Now") { }
-                }
-                .padding()
-                .background(Color.wmtBackground.ignoresSafeArea())
+        ZStack {
+            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.2), Color.cyan.opacity(0.4), Color.purple.opacity(0.2)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                            .ignoresSafeArea()
+                            .blur(radius: 10)
+            
+            VStack(spacing: 32) {
+                Text("Tonight’s Movie")
+                    .font(.title)
+                    .foregroundColor(.primary)
+                
+                MovieCardTest(movie: .preview)
+                
+                WMTButton(title: "Watch Now") { }
+            }
+            .padding()
+        }
     }
 }
 
@@ -29,39 +34,50 @@ struct TestsUI: View {
 
 struct MovieCardTest: View {
     let movie: Movie
+    let streamingPlatforms: [ImageResource] = [.netflixLogo, .primeVideoLogo, .disneyPlusLogo]
 
     var body: some View {
         VStack(spacing: 8) {
-            AsyncImage(url: movie.posterURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-            } placeholder: {
-                Color.gray.opacity(0.2)
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-            }
+            
+            Image(.inceptionCover)
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 20))
 
             Text(movie.title)
                 .font(.headline)
-                .foregroundColor(.wmtTextPrimary)
+                .foregroundStyle(.primary)
 
             HStack {
                 ForEach(movie.genres, id: \.self) { genre in
                     Text(genre.id)
                         .font(.caption)
+                        .foregroundStyle(.secondary)
                         .padding(6)
-                        .background(Color.white.opacity(0.08))
                         .cornerRadius(10)
+                        .background {
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                                .shadow(color: .secondary.opacity(0.1), radius: 2, x: 0, y: 4)
+                        }
                 }
             }
+            
+            HStack {
+                ForEach(streamingPlatforms, id: \.self) { image in
+                    Image(image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 40, height: 30)
+                        .shadow(color: .secondary.opacity(0.1), radius: 2, x: 0, y: 4)
+                }
+            }
+            .padding(.top, 10)
         }
         .padding()
-        .background(.ultraThinMaterial)
+        .background(.ultraThinMaterial.opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 25))
-        .shadow(color: .black.opacity(0.2), radius: 15, x: 0, y: 10)
+        .shadow(color: .secondary.opacity(0.2), radius: 15, x: 0, y: 10)
     }
 }
 
@@ -73,20 +89,39 @@ struct WMTButton: View {
         Button(action: action) {
             Text(title)
                 .fontWeight(.semibold)
-                .foregroundColor(.wmtTextPrimary)
+                .foregroundColor(.primary)
                 .padding(.vertical, 14)
                 .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.wmtGlassBackground)
-                        .blur(radius: 0.5)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.wmtGradientStart.opacity(0.4), lineWidth: 1)
-                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(.white, lineWidth: 1)
+                }
+                .shadow(color: .secondary.opacity(0.2), radius: 15, x: 0, y: 10)
         }
+        .background(
+            ZStack {
+                AnimatedMeshGradient()
+                    .mask(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(lineWidth: 16)
+                            .blur(radius: 8)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.white, lineWidth: 3)
+                            .blur(radius: 2)
+                            .blendMode(.overlay)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.white, lineWidth: 1)
+                            .blur(radius: 1)
+                            .blendMode(.overlay)
+                    )
+            }
+        )
+        .background(.ultraThinMaterial.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 25))
     }
 }
 
