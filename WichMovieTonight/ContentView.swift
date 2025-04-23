@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var onboardingViewModel = OnboardingViewModel()
 
     var body: some View {
 //        Group {
