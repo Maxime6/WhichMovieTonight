@@ -21,7 +21,7 @@ struct ContentView: View {
 //                    .environmentObject(onboardingViewModel)
 //            }
 //        }
-        TestsUI()
+        HomeView()
     }
 }
 
