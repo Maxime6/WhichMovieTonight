@@ -130,65 +130,65 @@ struct WrapHStack<Content: View>: View {
     }
 }
 
-struct FlowLayout<Content: View>: View {
-    let spacing: CGFloat
-    let alignment: HorizontalAlignment
-    let content: () -> Content
-    
-    @State private var totalHeight: CGFloat = .zero
-    
-    init(
-        spacing: CGFloat = 8,
-        alignment: HorizontalAlignment = .leading,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
-        self.spacing = spacing
-        self.alignment = alignment
-        self.content = content
-    }
-    
-    var body: some View {
-        GeometryReader { geometry in
-            self.generatedContent(in: geometry)
-        }
-        .frame(height: totalHeight)
-    }
-    
-    private func generatedContent(in geometry: GeometryProxy) -> some View {
-        var width = CGFloat.zero
-        var height: CGFloat = .zero
-        
-        return ZStack(alignment: Alignment(horizontal: alignment, vertical: .top)) {
-            content()
-                .padding(.trailing, spacing)
-                .background(
-                    GeometryReader { itemGeo in
-                        Color.clear.onAppear {
-                            if width + itemGeo.size.width > geometry.size.width {
-                                width = 0
-                                height += itemGeo.size.height + spacing
-                            }
-                            width += itemGeo.size.width + spacing
-                            DispatchQueue.main.async {
-                                totalHeight = height + itemGeo.size.height
-                            }
-                        }
-                    }
-                )
-                .alignmentGuide(.leading) { d in
-                    let result = width
-                    if abs(width - d.width) > geometry.size.width {
-                        width = 0
-                        height += d.height + spacing
-                        return 0
-                    }
-                    width += d.width + spacing
-                    return result
-                }
-                .alignmentGuide(.top) { _ in
-                    let result = height
-                    return result
-                }
-        }
-    }
-}
+//struct FlowLayout<Content: View>: View {
+//    let spacing: CGFloat
+//    let alignment: HorizontalAlignment
+//    let content: () -> Content
+//    
+//    @State private var totalHeight: CGFloat = .zero
+//    
+//    init(
+//        spacing: CGFloat = 8,
+//        alignment: HorizontalAlignment = .leading,
+//        @ViewBuilder content: @escaping () -> Content
+//    ) {
+//        self.spacing = spacing
+//        self.alignment = alignment
+//        self.content = content
+//    }
+//    
+//    var body: some View {
+//        GeometryReader { geometry in
+//            self.generatedContent(in: geometry)
+//        }
+//        .frame(height: totalHeight)
+//    }
+//    
+//    private func generatedContent(in geometry: GeometryProxy) -> some View {
+//        var width = CGFloat.zero
+//        var height: CGFloat = .zero
+//        
+//        return ZStack(alignment: Alignment(horizontal: alignment, vertical: .top)) {
+//            content()
+//                .padding(.trailing, spacing)
+//                .background(
+//                    GeometryReader { itemGeo in
+//                        Color.clear.onAppear {
+//                            if width + itemGeo.size.width > geometry.size.width {
+//                                width = 0
+//                                height += itemGeo.size.height + spacing
+//                            }
+//                            width += itemGeo.size.width + spacing
+//                            DispatchQueue.main.async {
+//                                totalHeight = height + itemGeo.size.height
+//                            }
+//                        }
+//                    }
+//                )
+//                .alignmentGuide(.leading) { d in
+//                    let result = width
+//                    if abs(width - d.width) > geometry.size.width {
+//                        width = 0
+//                        height += d.height + spacing
+//                        return 0
+//                    }
+//                    width += d.width + spacing
+//                    return result
+//                }
+//                .alignmentGuide(.top) { _ in
+//                    let result = height
+//                    return result
+//                }
+//        }
+//    }
+//}

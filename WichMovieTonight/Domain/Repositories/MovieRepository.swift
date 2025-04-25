@@ -1,0 +1,12 @@
+//
+//  MovieRepository.swift
+//  WichMovieTonight
+//
+//  Created by Maxime Tanter on 25/04/2025.
+//
+
+import Foundation
+
+protocol MovieRepository {
+    func findSuggestedMovie() async throws -> Movie
+}
