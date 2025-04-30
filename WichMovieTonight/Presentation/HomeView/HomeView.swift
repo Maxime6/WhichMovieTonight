@@ -11,24 +11,56 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     
     var body: some View {
-        VStack {
-            headerView
+        ZStack(alignment: .bottom) {
+            Color(.systemGray6).edgesIgnoringSafeArea(.all)
             
-            Spacer()
-            
-            if let movie = viewModel.selectedMovie {
-                MovieCardView(movie: movie)
-            } else {
-                emptyStateView
+            VStack {
+                headerView
+                
+                Spacer()
+                
+                if let movie = viewModel.selectedMovie {
+                    MovieCardView(movie: movie)
+                } else {
+                    emptyStateView
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .blur(radius: viewModel.isLoading ? 10 : 0)
+            .onAppear {
+                viewModel.fetchUser()
             }
             
-            Spacer()
+            if viewModel.isLoading {
+                ZStack {
+                    VStack {
+                        Text("Let me find your movie for you...")
+                            .font(.title.bold())
+                            .foregroundStyle(.primary)
+                            .padding(.top, 40)
+                        
+                        Spacer()
+                    }
+                }
+                
+                AnimatedMeshGradient()
+                    .mask(
+                        RoundedRectangle(cornerRadius: 44)
+                            .stroke(lineWidth: 44)
+                            .blur(radius: 22)
+                    )
+                    .ignoresSafeArea()
+            }
+            
+            AIActionButton(isLoading: viewModel.isLoading, isDisabled: false) {
+                Task {
+                    try await viewModel.findTonightMovie()
+                }
+            }
         }
-        .padding()
-//        .background(GlassBackgroundView())
-        .onAppear {
-            viewModel.fetchUser()
-        }
+        .animation(.easeInOut, value: viewModel.isLoading)
     }
     
     private var headerView: some View {
@@ -69,22 +101,8 @@ struct HomeView: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-            
-            Button {
-                Task {
-                    try await viewModel.findTonightMovie()
-                }
-            } label: {
-                Text("Find a Movie")
-                    .fontWeight(.bold)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(GlassButtonStyle())
-            .padding(.top, 12)
         }
         .padding()
-//        .background(GlassCard())
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(radius: 10)
     }
@@ -94,64 +112,24 @@ struct HomeView: View {
     HomeView()
 }
 
-struct GlassCard: View {
-    var cornerRadius: CGFloat = 24
+struct WaveRenderer: TextRenderer {
+    var strength: Double
+    var frequency: Double
+    var animatableData: Double {
+        get { strength }
+        set { strength = newValue }
+    }
     
-    var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(.ultraThinMaterial)
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(.white.opacity(0.1), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-    }
-}
-
-struct GlassButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .foregroundStyle(.primary)
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(
-                ZStack {
-                    AnimatedMeshGradient()
-                        .mask(
-                            Capsule()
-                                .stroke(lineWidth: 16)
-                                .blur(radius: 8)
-                        )
-                        .overlay(
-                            Capsule()
-                                .stroke(.white, lineWidth: 3)
-                                .blur(radius: 2)
-                                .blendMode(.overlay)
-                        )
-                        .overlay(
-                            Capsule()
-                                .stroke(.white, lineWidth: 1)
-                                .blur(radius: 1)
-                                .blendMode(.overlay)
-                        )
+    func draw(layout: Text.Layout, in context: inout GraphicsContext) {
+        for line in layout {
+            for run in line {
+                for (index, glyph) in run.enumerated() {
+                    let yOffset = strength * sin(Double(index) * frequency)
+                    var copy = context
+                    copy.translateBy(x: 0, y: yOffset)
+                    copy.draw(glyph, options: .disablesSubpixelQuantization)
                 }
-            )
-            .background(.ultraThinMaterial.opacity(0.7))
-            .clipShape(.capsule)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
-    }
-}
-
-struct GlassBackgroundView: View {
-    var body: some View {
-        LinearGradient(colors: [Color.purple.opacity(0.15),
-                                Color.blue.opacity(0.15),
-                                Color.indigo.opacity(0.2)],
-                       startPoint: .topLeading,
-                       endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-            .background(.ultraThinMaterial)
+            }
+        }
     }
 }

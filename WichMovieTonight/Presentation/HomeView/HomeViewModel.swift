@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 final class HomeViewModel: ObservableObject {
@@ -24,7 +25,9 @@ final class HomeViewModel: ObservableObject {
     }
     
     func findTonightMovie() async throws {
-        isLoading = true
+        withAnimation {
+            isLoading = true
+        }
         
         do {
             let movie = try await findMovieUseCase.execute()
@@ -33,6 +36,8 @@ final class HomeViewModel: ObservableObject {
             print("Error suggesting movie : \(error)")
         }
         
-        isLoading = false
+        withAnimation {
+            isLoading = false
+        }
     }
 }

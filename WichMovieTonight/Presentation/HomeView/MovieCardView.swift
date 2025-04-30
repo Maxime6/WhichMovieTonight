@@ -10,6 +10,9 @@ import SwiftUI
 struct MovieCardView: View {
     let movie: Movie
     
+    @State var counter: Int = 0
+    @State var origin: CGPoint = .zero
+    
     var body: some View {
         VStack(spacing: 16) {
             // TODO: Connect with api datas
@@ -37,6 +40,15 @@ struct MovieCardView: View {
                 .frame(height: 300)
                 .cornerRadius(16)
                 .shadow(radius: 10)
+                .onPressingChanged { point in
+//                    if !isDisabled {
+                        if let point {
+                            origin = point
+                            counter += 1
+                        }
+//                    }
+                }
+                .modifier(RippleEffect(at: origin, trigger: counter))
             
             Text(movie.title)
                 .font(.title2.bold())
@@ -57,10 +69,8 @@ struct MovieCardView: View {
                 Text("Watch now")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(GlassButtonStyle())
         }
         .padding()
-//        .background(GlassCard())
         .cornerRadius(24)
         .padding(.horizontal)
     }
@@ -79,7 +89,7 @@ struct MovieCardView: View {
     }
     
     private var genreTags: some View {
-        WrapHStack(spacing: 8, alignment: .leading) {
+        HStack(spacing: 8) {
             ForEach(movie.genres, id: \.self) { genre in
                 Text(genre.id)
                     .font(.caption)
@@ -129,66 +139,3 @@ struct WrapHStack<Content: View>: View {
         FlowLayout(spacing: spacing, alignment: alignment, content: content)
     }
 }
-
-//struct FlowLayout<Content: View>: View {
-//    let spacing: CGFloat
-//    let alignment: HorizontalAlignment
-//    let content: () -> Content
-//    
-//    @State private var totalHeight: CGFloat = .zero
-//    
-//    init(
-//        spacing: CGFloat = 8,
-//        alignment: HorizontalAlignment = .leading,
-//        @ViewBuilder content: @escaping () -> Content
-//    ) {
-//        self.spacing = spacing
-//        self.alignment = alignment
-//        self.content = content
-//    }
-//    
-//    var body: some View {
-//        GeometryReader { geometry in
-//            self.generatedContent(in: geometry)
-//        }
-//        .frame(height: totalHeight)
-//    }
-//    
-//    private func generatedContent(in geometry: GeometryProxy) -> some View {
-//        var width = CGFloat.zero
-//        var height: CGFloat = .zero
-//        
-//        return ZStack(alignment: Alignment(horizontal: alignment, vertical: .top)) {
-//            content()
-//                .padding(.trailing, spacing)
-//                .background(
-//                    GeometryReader { itemGeo in
-//                        Color.clear.onAppear {
-//                            if width + itemGeo.size.width > geometry.size.width {
-//                                width = 0
-//                                height += itemGeo.size.height + spacing
-//                            }
-//                            width += itemGeo.size.width + spacing
-//                            DispatchQueue.main.async {
-//                                totalHeight = height + itemGeo.size.height
-//                            }
-//                        }
-//                    }
-//                )
-//                .alignmentGuide(.leading) { d in
-//                    let result = width
-//                    if abs(width - d.width) > geometry.size.width {
-//                        width = 0
-//                        height += d.height + spacing
-//                        return 0
-//                    }
-//                    width += d.width + spacing
-//                    return result
-//                }
-//                .alignmentGuide(.top) { _ in
-//                    let result = height
-//                    return result
-//                }
-//        }
-//    }
-//}
