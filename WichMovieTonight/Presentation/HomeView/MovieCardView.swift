@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MovieCardView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     let movie: Movie
     
     @State var counter: Int = 0
@@ -37,9 +39,9 @@ struct MovieCardView: View {
             Image(.inceptionCover)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 300)
+                .frame(height: 350)
                 .cornerRadius(16)
-                .shadow(radius: 10)
+                .shadow(color: .primary.opacity(0.2), radius: 10)
                 .onPressingChanged { point in
 //                    if !isDisabled {
                         if let point {
@@ -52,8 +54,16 @@ struct MovieCardView: View {
             
             Text(movie.title)
                 .font(.title2.bold())
-                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.05), radius: 15, x: 0, y: 5)
+                )
+                .overlay {
+                    AnimatedMeshGradient()
+                        .blendMode(colorScheme == .dark ? .colorBurn : .screen)
+                }
             
             genreTags
             
@@ -98,9 +108,11 @@ struct MovieCardView: View {
                     .background(.ultraThinMaterial)
                     .cornerRadius(12)
                     .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(.white.opacity(0.1))
+                        Capsule()
+                            .stroke(.primary.opacity(0.1))
                     }
+                
+                    .shadow(color: .cyan.opacity(0.3), radius: 2, x: 2, y: 2)
             }
         }
     }

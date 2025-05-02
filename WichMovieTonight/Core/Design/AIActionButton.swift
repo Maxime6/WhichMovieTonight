@@ -56,18 +56,17 @@ struct AIActionButton: View {
                 }
             }
         )
-        .background(.black)
         .cornerRadius(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black.opacity(0.5), lineWidth: 1)
+                .stroke(.blue.opacity(0.5), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 20)
-        .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 15)
-        .foregroundColor(.white)
+        .shadow(color: .cyan.opacity(0.15), radius: 20, x: 0, y: 20)
+        .shadow(color: .purple.opacity(0.1), radius: 15, x: 0, y: 15)
+        .foregroundColor(.primary)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.primary.opacity(0.5), lineWidth: 1)
+                .stroke(.cyan.opacity(0.5), lineWidth: 1)
         )
         .disabled(isLoading || isDisabled)
         .opacity(isDisabled ? 0.5 : 1)
@@ -105,7 +104,7 @@ struct LoadingIndicator: View {
     var body: some View {
         Circle()
             .trim(from: 0, to: 0.7)
-            .stroke(Color.white, lineWidth: 2)
+            .stroke(.primary, lineWidth: 2)
             .frame(width: 16, height: 16)
             .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
             .onAppear {

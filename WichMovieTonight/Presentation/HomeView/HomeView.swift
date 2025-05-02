@@ -21,6 +21,9 @@ struct HomeView: View {
                 
                 if let movie = viewModel.selectedMovie {
                     MovieCardView(movie: movie)
+                        .onAppear {
+                            triggerHaptic()
+                        }
                 } else {
                     emptyStateView
                 }
@@ -86,10 +89,10 @@ struct HomeView: View {
     
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "sparkles")
+            Image(systemName: "movieclapper")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 100, height: 100)
+                .frame(width: 70, height: 70)
                 .foregroundStyle(.ultraThickMaterial)
             
             Text("No movie selected yet")
@@ -105,6 +108,11 @@ struct HomeView: View {
         .padding()
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(radius: 10)
+    }
+    
+    private func triggerHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
 }
 
