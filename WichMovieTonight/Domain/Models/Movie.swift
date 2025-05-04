@@ -3,19 +3,19 @@ import Foundation
 struct Movie: Identifiable, Equatable {
     let id: UUID
     let title: String
-    let overview: String
+    let overview: String?
     let posterURL: URL?
     let backdropURL: URL?
-    let releaseDate: Date
-    let genres: [MovieGenre]
-    let runtime: Int // in minutes
-    let rating: Double // IMDb rating
-    let streamingPlatforms: [StreamingPlatform]
-    let matchPercentage: Int
+    let releaseDate: Date?
+    let genres: [String]
+    let runtime: Int? // in minutes
+    let rating: Double? // IMDb rating
+    let streamingPlatforms: [String]
+    let matchPercentage: Int?
 
     var formattedRuntime: String {
-        let hours = runtime / 60
-        let minutes = runtime % 60
+        let hours = (runtime ?? 0) / 60
+        let minutes = (runtime ?? 0) % 60
         if hours > 0 {
             return "\(hours)h \(minutes)m"
         }
@@ -25,7 +25,7 @@ struct Movie: Identifiable, Equatable {
     var formattedReleaseYear: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy"
-        return formatter.string(from: releaseDate)
+        return formatter.string(from: releaseDate ?? Date())
     }
 
     // Example movie for previews
@@ -37,10 +37,10 @@ struct Movie: Identifiable, Equatable {
             posterURL: URL(string: "https://picsum.photos/300/450"),
             backdropURL: URL(string: "https://example.com/inception-backdrop.jpg"),
             releaseDate: Date(),
-            genres: [.scienceFiction, .action, .thriller],
+            genres: ["scienceFiction", "action", "thriller"],
             runtime: 148,
             rating: 8.8,
-            streamingPlatforms: [.netflix, .primeVideo],
+            streamingPlatforms: ["netflix", "primeVideo"],
             matchPercentage: 95
         )
     }

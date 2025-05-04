@@ -18,39 +18,48 @@ struct MovieCardView: View {
     var body: some View {
         VStack(spacing: 16) {
             // TODO: Connect with api datas
-//            AsyncImage(url: movie.posterURL) { phase in
-//                switch phase {
-//                case .empty:
-//                    ProgressView()
-//                case .success(let image):
-//                    image
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(height: 300)
-//                        .cornerRadius(16)
-//                        .shadow(radius: 10)
-//                case .failure(_):
-//                    placeHolderPoster
-//                @unknown default:
-//                    placeHolderPoster
-//                }
-//            }
-            
-            Image(.inceptionCover)
-                .resizable()
-                .scaledToFit()
-                .frame(height: 350)
-                .cornerRadius(16)
-                .shadow(color: .primary.opacity(0.2), radius: 10)
-                .onPressingChanged { point in
-//                    if !isDisabled {
-                        if let point {
-                            origin = point
-                            counter += 1
+            AsyncImage(url: movie.posterURL) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 350)
+                        .cornerRadius(16)
+                        .shadow(color: .primary.opacity(0.2), radius: 10)
+                        .onPressingChanged { point in
+        //                    if !isDisabled {
+                                if let point {
+                                    origin = point
+                                    counter += 1
+                                }
+        //                    }
                         }
-//                    }
+                        .modifier(RippleEffect(at: origin, trigger: counter))
+                case .failure(_):
+                    placeHolderPoster
+                @unknown default:
+                    placeHolderPoster
                 }
-                .modifier(RippleEffect(at: origin, trigger: counter))
+            }
+            
+//            Image(.inceptionCover)
+//                .resizable()
+//                .scaledToFit()
+//                .frame(height: 350)
+//                .cornerRadius(16)
+//                .shadow(color: .primary.opacity(0.2), radius: 10)
+//                .onPressingChanged { point in
+////                    if !isDisabled {
+//                        if let point {
+//                            origin = point
+//                            counter += 1
+//                        }
+////                    }
+//                }
+//                .modifier(RippleEffect(at: origin, trigger: counter))
             
             Text(movie.title)
                 .font(.title2.bold())
@@ -67,11 +76,11 @@ struct MovieCardView: View {
             
             genreTags
             
-            HStack {
-                ForEach(movie.streamingPlatforms, id: \.self) { platform in
-                    StreamingPlatformLogoView(platform: platform)
-                }
-            }
+//            HStack {
+//                ForEach(movie.streamingPlatforms, id: \.self) { platform in
+//                    StreamingPlatformLogoView(platform: platform)
+//                }
+//            }
             
             Button {
                 // open streaming app
@@ -101,7 +110,7 @@ struct MovieCardView: View {
     private var genreTags: some View {
         HStack(spacing: 8) {
             ForEach(movie.genres, id: \.self) { genre in
-                Text(genre.id)
+                Text(genre)
                     .font(.caption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)

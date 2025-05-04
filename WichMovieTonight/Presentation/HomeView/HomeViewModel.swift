@@ -16,7 +16,7 @@ final class HomeViewModel: ObservableObject {
     
     private let findMovieUseCase: FindTonightMovieUseCase
     
-    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MockMovieRepository())) {
+    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl())) {
         self.findMovieUseCase = findMovieUseCase
     }
     
@@ -31,7 +31,17 @@ final class HomeViewModel: ObservableObject {
         
         do {
             let movie = try await findMovieUseCase.execute()
-            selectedMovie = Movie(id: movie.id, title: movie.title, overview: movie.overview, posterURL: movie.posterURL, backdropURL: movie.backdropURL, releaseDate: movie.releaseDate, genres: movie.genres, runtime: movie.runtime, rating: movie.rating, streamingPlatforms: movie.streamingPlatforms, matchPercentage: movie.matchPercentage)
+            selectedMovie = Movie(id: movie.id,
+                                  title: movie.title,
+                                  overview: movie.overview,
+                                  posterURL: movie.posterURL,
+                                  backdropURL: movie.backdropURL,
+                                  releaseDate: movie.releaseDate,
+                                  genres: movie.genres,
+                                  runtime: movie.runtime,
+                                  rating: movie.rating,
+                                  streamingPlatforms: movie.streamingPlatforms,
+                                  matchPercentage: movie.matchPercentage)
         } catch {
             print("Error suggesting movie : \(error)")
         }

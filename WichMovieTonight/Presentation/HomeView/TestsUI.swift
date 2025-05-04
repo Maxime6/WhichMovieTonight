@@ -50,7 +50,7 @@ struct MovieCardTest: View {
 
             HStack {
                 ForEach(movie.genres, id: \.self) { genre in
-                    Text(genre.id)
+                    Text(genre)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(6)
