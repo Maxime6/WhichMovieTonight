@@ -1,0 +1,2 @@
+# Ignore shared Xcode schemes
+*.xcodeproj/xcshareddata/xcschemes/
