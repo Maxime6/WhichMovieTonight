@@ -44,6 +44,14 @@ struct HomeView: View {
                             .foregroundStyle(.primary)
                             .padding(.top, 40)
                         
+                        MovieGenreSelectionView(tags: MovieGenre.allCases) { tag, isSelected in
+                            MovieGenreCapsule(tag: tag.rawValue, isSelected: isSelected)
+                        } didChangeSelection: { selection in
+                            print(selection)
+                        }
+                        .padding()
+
+                        
                         Spacer()
                     }
                 }
@@ -65,6 +73,8 @@ struct HomeView: View {
         }
         .animation(.easeInOut, value: viewModel.isLoading)
     }
+    
+    
     
     private var headerView: some View {
         HStack {
