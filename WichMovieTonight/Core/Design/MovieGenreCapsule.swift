@@ -27,14 +27,13 @@ struct MovieGenreCapsule: View {
         .background {
             ZStack {
                 Capsule()
-                    .fill(.background)
-                    .opacity(!isSelected ? 1 : 0)
-                
-                Capsule()
-                    .fill(.cyan.gradient)
-                    .opacity(isSelected ? 1 : 0)
+                    .fill(isSelected ? .cyan : .gray.opacity(0.2))
             }
         }
     }
     
+}
+
+#Preview {
+    MovieGenreCapsule(tag: "movie genre", isSelected: true)
 }
