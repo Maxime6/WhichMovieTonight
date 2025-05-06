@@ -10,7 +10,7 @@ import Foundation
 final class MovieRepositoryImpl: MovieRepository {
     private let openAIService = OpenAIService()
     
-    func findSuggestedMovie() async throws -> Movie {
-        try await openAIService.getMovieSuggestion(for: ["netflix"], mood: "happy")
+    func findSuggestedMovie(movieGenre: [MovieGenre]) async throws -> Movie {
+        try await openAIService.getMovieSuggestion(for: ["netflix"], movieGenre: movieGenre, mood: "happy")
     }
 }

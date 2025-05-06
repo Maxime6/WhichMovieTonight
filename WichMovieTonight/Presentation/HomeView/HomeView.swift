@@ -10,6 +10,9 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     
+    @State private var actorsInput: String = ""
+    @State private var genresSelected: [MovieGenre] = []
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Color(.systemGray6).edgesIgnoringSafeArea(.all)
@@ -38,31 +41,53 @@ struct HomeView: View {
             
             if viewModel.isLoading {
                 ZStack {
+                    AnimatedMeshGradient()
+                        .mask(
+                            RoundedRectangle(cornerRadius: 55)
+                                .stroke(lineWidth: 25)
+                                .blur(radius: 10)
+                        )
+                        .ignoresSafeArea()
+                    
                     VStack {
-                        Text("Let me find your movie for you...")
-                            .font(.title.bold())
+                        Text("Looking for a particular theme ?")
+                            .font(.title3.bold())
                             .foregroundStyle(.primary)
                             .padding(.top, 40)
                         
                         MovieGenreSelectionView(tags: MovieGenre.allCases) { tag, isSelected in
                             MovieGenreCapsule(tag: tag.rawValue, isSelected: isSelected)
                         } didChangeSelection: { selection in
-                            print(selection)
+                            viewModel.selectedGenres = selection
                         }
-                        .padding()
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 20)
+                        
+                        Text("Or any actors ?")
+                            .font(.title3.bold())
+                            .foregroundStyle(.primary)
+                            .padding(.top, 40)
+                        
+                        TextEditor(text: $actorsInput)
+                            .frame(maxHeight: 100)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(.primary.opacity(0.1), lineWidth: 1)
+                            )
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(.systemBackground))
+                                    .shadow(color: .black.opacity(0.05), radius: 15, x: 0, y: 5)
+                            )
+                            .padding(.horizontal, 30)
 
                         
                         Spacer()
                     }
+                    
+                    
                 }
-                
-                AnimatedMeshGradient()
-                    .mask(
-                        RoundedRectangle(cornerRadius: 44)
-                            .stroke(lineWidth: 44)
-                            .blur(radius: 22)
-                    )
-                    .ignoresSafeArea()
             }
             
             AIActionButton(isLoading: viewModel.isLoading, isDisabled: false) {
@@ -70,6 +95,14 @@ struct HomeView: View {
                     try await viewModel.findTonightMovie()
                 }
             }
+            
+//            if viewModel.isLoading {
+//                AIActionButton(title: "") {
+//                    Task {
+//                        try await viewModel.findTonightMovie()
+//                    }
+//                }
+//            }
         }
         .animation(.easeInOut, value: viewModel.isLoading)
     }

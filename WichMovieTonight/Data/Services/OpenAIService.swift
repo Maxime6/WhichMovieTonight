@@ -17,16 +17,19 @@ final class OpenAIService {
 
     private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
 
-    func getMovieSuggestion(for platforms: [String], mood: String?) async throws -> Movie {
+    func getMovieSuggestion(for platforms: [String], movieGenre: [MovieGenre], mood: String?) async throws -> Movie {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let genresString = movieGenre.map { $0.rawValue }.joined(separator: ", ")
 
         let prompt = """
         You are an AI movie recommender. Suggest a creative, lesser-known movie I can watch tonight.
 
         It must be available on: \(platforms.joined(separator: ", ")).
+        Matching one or more of these genres: \(genresString)
         Mood of the user: \(mood ?? "neutral").
         Respond ONLY with JSON in the following format:
 

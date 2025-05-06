@@ -8,7 +8,7 @@
 import Foundation
 
 protocol FindTonightMovieUseCase {
-    func execute() async throws -> Movie
+    func execute(movieGenre: [MovieGenre]) async throws -> Movie
 }
 
 final class FindTonightMovieUseCaseImpl: FindTonightMovieUseCase {
@@ -18,7 +18,7 @@ final class FindTonightMovieUseCaseImpl: FindTonightMovieUseCase {
         self.repository = repository
     }
     
-    func execute() async throws -> Movie {
-        try await repository.findSuggestedMovie()
+    func execute(movieGenre: [MovieGenre]) async throws -> Movie {
+        try await repository.findSuggestedMovie(movieGenre: movieGenre)
     }
 }

@@ -13,6 +13,7 @@ final class HomeViewModel: ObservableObject {
     @Published var userName: String = "Maxime"
     @Published var selectedMovie: Movie?
     @Published var isLoading = false
+    @Published var selectedGenres: [MovieGenre] = []
     
     private let findMovieUseCase: FindTonightMovieUseCase
     
@@ -30,7 +31,7 @@ final class HomeViewModel: ObservableObject {
         }
         
         do {
-            let movie = try await findMovieUseCase.execute()
+            let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
             selectedMovie = Movie(id: movie.id,
                                   title: movie.title,
                                   overview: movie.overview,
@@ -47,7 +48,27 @@ final class HomeViewModel: ObservableObject {
         }
         
         withAnimation {
-            isLoading = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                self.isLoading = false
+            }
+            
         }
     }
+    
+//    func confirmGenreSelectionAndStartSearch() async {
+//        guard !selectedGenres.isEmpty else { return }
+//        
+//        state = .loading
+//        
+//        do {
+//            let movie = try await findMovieUseCase.execute(
+//                movieGenre: selectedGenres
+//            )
+//            state = .showingResult(movie)
+//            selectedGenres = [] // 🔁 reset après usage
+//        } catch {
+//            print("Error suggesting movie: \(error)")
+//            state = .error
+//        }
+//    }
 }
