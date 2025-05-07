@@ -90,10 +90,18 @@ struct HomeView: View {
                 }
             }
             
-            AIActionButton(isLoading: viewModel.isLoading, isDisabled: false) {
-                Task {
-                    try await viewModel.findTonightMovie()
+            AIActionButton(buttonState: viewModel.state, isDisabled: false) {
+                switch viewModel.state {
+                case .idle:
+                    viewModel.setResearchInfos()
+                case .selectingGenres:
+                    Task {
+                        try await viewModel.findTonightMovie()
+                    }
+                default:
+                    break
                 }
+                
             }
             
 //            if viewModel.isLoading {

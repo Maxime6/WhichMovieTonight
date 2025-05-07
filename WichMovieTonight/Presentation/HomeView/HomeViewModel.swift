@@ -8,12 +8,21 @@
 import Foundation
 import SwiftUI
 
+enum HomeViewState: Equatable {
+    case idle
+    case selectingGenres
+    case loading
+    case showingResult(Movie)
+    case error
+}
+
 @MainActor
 final class HomeViewModel: ObservableObject {
     @Published var userName: String = "Maxime"
     @Published var selectedMovie: Movie?
     @Published var isLoading = false
     @Published var selectedGenres: [MovieGenre] = []
+    @Published var state: HomeViewState = .idle
     
     private let findMovieUseCase: FindTonightMovieUseCase
     
@@ -25,10 +34,19 @@ final class HomeViewModel: ObservableObject {
         userName = "Maxime"
     }
     
-    func findTonightMovie() async throws {
+    func setResearchInfos() {
         withAnimation {
             isLoading = true
+            if !selectedGenres.isEmpty {
+                state = .selectingGenres
+            }
         }
+    }
+    
+    func findTonightMovie() async throws {
+//        withAnimation {
+//            isLoading = true
+//        }
         
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)

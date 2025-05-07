@@ -10,7 +10,7 @@ import SwiftUI
 struct AIActionButton: View {
     var title: String = "Suggest a Movie"
     var icon: String = "sparkles"
-    var isLoading: Bool = false
+    var buttonState: HomeViewState = .idle
     var isDisabled: Bool = false
     var action: () -> Void
     @State var counter: Int = 0
@@ -21,13 +21,13 @@ struct AIActionButton: View {
             action()
         } label: {
             HStack {
-                if isLoading {
+                if buttonState == .selectingGenres {
                     LoadingIndicator()
                 } else {
                     Image(systemName: "sparkles")
                 }
                 
-                Text(isLoading ? "Searching Movie" : "Which Movie Tonight ?")
+                Text(setButtonText())
             }
             .padding()
             .frame(width: 250)
@@ -68,7 +68,7 @@ struct AIActionButton: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(.cyan.opacity(0.5), lineWidth: 1)
         )
-        .disabled(isLoading || isDisabled)
+        .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)
         .onPressingChanged { point in
             if !isDisabled {
@@ -83,6 +83,17 @@ struct AIActionButton: View {
         .modifier(RippleEffect(at: origin, trigger: counter))
     }
     
+    private func setButtonText() -> String {
+        switch buttonState {
+        case .idle:
+            return "Which movie tonight ?"
+        case .selectingGenres:
+            return "AI is searching..."
+        default:
+            return "Start"
+        }
+    }
+    
     private func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
@@ -92,7 +103,7 @@ struct AIActionButton: View {
 #Preview {
     VStack {
         AIActionButton(action: {})
-        AIActionButton(isLoading: true, action: {})
+        AIActionButton(buttonState: .selectingGenres, action: {})
         AIActionButton(isDisabled: true, action: {})
     }
     .padding()
