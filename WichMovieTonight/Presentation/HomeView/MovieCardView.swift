@@ -37,11 +37,11 @@ struct MovieCardView: View {
                                 }
                             }
                             .modifier(RippleEffect(at: origin, trigger: counter))
-                        // Metal animation overlay
-                        AnimatedMeshGradient()
-                            .blendMode(.plusLighter)
-                            .opacity(0.35)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+//                        // Metal animation overlay
+//                        AnimatedMeshGradient()
+//                            .blendMode(.plusLighter)
+//                            .opacity(0.35)
+//                            .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 case .failure:
                     placeHolderPoster

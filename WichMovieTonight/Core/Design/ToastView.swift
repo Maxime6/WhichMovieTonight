@@ -10,7 +10,7 @@ import SwiftUI
 struct ToastView: View {
     let message: String
     var icon: String? = nil
-    var duration: Double = 2.0
+    var duration: Double = 3.0
     var onDismiss: (() -> Void)? = nil
 
     @Binding var isShowing: Bool

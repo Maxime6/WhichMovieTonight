@@ -70,9 +70,7 @@ final class HomeViewModel: ObservableObject {
         }
 
         withAnimation {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
                 self.isLoading = false
-            }
         }
     }
 

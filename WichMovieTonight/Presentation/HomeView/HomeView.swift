@@ -112,9 +112,7 @@ struct HomeView: View {
         .overlay(
             Group {
                 if let message = viewModel.toastMessage, viewModel.showToast {
-//                    ToastView(message: message, icon: "checkmark.seal.fill", isShowing: $viewModel.showToast) {
-//                        viewModel.toastMessage = nil
-//                    }
+                    ToastView(message: message, icon: "checkmark.seal.fill", onDismiss: { viewModel.toastMessage = nil }, isShowing: $viewModel.showToast)
                 }
             }, alignment: .bottom
         )
