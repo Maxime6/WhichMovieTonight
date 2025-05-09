@@ -23,17 +23,19 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var selectedGenres: [MovieGenre] = []
     @Published var state: HomeViewState = .idle
-    
+    @Published var showToast: Bool = false
+    @Published var toastMessage: String? = nil
+
     private let findMovieUseCase: FindTonightMovieUseCase
-    
+
     init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl())) {
         self.findMovieUseCase = findMovieUseCase
     }
-    
+
     func fetchUser() {
         userName = "Maxime"
     }
-    
+
     func setResearchInfos() {
         withAnimation {
             isLoading = true
@@ -42,12 +44,12 @@ final class HomeViewModel: ObservableObject {
             }
         }
     }
-    
+
     func findTonightMovie() async throws {
 //        withAnimation {
 //            isLoading = true
 //        }
-        
+
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
             selectedMovie = Movie(id: movie.id,
@@ -61,23 +63,24 @@ final class HomeViewModel: ObservableObject {
                                   rating: movie.rating,
                                   streamingPlatforms: movie.streamingPlatforms,
                                   matchPercentage: movie.matchPercentage)
+            toastMessage = "AI has find your movie"
+            showToast = true
         } catch {
             print("Error suggesting movie : \(error)")
         }
-        
+
         withAnimation {
             DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
                 self.isLoading = false
             }
-            
         }
     }
-    
+
 //    func confirmGenreSelectionAndStartSearch() async {
 //        guard !selectedGenres.isEmpty else { return }
-//        
+//
 //        state = .loading
-//        
+//
 //        do {
 //            let movie = try await findMovieUseCase.execute(
 //                movieGenre: selectedGenres

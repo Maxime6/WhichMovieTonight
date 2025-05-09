@@ -9,12 +9,12 @@ import SwiftUI
 
 struct MovieCardView: View {
     @Environment(\.colorScheme) var colorScheme
-    
+
     let movie: Movie
-    
+
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // TODO: Connect with api datas
@@ -22,29 +22,34 @@ struct MovieCardView: View {
                 switch phase {
                 case .empty:
                     ProgressView()
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 350)
-                        .cornerRadius(16)
-                        .shadow(color: .primary.opacity(0.2), radius: 10)
-                        .onPressingChanged { point in
-        //                    if !isDisabled {
+                case let .success(image):
+                    ZStack {
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 350)
+                            .cornerRadius(16)
+                            .shadow(color: .primary.opacity(0.2), radius: 10)
+                            .onPressingChanged { point in
                                 if let point {
                                     origin = point
                                     counter += 1
                                 }
-        //                    }
-                        }
-                        .modifier(RippleEffect(at: origin, trigger: counter))
-                case .failure(_):
+                            }
+                            .modifier(RippleEffect(at: origin, trigger: counter))
+                        // Metal animation overlay
+                        AnimatedMeshGradient()
+                            .blendMode(.plusLighter)
+                            .opacity(0.35)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                case .failure:
                     placeHolderPoster
                 @unknown default:
                     placeHolderPoster
                 }
             }
-            
+
 //            Image(.inceptionCover)
 //                .resizable()
 //                .scaledToFit()
@@ -52,15 +57,15 @@ struct MovieCardView: View {
 //                .cornerRadius(16)
 //                .shadow(color: .primary.opacity(0.2), radius: 10)
 //                .onPressingChanged { point in
-////                    if !isDisabled {
+            ////                    if !isDisabled {
 //                        if let point {
 //                            origin = point
 //                            counter += 1
 //                        }
-////                    }
+            ////                    }
 //                }
 //                .modifier(RippleEffect(at: origin, trigger: counter))
-            
+
             Text(movie.title)
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
@@ -73,15 +78,15 @@ struct MovieCardView: View {
                     AnimatedMeshGradient()
                         .blendMode(colorScheme == .dark ? .colorBurn : .screen)
                 }
-            
+
             genreTags
-            
+
 //            HStack {
 //                ForEach(movie.streamingPlatforms, id: \.self) { platform in
 //                    StreamingPlatformLogoView(platform: platform)
 //                }
 //            }
-            
+
             Button {
                 // open streaming app
             } label: {
@@ -92,8 +97,13 @@ struct MovieCardView: View {
         .padding()
         .cornerRadius(24)
         .padding(.horizontal)
+        .onAppear {
+            // Haptic feedback à l'affichage du MovieCard
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+        }
     }
-    
+
     private var placeHolderPoster: some View {
         RoundedRectangle(cornerRadius: 16)
             .fill(.gray.opacity(0.2))
@@ -106,7 +116,7 @@ struct MovieCardView: View {
                     .foregroundStyle(.secondary)
             }
     }
-    
+
     private var genreTags: some View {
         HStack(spacing: 8) {
             ForEach(movie.genres, id: \.self) { genre in
@@ -120,7 +130,7 @@ struct MovieCardView: View {
                         Capsule()
                             .stroke(.primary.opacity(0.1))
                     }
-                
+
                     .shadow(color: .cyan.opacity(0.3), radius: 2, x: 2, y: 2)
             }
         }

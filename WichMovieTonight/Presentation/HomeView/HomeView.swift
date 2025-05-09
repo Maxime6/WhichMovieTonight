@@ -9,19 +9,19 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
-    
+
     @State private var actorsInput: String = ""
     @State private var genresSelected: [MovieGenre] = []
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Color(.systemGray6).edgesIgnoringSafeArea(.all)
-            
+
             VStack {
                 headerView
-                
+
                 Spacer()
-                
+
                 if let movie = viewModel.selectedMovie {
                     MovieCardView(movie: movie)
                         .onAppear {
@@ -30,7 +30,7 @@ struct HomeView: View {
                 } else {
                     emptyStateView
                 }
-                
+
                 Spacer()
             }
             .padding()
@@ -38,7 +38,7 @@ struct HomeView: View {
             .onAppear {
                 viewModel.fetchUser()
             }
-            
+
             if viewModel.isLoading {
                 ZStack {
                     AnimatedMeshGradient()
@@ -48,13 +48,13 @@ struct HomeView: View {
                                 .blur(radius: 10)
                         )
                         .ignoresSafeArea()
-                    
+
                     VStack {
                         Text("Looking for a particular theme ?")
                             .font(.title3.bold())
                             .foregroundStyle(.primary)
                             .padding(.top, 40)
-                        
+
                         MovieGenreSelectionView(tags: MovieGenre.allCases) { tag, isSelected in
                             MovieGenreCapsule(tag: tag.rawValue, isSelected: isSelected)
                         } didChangeSelection: { selection in
@@ -62,12 +62,12 @@ struct HomeView: View {
                         }
                         .padding(.horizontal, 30)
                         .padding(.vertical, 20)
-                        
+
                         Text("Or any actors ?")
                             .font(.title3.bold())
                             .foregroundStyle(.primary)
                             .padding(.top, 40)
-                        
+
                         TextEditor(text: $actorsInput)
                             .frame(maxHeight: 100)
                             .padding()
@@ -82,14 +82,11 @@ struct HomeView: View {
                             )
                             .padding(.horizontal, 30)
 
-                        
                         Spacer()
                     }
-                    
-                    
                 }
             }
-            
+
             AIActionButton(buttonState: viewModel.state, isDisabled: false) {
                 switch viewModel.state {
                 case .idle:
@@ -101,9 +98,8 @@ struct HomeView: View {
                 default:
                     break
                 }
-                
             }
-            
+
 //            if viewModel.isLoading {
 //                AIActionButton(title: "") {
 //                    Task {
@@ -113,31 +109,38 @@ struct HomeView: View {
 //            }
         }
         .animation(.easeInOut, value: viewModel.isLoading)
+        .overlay(
+            Group {
+                if let message = viewModel.toastMessage, viewModel.showToast {
+//                    ToastView(message: message, icon: "checkmark.seal.fill", isShowing: $viewModel.showToast) {
+//                        viewModel.toastMessage = nil
+//                    }
+                }
+            }, alignment: .bottom
+        )
     }
-    
-    
-    
+
     private var headerView: some View {
         HStack {
             VStack(alignment: .leading) {
                 Text("Hi \(viewModel.userName),")
                     .font(.title2.bold())
                     .foregroundStyle(.primary)
-                
+
                 Text("What are you in the mood for tonight ?")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: "person.crop.circle")
                 .resizable()
                 .frame(width: 40, height: 40)
                 .foregroundStyle(.primary)
         }
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "movieclapper")
@@ -145,12 +148,12 @@ struct HomeView: View {
                 .scaledToFit()
                 .frame(width: 70, height: 70)
                 .foregroundStyle(.ultraThickMaterial)
-            
+
             Text("No movie selected yet")
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
-            
+
             Text("Tap below to let AI find the perfect movie for tonight !")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
@@ -160,7 +163,7 @@ struct HomeView: View {
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(radius: 10)
     }
-    
+
     private func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -178,7 +181,7 @@ struct WaveRenderer: TextRenderer {
         get { strength }
         set { strength = newValue }
     }
-    
+
     func draw(layout: Text.Layout, in context: inout GraphicsContext) {
         for line in layout {
             for run in line {
