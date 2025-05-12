@@ -83,30 +83,15 @@ struct HomeView: View {
                             .padding(.horizontal, 30)
 
                         Spacer()
+                        
+                        AIActionButton(title: "Find Movie") {
+                            Task {
+                                try await viewModel.findTonightMovie()
+                            }
+                        }
                     }
                 }
             }
-
-            AIActionButton(buttonState: viewModel.state, isDisabled: false) {
-                switch viewModel.state {
-                case .idle:
-                    viewModel.setResearchInfos()
-                case .selectingGenres:
-                    Task {
-                        try await viewModel.findTonightMovie()
-                    }
-                default:
-                    break
-                }
-            }
-
-//            if viewModel.isLoading {
-//                AIActionButton(title: "") {
-//                    Task {
-//                        try await viewModel.findTonightMovie()
-//                    }
-//                }
-//            }
         }
         .animation(.easeInOut, value: viewModel.isLoading)
         .overlay(
@@ -156,6 +141,10 @@ struct HomeView: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
+            
+            AIActionButton(title: "Which Movie tonight ?") {
+                viewModel.isLoading = true
+            }
         }
         .padding()
         .clipShape(RoundedRectangle(cornerRadius: 24))

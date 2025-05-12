@@ -10,7 +10,7 @@ import SwiftUI
 struct AIActionButton: View {
     var title: String = "Suggest a Movie"
     var icon: String = "sparkles"
-    var buttonState: HomeViewState = .idle
+    var isLoading: Bool = false
     var isDisabled: Bool = false
     var action: () -> Void
     @State var counter: Int = 0
@@ -21,13 +21,13 @@ struct AIActionButton: View {
             action()
         } label: {
             HStack {
-                if buttonState == .selectingGenres {
+                if isLoading {
                     LoadingIndicator()
                 } else {
                     Image(systemName: "sparkles")
                 }
                 
-                Text(setButtonText())
+                Text(title)
             }
             .padding()
             .frame(width: 250)
@@ -83,16 +83,13 @@ struct AIActionButton: View {
         .modifier(RippleEffect(at: origin, trigger: counter))
     }
     
-    private func setButtonText() -> String {
-        switch buttonState {
-        case .idle:
-            return "Which movie tonight ?"
-        case .selectingGenres:
-            return "AI is searching..."
-        default:
-            return "Start"
-        }
-    }
+//    private func setButtonText() -> String {
+//        if isLoading {
+//            "AI is searching"
+//        } else {
+//            ""
+//        }
+//    }
     
     private func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .light)
@@ -103,7 +100,7 @@ struct AIActionButton: View {
 #Preview {
     VStack {
         AIActionButton(action: {})
-        AIActionButton(buttonState: .selectingGenres, action: {})
+//        AIActionButton(is: .selectingGenres, action: {})
         AIActionButton(isDisabled: true, action: {})
     }
     .padding()

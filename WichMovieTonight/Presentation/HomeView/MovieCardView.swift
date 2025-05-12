@@ -37,11 +37,6 @@ struct MovieCardView: View {
                                 }
                             }
                             .modifier(RippleEffect(at: origin, trigger: counter))
-//                        // Metal animation overlay
-//                        AnimatedMeshGradient()
-//                            .blendMode(.plusLighter)
-//                            .opacity(0.35)
-//                            .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 case .failure:
                     placeHolderPoster
@@ -50,34 +45,9 @@ struct MovieCardView: View {
                 }
             }
 
-//            Image(.inceptionCover)
-//                .resizable()
-//                .scaledToFit()
-//                .frame(height: 350)
-//                .cornerRadius(16)
-//                .shadow(color: .primary.opacity(0.2), radius: 10)
-//                .onPressingChanged { point in
-            ////                    if !isDisabled {
-//                        if let point {
-//                            origin = point
-//                            counter += 1
-//                        }
-            ////                    }
-//                }
-//                .modifier(RippleEffect(at: origin, trigger: counter))
-
             Text(movie.title)
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(.systemBackground))
-                        .shadow(color: .black.opacity(0.05), radius: 15, x: 0, y: 5)
-                )
-                .overlay {
-                    AnimatedMeshGradient()
-                        .blendMode(colorScheme == .dark ? .colorBurn : .screen)
-                }
 
             genreTags
 
@@ -86,13 +56,6 @@ struct MovieCardView: View {
 //                    StreamingPlatformLogoView(platform: platform)
 //                }
 //            }
-
-            Button {
-                // open streaming app
-            } label: {
-                Text("Watch now")
-                    .frame(maxWidth: .infinity)
-            }
         }
         .padding()
         .cornerRadius(24)
