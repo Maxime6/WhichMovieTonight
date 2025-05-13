@@ -2,3 +2,6 @@
 *.xcodeproj/xcshareddata/xcschemes/
 
 *.cursorrules
+
+# macOS
+*.DS_Store

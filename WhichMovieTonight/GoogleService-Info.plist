@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyARXdSBoGOzJzaZyH-aVEjt2tMi9IbP7jY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>315704430524</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.maximetanter.WhichMovieTonight</string>
+	<key>PROJECT_ID</key>
+	<string>wmt---which-movie-tonight</string>
+	<key>STORAGE_BUCKET</key>
+	<string>wmt---which-movie-tonight.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:315704430524:ios:7db4f2f74fe504e06065b9</string>
+</dict>
+</plist>
