@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Findy
+//  WhichMovieTonight
 //
 //  Created by Maxime Tanter on 28/03/2025.
 //

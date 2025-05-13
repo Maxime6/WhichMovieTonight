@@ -1,6 +1,6 @@
 //
 //  AnimatedMeshGradient.swift
-//  Notes
+//  WhichMovieTonight
 //
 //  Created by Maxime Tanter on 18/02/2025.
 //

@@ -1,6 +1,6 @@
 //
 //  OpenAIService.swift
-//  WichMovieTonight
+//  WhichMovieTonight
 //
 //  Created by Maxime Tanter on 05/05/2025.
 //

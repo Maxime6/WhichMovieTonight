@@ -1,3 +1,10 @@
+//
+//  Movie.swift
+//  WhichMovieTonight
+//
+//  Created by Maxime Tanter on 25/04/2025.
+//
+
 import Foundation
 
 struct Movie: Identifiable, Equatable {

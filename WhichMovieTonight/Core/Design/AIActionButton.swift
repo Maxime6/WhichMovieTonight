@@ -1,6 +1,6 @@
 //
 //  AIActionButton.swift
-//  WichMovieTonight
+//  WhichMovieTonight
 //
 //  Created by Maxime Tanter on 30/04/2025.
 //
