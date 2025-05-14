@@ -38,17 +38,12 @@ final class HomeViewModel: ObservableObject {
     func findTonightMovie() async throws {
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
-            selectedMovie = Movie(id: movie.id,
-                                  title: movie.title,
+            selectedMovie = Movie(title: movie.title,
                                   overview: movie.overview,
                                   posterURL: movie.posterURL,
-                                  backdropURL: movie.backdropURL,
                                   releaseDate: movie.releaseDate,
                                   genres: movie.genres,
-                                  runtime: movie.runtime,
-                                  rating: movie.rating,
-                                  streamingPlatforms: movie.streamingPlatforms,
-                                  matchPercentage: movie.matchPercentage)
+                                  streamingPlatforms: movie.streamingPlatforms)
             toastMessage = "AI has find your movie"
             showToast = true
         } catch {

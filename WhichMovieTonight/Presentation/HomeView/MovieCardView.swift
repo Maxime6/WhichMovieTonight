@@ -17,51 +17,47 @@ struct MovieCardView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            // TODO: Connect with api datas
-            AsyncImage(url: movie.posterURL) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                case let .success(image):
-                    ZStack {
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 350)
-                            .cornerRadius(16)
-                            .shadow(color: .primary.opacity(0.2), radius: 10)
-                            .onPressingChanged { point in
-                                if let point {
-                                    origin = point
-                                    counter += 1
+            if let url = movie.posterURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case let .success(image):
+                        ZStack {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 350)
+                                .cornerRadius(16)
+                                .shadow(color: .primary.opacity(0.2), radius: 10)
+                                .onPressingChanged { point in
+                                    if let point {
+                                        origin = point
+                                        counter += 1
+                                    }
                                 }
-                            }
-                            .modifier(RippleEffect(at: origin, trigger: counter))
+                                .modifier(RippleEffect(at: origin, trigger: counter))
+                        }
+                    case .failure:
+                        placeHolderPoster
+                    @unknown default:
+                        placeHolderPoster
                     }
-                case .failure:
-                    placeHolderPoster
-                @unknown default:
-                    placeHolderPoster
                 }
+            } else {
+                placeHolderPoster
             }
-
+            
             Text(movie.title)
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
 
             genreTags
-
-//            HStack {
-//                ForEach(movie.streamingPlatforms, id: \.self) { platform in
-//                    StreamingPlatformLogoView(platform: platform)
-//                }
-//            }
         }
         .padding()
         .cornerRadius(24)
         .padding(.horizontal)
         .onAppear {
-            // Haptic feedback à l'affichage du MovieCard
             let generator = UIImpactFeedbackGenerator(style: .medium)
             generator.impactOccurred()
         }

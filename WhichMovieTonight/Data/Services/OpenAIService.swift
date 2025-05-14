@@ -17,7 +17,7 @@ final class OpenAIService {
 
     private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
 
-    func getMovieSuggestion(for platforms: [String], movieGenre: [MovieGenre], mood: String?) async throws -> Movie {
+    func getMovieSuggestion(for platforms: [String], movieGenre: [MovieGenre], mood: String?) async throws -> OpenAIMovieDTO {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -36,13 +36,17 @@ final class OpenAIService {
         {
           "title": "...",
           "genres": ["...", "..."],
-          "poster_url": "...",
+          "poster_url": "https://valid.image.url/of/poster.jpg",
           "platforms": ["..."]
         }
+        
+        The "poster_url" must be a valid public link to an actual image of the movie poster.
+        Use a reliable source like Wikipedia, IMDb, or an official image hosting site.
+        Do not write placeholder values. Always include a real image URL.
         """
 
         let body: [String: Any] = [
-            "model": "gpt-3.5-turbo",
+            "model": "gpt-4o",
             "messages": [
                 ["role": "user", "content": prompt]
             ],
@@ -64,19 +68,7 @@ final class OpenAIService {
 
         let suggestion = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
 
-        return Movie(
-            id: UUID(),
-            title: suggestion.title,
-            overview: "",
-            posterURL: URL(string: suggestion.posterUrl),
-            backdropURL: nil,
-            releaseDate: Date(),
-            genres: suggestion.genres,
-            runtime: nil,
-            rating: 5.0,
-            streamingPlatforms: suggestion.platforms,
-            matchPercentage: 95
-        )
+        return OpenAIMovieDTO(title: suggestion.title, genres: suggestion.genres, posterUrl: suggestion.posterUrl, platforms: suggestion.platforms)
     }
 
     private func extractJSON(from content: String) -> String? {
