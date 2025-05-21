@@ -18,10 +18,15 @@ class Appdelegate: UIResponder, UIApplicationDelegate {
 @main
 struct WhichMovieTonightApp: App {
     @UIApplicationDelegateAdaptor(Appdelegate.self) var appDelegate
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if !hasSeenOnboarding {
+                OnboardingView()
+            } else {
+                ContentView()
+            }
         }
     }
 }
