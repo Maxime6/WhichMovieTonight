@@ -16,6 +16,7 @@ struct OnboardingSlideView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 150, height: 150)
+                .foregroundStyle(.cyan.gradient)
             
             Text(slide.title)
                 .font(.title)

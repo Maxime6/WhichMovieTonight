@@ -30,7 +30,7 @@ struct OnboardingView: View {
                     }
                 }
                 .tabViewStyle(.page)
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .indexViewStyle(.page(backgroundDisplayMode: .never))
 
                 HStack {
                     Button {
@@ -42,12 +42,14 @@ struct OnboardingView: View {
 
                     Spacer()
 
-                    Button {
-                        viewModel.nextPage()
-                    } label: {
-                        Text(viewModel.currentPage == OnboardingSlide.slides.count - 1 ? "Commencer" : "Suivant")
-                    }
-                    .buttonStyle(.borderedProminent)
+                    OnboardingActionButton(
+                        title: viewModel.currentPage == OnboardingSlide.slides.count - 1 ? "Commencer" : "Suivant",
+                        isDisabled: shouldDisableNextButton,
+                        action: {
+                            viewModel.nextPage()
+                        }
+                    )
+                    .frame(width: 200)
                 }
                 .padding()
             }
@@ -57,6 +59,14 @@ struct OnboardingView: View {
                 dismiss()
             }
         }
+    }
+
+    private var shouldDisableNextButton: Bool {
+        let currentSlide = OnboardingSlide.slides[viewModel.currentPage]
+        if currentSlide.isGenreSelection {
+            return UserPreferencesService().favoriteGenres.count < 3
+        }
+        return false
     }
 }
 

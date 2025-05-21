@@ -49,10 +49,6 @@ struct ActorSelectionView: View {
                     .padding()
                 }
             }
-
-            AIActionButton(title: "Continuer") {
-                dismiss()
-            }
         }
     }
 

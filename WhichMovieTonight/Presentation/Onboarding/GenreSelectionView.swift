@@ -36,10 +36,6 @@ struct GenreSelectionView: View {
                 }
                 .padding()
             }
-            
-            AIActionButton(title: "Continuer") {
-                dismiss()
-            }
         }
     }
 }
