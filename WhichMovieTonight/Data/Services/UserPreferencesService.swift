@@ -3,11 +3,14 @@ import Foundation
 class UserPreferencesService: ObservableObject {
     private let userDefaults = UserDefaults.standard
     private let favoriteGenresKey = "favoriteGenres"
+    private let favoriteActorsKey = "favoriteActors"
 
     @Published var favoriteGenres: [MovieGenre] = []
+    @Published var favoriteActors: [String] = []
 
     init() {
         loadFavoriteGenres()
+        loadFavoriteActors()
     }
 
     func loadFavoriteGenres() {
@@ -38,5 +41,28 @@ class UserPreferencesService: ObservableObject {
 
     func isGenreSelected(_ genre: MovieGenre) -> Bool {
         favoriteGenres.contains(genre)
+    }
+
+    func loadFavoriteActors() {
+        if let actors = userDefaults.stringArray(forKey: favoriteActorsKey) {
+            favoriteActors = actors
+        }
+    }
+
+    func saveFavoriteActors(_ actors: [String]) {
+        userDefaults.set(actors, forKey: favoriteActorsKey)
+        favoriteActors = actors
+    }
+
+    func addActor(_ actor: String) {
+        var updatedActors = favoriteActors
+        updatedActors.append(actor)
+        saveFavoriteActors(updatedActors)
+    }
+
+    func removeActor(_ actor: String) {
+        var updatedActors = favoriteActors
+        updatedActors.removeAll { $0 == actor }
+        saveFavoriteActors(updatedActors)
     }
 }

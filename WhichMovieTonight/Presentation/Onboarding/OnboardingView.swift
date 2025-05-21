@@ -20,6 +20,9 @@ struct OnboardingView: View {
                         if slide.isGenreSelection {
                             GenreSelectionView()
                                 .tag(index)
+                        } else if slide.isActorSelection {
+                            ActorSelectionView()
+                                .tag(index)
                         } else {
                             OnboardingSlideView(slide: slide)
                                 .tag(index)
@@ -29,24 +32,24 @@ struct OnboardingView: View {
                 .tabViewStyle(.page)
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
 
-//                HStack {
-//                    Button {
-//                        viewModel.skipOnboarding()
-//                    } label: {
-//                        Text("Passer")
-//                    }
-//                    .foregroundStyle(.tertiary)
-//
-//                    Spacer()
-//
-//                    Button {
-//                        viewModel.nextPage()
-//                    } label: {
-//                        Text(viewModel.currentPage == OnboardingSlide.slides.count - 1 ? "Commencer" : "Suivant")
-//                    }
-//                    .buttonStyle(.borderedProminent)
-//                }
-//                .padding()
+                HStack {
+                    Button {
+                        viewModel.skipOnboarding()
+                    } label: {
+                        Text("Passer")
+                    }
+                    .foregroundStyle(.tertiary)
+
+                    Spacer()
+
+                    Button {
+                        viewModel.nextPage()
+                    } label: {
+                        Text(viewModel.currentPage == OnboardingSlide.slides.count - 1 ? "Commencer" : "Suivant")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
             }
         }
         .onChange(of: viewModel.hasSeenOnboarding) { _, newValue in

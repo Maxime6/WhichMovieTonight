@@ -40,20 +40,6 @@ struct GenreSelectionView: View {
             AIActionButton(title: "Continuer") {
                 dismiss()
             }
-
-//            Button(action: {
-//                dismiss()
-//            }) {
-//                Text("Continuer")
-//                    .font(.headline)
-//                    .foregroundColor(.white)
-//                    .frame(maxWidth: .infinity)
-//                    .padding()
-//                    .background(Color.blue)
-//                    .cornerRadius(12)
-//            }
-//            .padding(.horizontal)
-//            .padding(.bottom)
         }
     }
 }
@@ -75,7 +61,7 @@ struct GenreButton: View {
             .foregroundColor(isSelected ? .white : .primary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(isSelected ? Color.blue : Color.gray.opacity(0.1))
+            .background(isSelected ? Color.cyan.gradient : Color.gray.opacity(0.1).gradient)
             .cornerRadius(8)
         }
     }
