@@ -35,15 +35,6 @@ struct OnboardingView: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
                 HStack {
-                    Button {
-                        viewModel.skipOnboarding()
-                    } label: {
-                        Text("Passer")
-                    }
-                    .foregroundStyle(.tertiary)
-
-                    Spacer()
-
                     OnboardingActionButton(
                         title: viewModel.currentPage == OnboardingSlide.slides.count - 1 ? "Commencer" : "Suivant",
                         isDisabled: shouldDisableNextButton,
