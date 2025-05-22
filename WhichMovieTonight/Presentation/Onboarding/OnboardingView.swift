@@ -32,8 +32,7 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .tabViewStyle(.page)
-                .indexViewStyle(.page(backgroundDisplayMode: .never))
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
                 HStack {
                     Button {
