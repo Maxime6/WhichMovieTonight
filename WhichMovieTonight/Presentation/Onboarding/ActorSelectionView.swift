@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ActorSelectionView: View {
-    @StateObject private var preferencesService = UserPreferencesService()
+    @EnvironmentObject private var preferencesService: UserPreferencesService
     @Environment(\.dismiss) private var dismiss
 
     @State private var actorInput: String = ""
@@ -50,6 +50,11 @@ struct ActorSelectionView: View {
                 }
             }
         }
+        .alert("Acteur déjà ajouté", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(alertMessage)
+        }
     }
 
     private func addActor() {
@@ -92,4 +97,5 @@ struct ActorChip: View {
 
 #Preview {
     ActorSelectionView()
+        .environmentObject(UserPreferencesService())
 }

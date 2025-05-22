@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GenreSelectionView: View {
-    @StateObject private var preferencesService = UserPreferencesService()
+    @EnvironmentObject private var preferencesService: UserPreferencesService
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
@@ -65,4 +65,5 @@ struct GenreButton: View {
 
 #Preview {
     GenreSelectionView()
+        .environmentObject(UserPreferencesService())
 }

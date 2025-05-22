@@ -13,7 +13,7 @@ struct OnboardingActionButton: View {
         } label: {
             Text(title)
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity)
                 .padding()
         }

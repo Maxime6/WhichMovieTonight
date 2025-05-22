@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @StateObject private var viewModel = OnboardingViewModel()
+    @StateObject private var preferencesService = UserPreferencesService()
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -19,9 +20,11 @@ struct OnboardingView: View {
                         let slide = OnboardingSlide.slides[index]
                         if slide.isGenreSelection {
                             GenreSelectionView()
+                                .environmentObject(preferencesService)
                                 .tag(index)
                         } else if slide.isActorSelection {
                             ActorSelectionView()
+                                .environmentObject(preferencesService)
                                 .tag(index)
                         } else {
                             OnboardingSlideView(slide: slide)
@@ -64,7 +67,7 @@ struct OnboardingView: View {
     private var shouldDisableNextButton: Bool {
         let currentSlide = OnboardingSlide.slides[viewModel.currentPage]
         if currentSlide.isGenreSelection {
-            return UserPreferencesService().favoriteGenres.count < 3
+            return preferencesService.favoriteGenres.count < 3
         }
         return false
     }
