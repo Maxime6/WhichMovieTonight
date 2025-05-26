@@ -8,8 +8,8 @@
 import Foundation
 
 final class OMDBService {
-    private let apiKey = "2c3bc2c6" // Clé API gratuite OMDB
-    private let baseURL = "http://www.omdbapi.com/"
+    private let apiKey = "a8e95e30" // Clé API gratuite OMDB
+    private let baseURL = "https://www.omdbapi.com/"
 
     enum OMDBError: Error {
         case invalidURL
