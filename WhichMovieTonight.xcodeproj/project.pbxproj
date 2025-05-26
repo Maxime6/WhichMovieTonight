@@ -50,6 +50,7 @@
 		9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */; };
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
+		9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -92,6 +93,7 @@
 		9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				9C49596E2DDF6F2600BD170D /* AuthenticationView.swift */,
+				9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -405,6 +408,7 @@
 				9C49594B2DDE181A00BD170D /* OnboardingViewModel.swift in Sources */,
 				9C6EAEF02DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift in Sources */,
 				9C49594D2DDE182300BD170D /* OnboardingSlide.swift in Sources */,
+				9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */,
 				9C4959702DDF6F2600BD170D /* AuthenticationView.swift in Sources */,
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
