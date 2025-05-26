@@ -5,11 +5,11 @@
 //  Created by Maxime Tanter on 28/03/2025.
 //
 
-import SwiftUI
 import FirebaseCore
+import SwiftUI
 
 class Appdelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
         return true
     }
@@ -18,15 +18,10 @@ class Appdelegate: UIResponder, UIApplicationDelegate {
 @main
 struct WhichMovieTonightApp: App {
     @UIApplicationDelegateAdaptor(Appdelegate.self) var appDelegate
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     var body: some Scene {
         WindowGroup {
-            if !hasSeenOnboarding {
-                OnboardingView()
-            } else {
-                ContentView()
-            }
+            RootView()
         }
     }
 }

@@ -51,6 +51,9 @@
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
 		9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */; };
+		9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */; };
+		9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EA2DE4B204002002B4 /* RootView.swift */; };
+		9CF0B5ED2DE4B32C002002B4 /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -94,6 +97,9 @@
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
+		9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
+		9CF0B5EA2DE4B204002002B4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +169,7 @@
 		9C6EAEBE2DD3B10F00C2A6D2 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */,
 				9C6EAEB62DD3B10F00C2A6D2 /* Design */,
 				9C6EAEBD2DD3B10F00C2A6D2 /* Utils */,
 			);
@@ -243,6 +250,7 @@
 		9C6EAED42DD3B10F00C2A6D2 /* HomeView */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */,
 				9C6EAED02DD3B10F00C2A6D2 /* HomeView.swift */,
 				9C6EAED12DD3B10F00C2A6D2 /* HomeViewModel.swift */,
 				9C6EAED22DD3B10F00C2A6D2 /* MovieCardView.swift */,
@@ -272,6 +280,7 @@
 		9C6EAEDB2DD3B10F00C2A6D2 /* WhichMovieTonight */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5EA2DE4B204002002B4 /* RootView.swift */,
 				9C6EAEBE2DD3B10F00C2A6D2 /* Core */,
 				9C6EAEC42DD3B10F00C2A6D2 /* Data */,
 				9C6EAECD2DD3B10F00C2A6D2 /* Domain */,
@@ -390,6 +399,7 @@
 				9C6EAEE02DD3B10F00C2A6D2 /* Shaders.metal in Sources */,
 				9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */,
 				9C6EAEE22DD3B10F00C2A6D2 /* TextTransition.swift in Sources */,
+				9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */,
 				9C6EAEE32DD3B10F00C2A6D2 /* AIActionButton.swift in Sources */,
 				9C6EAEE42DD3B10F00C2A6D2 /* MovieRepository.swift in Sources */,
 				9C6EAEE52DD3B10F00C2A6D2 /* OpenAIService.swift in Sources */,
@@ -402,6 +412,8 @@
 				9C6EAEEA2DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift in Sources */,
 				9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */,
 				9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */,
+				9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */,
+				9CF0B5ED2DE4B32C002002B4 /* ProfileMenuView.swift in Sources */,
 				9C6EAEED2DD3B10F00C2A6D2 /* example-swiftui-shaders.metal in Sources */,
 				9C6EAEEE2DD3B10F00C2A6D2 /* ToastView.swift in Sources */,
 				9C6EAEEF2DD3B10F00C2A6D2 /* MovieCardView.swift in Sources */,

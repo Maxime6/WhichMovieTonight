@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @ObservedObject var appStateManager: AppStateManager
     @StateObject private var viewModel = OnboardingViewModel()
     @StateObject private var preferencesService = UserPreferencesService()
-    @Environment(\.dismiss) private var dismiss
     @State private var showAuthentication = false
+
+    init(appStateManager: AppStateManager) {
+        self.appStateManager = appStateManager
+    }
 
     var body: some View {
         ZStack {
@@ -41,7 +45,7 @@ struct OnboardingView: View {
                         isDisabled: shouldDisableNextButton,
                         action: {
                             if viewModel.currentPage == OnboardingSlide.slides.count - 1 {
-                                showAuthentication = true
+                                appStateManager.completeOnboarding()
                             } else {
                                 viewModel.nextPage()
                             }
@@ -50,14 +54,6 @@ struct OnboardingView: View {
                     .frame(width: 200)
                 }
                 .padding()
-            }
-        }
-        .fullScreenCover(isPresented: $showAuthentication) {
-            AuthenticationView()
-        }
-        .onChange(of: viewModel.hasSeenOnboarding) { _, newValue in
-            if newValue {
-                dismiss()
             }
         }
     }
@@ -72,5 +68,5 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(appStateManager: AppStateManager())
 }
