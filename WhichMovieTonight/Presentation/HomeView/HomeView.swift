@@ -9,9 +9,18 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject var appStateManager: AppStateManager
+    @StateObject private var authViewModel: AuthenticationViewModel
 
     @State private var actorsInput: String = ""
     @State private var genresSelected: [MovieGenre] = []
+    @State private var showingProfileMenu = false
+    @State private var showingDeleteAlert = false
+
+    init() {
+        // Initialize authViewModel with a placeholder, will be updated in onAppear
+        _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -37,6 +46,9 @@ struct HomeView: View {
             .blur(radius: viewModel.isLoading ? 10 : 0)
             .onAppear {
                 viewModel.fetchUser()
+                if authViewModel.appStateManager == nil {
+                    authViewModel.appStateManager = appStateManager
+                }
             }
 
             if viewModel.isLoading {
@@ -83,7 +95,7 @@ struct HomeView: View {
                             .padding(.horizontal, 30)
 
                         Spacer()
-                        
+
                         AIActionButton(title: "Find Movie") {
                             Task {
                                 try await viewModel.findTonightMovie()
@@ -101,6 +113,32 @@ struct HomeView: View {
                 }
             }, alignment: .bottom
         )
+        .sheet(isPresented: $showingProfileMenu) {
+            ProfileMenuView(
+                authViewModel: authViewModel,
+                onSignOut: {
+                    authViewModel.signOut()
+                    showingProfileMenu = false
+                },
+                onDeleteAccount: {
+                    showingDeleteAlert = true
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .alert("Supprimer le compte", isPresented: $showingDeleteAlert) {
+            Button("Annuler", role: .cancel) {}
+            Button("Supprimer", role: .destructive) {
+                Task {
+                    let success = await authViewModel.deleteAccount()
+                    if success {
+                        showingProfileMenu = false
+                    }
+                }
+            }
+        } message: {
+            Text("Cette action est irréversible. Toutes vos données seront supprimées et vous devrez refaire l'onboarding.")
+        }
     }
 
     private var headerView: some View {
@@ -117,10 +155,14 @@ struct HomeView: View {
 
             Spacer()
 
-            Image(systemName: "person.crop.circle")
-                .resizable()
-                .frame(width: 40, height: 40)
-                .foregroundStyle(.primary)
+            Button(action: {
+                showingProfileMenu = true
+            }) {
+                Image(systemName: "person.crop.circle")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .foregroundStyle(.primary)
+            }
         }
     }
 
@@ -141,7 +183,7 @@ struct HomeView: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-            
+
             AIActionButton(title: "Which Movie tonight ?") {
                 viewModel.isLoading = true
             }
@@ -159,6 +201,7 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
+        .environmentObject(AppStateManager())
 }
 
 struct WaveRenderer: TextRenderer {
