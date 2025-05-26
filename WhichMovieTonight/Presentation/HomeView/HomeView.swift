@@ -45,10 +45,11 @@ struct HomeView: View {
             .padding()
             .blur(radius: viewModel.isLoading ? 10 : 0)
             .onAppear {
-                viewModel.fetchUser()
                 if authViewModel.appStateManager == nil {
                     authViewModel.appStateManager = appStateManager
                 }
+                viewModel.setAuthViewModel(authViewModel)
+                viewModel.fetchUser()
             }
 
             if viewModel.isLoading {
