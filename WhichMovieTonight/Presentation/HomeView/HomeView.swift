@@ -10,12 +10,17 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @EnvironmentObject var appStateManager: AppStateManager
-    @StateObject private var authViewModel = AuthenticationViewModel()
+    @StateObject private var authViewModel: AuthenticationViewModel
 
     @State private var actorsInput: String = ""
     @State private var genresSelected: [MovieGenre] = []
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
+
+    init() {
+        // Initialize authViewModel with a placeholder, will be updated in onAppear
+        _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -41,7 +46,9 @@ struct HomeView: View {
             .blur(radius: viewModel.isLoading ? 10 : 0)
             .onAppear {
                 viewModel.fetchUser()
-                authViewModel.appStateManager = appStateManager
+                if authViewModel.appStateManager == nil {
+                    authViewModel.appStateManager = appStateManager
+                }
             }
 
             if viewModel.isLoading {
@@ -194,6 +201,7 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
+        .environmentObject(AppStateManager())
 }
 
 struct WaveRenderer: TextRenderer {

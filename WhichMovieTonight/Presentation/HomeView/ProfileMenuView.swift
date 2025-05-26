@@ -61,9 +61,13 @@ struct ProfileMenuView: View {
             }
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Fermer") {
-                dismiss()
-            })
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Fermer") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
