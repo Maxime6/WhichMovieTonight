@@ -69,13 +69,8 @@ final class HomeViewModel: ObservableObject {
     func findTonightMovie() async throws {
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
-            selectedMovie = Movie(title: movie.title,
-                                  overview: movie.overview,
-                                  posterURL: movie.posterURL,
-                                  releaseDate: movie.releaseDate,
-                                  genres: movie.genres,
-                                  streamingPlatforms: movie.streamingPlatforms)
-            toastMessage = "AI has find your movie"
+            selectedMovie = movie // Utiliser directement le movie retourné avec toutes les propriétés OMDB
+            toastMessage = "AI has found your movie with detailed info!"
             showToast = true
         } catch {
             print("Error suggesting movie : \(error)")

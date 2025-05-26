@@ -47,10 +47,82 @@ struct MovieCardView: View {
             } else {
                 placeHolderPoster
             }
-            
-            Text(movie.title)
-                .font(.title2.bold())
-                .multilineTextAlignment(.center)
+
+            VStack(spacing: 12) {
+                Text(movie.title)
+                    .font(.title2.bold())
+                    .multilineTextAlignment(.center)
+
+                // Informations OMDB
+                if let year = movie.year, let rated = movie.rated {
+                    HStack(spacing: 16) {
+                        Text(year)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.secondary)
+
+                        Text(rated)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        if let runtime = movie.runtime {
+                            Text("•")
+                                .foregroundStyle(.secondary)
+
+                            Text(runtime)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                // Note IMDB
+                if let imdbRating = movie.imdbRating {
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .foregroundStyle(.yellow)
+                            .font(.caption)
+
+                        Text(imdbRating)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        Text("IMDb")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                // Réalisateur et acteurs
+                if let director = movie.director {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Directed by \(director)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+
+                if let actors = movie.actors {
+                    Text(actors)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+
+                // Synopsis
+                if let overview = movie.overview {
+                    Text(overview)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .padding(.top, 4)
+                }
+            }
 
             genreTags
         }

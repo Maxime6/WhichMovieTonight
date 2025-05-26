@@ -54,6 +54,9 @@
 		9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */; };
 		9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EA2DE4B204002002B4 /* RootView.swift */; };
 		9CF0B5ED2DE4B32C002002B4 /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */; };
+		9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EE2DE4BC8B002002B4 /* OMDBMovieDTO.swift */; };
+		9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5F02DE4BC9E002002B4 /* Movie+OMDB.swift */; };
+		9CF0B5F42DE4BCB0002002B4 /* OMDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5F32DE4BCB0002002B4 /* OMDBService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,6 +103,9 @@
 		9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		9CF0B5EA2DE4B204002002B4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuView.swift; sourceTree = "<group>"; };
+		9CF0B5EE2DE4BC8B002002B4 /* OMDBMovieDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMDBMovieDTO.swift; sourceTree = "<group>"; };
+		9CF0B5F02DE4BC9E002002B4 /* Movie+OMDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Movie+OMDB.swift"; sourceTree = "<group>"; };
+		9CF0B5F32DE4BCB0002002B4 /* OMDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMDBService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +185,7 @@
 		9C6EAEC12DD3B10F00C2A6D2 /* DTO */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5EE2DE4BC8B002002B4 /* OMDBMovieDTO.swift */,
 				9C6EAEBF2DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift */,
 				9C6EAEC02DD3B10F00C2A6D2 /* OpenAIResponse.swift */,
 			);
@@ -188,6 +195,7 @@
 		9C6EAEC32DD3B10F00C2A6D2 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5F32DE4BCB0002002B4 /* OMDBService.swift */,
 				9C4959522DDE21F700BD170D /* UserPreferencesService.swift */,
 				9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */,
 			);
@@ -197,6 +205,7 @@
 		9C6EAEC42DD3B10F00C2A6D2 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				9CF0B5F12DE4BC9E002002B4 /* Extensions */,
 				9C6EAEC12DD3B10F00C2A6D2 /* DTO */,
 				9C6EAEC32DD3B10F00C2A6D2 /* Services */,
 			);
@@ -311,6 +320,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		9CF0B5F12DE4BC9E002002B4 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				9CF0B5F02DE4BC9E002002B4 /* Movie+OMDB.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -398,6 +415,7 @@
 				9C6EAEDF2DD3B10F00C2A6D2 /* HomeViewModel.swift in Sources */,
 				9C6EAEE02DD3B10F00C2A6D2 /* Shaders.metal in Sources */,
 				9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */,
+				9CF0B5F42DE4BCB0002002B4 /* OMDBService.swift in Sources */,
 				9C6EAEE22DD3B10F00C2A6D2 /* TextTransition.swift in Sources */,
 				9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */,
 				9C6EAEE32DD3B10F00C2A6D2 /* AIActionButton.swift in Sources */,
@@ -423,6 +441,8 @@
 				9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */,
 				9C4959702DDF6F2600BD170D /* AuthenticationView.swift in Sources */,
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
+				9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */,
+				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
 				9C49595B2DDE22E200BD170D /* GenreSelectionView.swift in Sources */,
 				9C6EAEF22DD3B10F00C2A6D2 /* ContentView.swift in Sources */,
