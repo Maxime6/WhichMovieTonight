@@ -27,6 +27,7 @@ final class HomeViewModel: ObservableObject {
     @Published var showToast: Bool = false
     @Published var toastMessage: String? = nil
     @Published var showMovieConfirmation = false
+    @Published var showGenreSelection = false
 
     private let findMovieUseCase: FindTonightMovieUseCase
     private var authViewModel: AuthenticationViewModel?
@@ -69,6 +70,8 @@ final class HomeViewModel: ObservableObject {
     }
 
     func findTonightMovie() async throws {
+        showGenreSelection = false // Fermer l'écran de sélection
+
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
             suggestedMovie = movie // Stocker le film suggéré pour l'écran de confirmation
