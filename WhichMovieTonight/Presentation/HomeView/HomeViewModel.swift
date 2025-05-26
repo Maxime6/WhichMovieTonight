@@ -21,10 +21,12 @@ import SwiftUI
 final class HomeViewModel: ObservableObject {
     @Published var userName: String = ""
     @Published var selectedMovie: Movie?
+    @Published var suggestedMovie: Movie?
     @Published var isLoading = false
     @Published var selectedGenres: [MovieGenre] = []
     @Published var showToast: Bool = false
     @Published var toastMessage: String? = nil
+    @Published var showMovieConfirmation = false
 
     private let findMovieUseCase: FindTonightMovieUseCase
     private var authViewModel: AuthenticationViewModel?
@@ -69,15 +71,34 @@ final class HomeViewModel: ObservableObject {
     func findTonightMovie() async throws {
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
-            selectedMovie = movie // Utiliser directement le movie retourné avec toutes les propriétés OMDB
-            toastMessage = "AI has found your movie with detailed info!"
-            showToast = true
+            suggestedMovie = movie // Stocker le film suggéré pour l'écran de confirmation
+            showMovieConfirmation = true // Afficher l'écran de confirmation
         } catch {
             print("Error suggesting movie : \(error)")
         }
 
         withAnimation {
             self.isLoading = false
+        }
+    }
+
+    func confirmMovie() {
+        if let movie = suggestedMovie {
+            selectedMovie = movie
+            toastMessage = "Film sélectionné ! Bon visionnage !"
+            showToast = true
+        }
+        suggestedMovie = nil
+        showMovieConfirmation = false
+    }
+
+    func searchAgain() {
+        suggestedMovie = nil
+        showMovieConfirmation = false
+        // Relancer automatiquement une nouvelle recherche
+        Task {
+            isLoading = true
+            try await findTonightMovie()
         }
     }
 }

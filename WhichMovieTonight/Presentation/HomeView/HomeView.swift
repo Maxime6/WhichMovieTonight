@@ -140,6 +140,21 @@ struct HomeView: View {
         } message: {
             Text("Cette action est irréversible. Toutes vos données seront supprimées et vous devrez refaire l'onboarding.")
         }
+        .fullScreenCover(isPresented: $viewModel.showMovieConfirmation) {
+            if let movie = viewModel.suggestedMovie {
+                NavigationView {
+                    MovieConfirmationView(
+                        movie: movie,
+                        onConfirm: {
+                            viewModel.confirmMovie()
+                        },
+                        onSearchAgain: {
+                            viewModel.searchAgain()
+                        }
+                    )
+                }
+            }
+        }
     }
 
     private var headerView: some View {

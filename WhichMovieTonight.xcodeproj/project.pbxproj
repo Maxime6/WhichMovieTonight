@@ -50,6 +50,7 @@
 		9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */; };
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
+		9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */; };
 		9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */; };
 		9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */; };
 		9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5EA2DE4B204002002B4 /* RootView.swift */; };
@@ -100,6 +101,7 @@
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhichMovieTonight.entitlements; sourceTree = "<group>"; };
+		9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfirmationView.swift; sourceTree = "<group>"; };
 		9CF0B5E62DE49D77002002B4 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		9CF0B5EA2DE4B204002002B4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 		9C6EAED42DD3B10F00C2A6D2 /* HomeView */ = {
 			isa = PBXGroup;
 			children = (
+				9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */,
 				9CF0B5EC2DE4B32C002002B4 /* ProfileMenuView.swift */,
 				9C6EAED02DD3B10F00C2A6D2 /* HomeView.swift */,
 				9C6EAED12DD3B10F00C2A6D2 /* HomeViewModel.swift */,
@@ -427,6 +430,7 @@
 				9C6EAEE72DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift in Sources */,
 				9C6EAEE82DD3B10F00C2A6D2 /* TestsUI.swift in Sources */,
 				9C6EAEE92DD3B10F00C2A6D2 /* Ripple.metal in Sources */,
+				9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */,
 				9C4959492DDE180700BD170D /* OnboardingView.swift in Sources */,
 				9C49594F2DDE183000BD170D /* OnboardingSlideView.swift in Sources */,
 				9C6EAEEA2DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift in Sources */,
