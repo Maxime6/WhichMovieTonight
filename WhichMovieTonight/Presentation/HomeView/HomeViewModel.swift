@@ -55,6 +55,18 @@ final class HomeViewModel: ObservableObject {
         // Reset des états temporaires au démarrage
         resetSearchState()
         isLoading = false
+
+        // Vérifier la configuration au démarrage
+        verifyConfiguration()
+    }
+
+    private func verifyConfiguration() {
+        let validation = Config.validateConfiguration()
+        if !validation.isValid {
+            print("Warning: Missing API keys: \(validation.missingKeys.joined(separator: ", "))")
+            toastMessage = "Configuration incomplète. Vérifiez vos clés API."
+            showToast = true
+        }
     }
 
     private func updateUserName() {
@@ -77,6 +89,13 @@ final class HomeViewModel: ObservableObject {
         // Éviter les recherches multiples simultanées
         guard !isLoading else { return }
 
+        // Vérifier qu'au moins un genre est sélectionné
+        guard !selectedGenres.isEmpty else {
+            toastMessage = "Veuillez sélectionner au moins un genre"
+            showToast = true
+            return
+        }
+
         // Éviter les recherches trop rapprochées (minimum 2 secondes)
         let now = Date()
         if now.timeIntervalSince(lastSearchTime) < 2.0 {
@@ -96,8 +115,25 @@ final class HomeViewModel: ObservableObject {
             showMovieConfirmation = true // Afficher l'écran de confirmation
         } catch {
             print("Error suggesting movie : \(error)")
-            // En cas d'erreur, afficher un message et reset l'état
-            toastMessage = "Erreur lors de la recherche. Veuillez réessayer."
+
+            // Gestion d'erreur spécifique selon le type d'erreur
+            let errorMessage: String
+            if let urlError = error as? URLError {
+                switch urlError.code {
+                case .userAuthenticationRequired:
+                    errorMessage = "Configuration manquante. Veuillez redémarrer l'application."
+                case .notConnectedToInternet:
+                    errorMessage = "Pas de connexion internet. Vérifiez votre réseau."
+                case .timedOut:
+                    errorMessage = "Délai d'attente dépassé. Veuillez réessayer."
+                default:
+                    errorMessage = "Erreur de réseau. Veuillez réessayer."
+                }
+            } else {
+                errorMessage = "Erreur lors de la recherche. Veuillez réessayer."
+            }
+
+            toastMessage = errorMessage
             showToast = true
             resetSearchState()
         }

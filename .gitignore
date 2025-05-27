@@ -11,3 +11,7 @@
 *.xcuserdatad
 project.xcworkspace/xcuserdata/
 *.xcworkspace/xcuserdata/
+
+# API Keys - Never commit these!
+APIKeys.plist
+**/APIKeys.plist

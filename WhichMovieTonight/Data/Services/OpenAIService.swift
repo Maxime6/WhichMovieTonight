@@ -8,20 +8,23 @@
 import Foundation
 
 final class OpenAIService {
-    private var apiKey: String {
-        guard let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"] else {
-            fatalError("OPENAI_API_KEY environment variable not set")
-        }
-        return apiKey
+    private var apiKey: String? {
+        return Config.openAIAPIKey
     }
 
     private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
 
     func getMovieSuggestion(for platforms: [String], movieGenre: [MovieGenre], mood: String?) async throws -> OpenAIMovieDTO {
+        guard let apiKey = apiKey else {
+            print("OPENAI_API_KEY environment variable not set")
+            throw URLError(.userAuthenticationRequired)
+        }
+
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0 // Timeout de 30 secondes
 
         let genresString = movieGenre.map { $0.rawValue }.joined(separator: ", ")
 

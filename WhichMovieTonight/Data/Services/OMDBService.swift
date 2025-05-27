@@ -59,16 +59,24 @@ final class OMDBService {
             throw OMDBError.invalidURL
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let movieDetails = try JSONDecoder().decode(OMDBMovieDTO.self, from: data)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15.0 // Timeout de 15 secondes pour OMDB
 
-        if movieDetails.response == "False" {
-            if let error = movieDetails.error {
-                throw OMDBError.apiError(error)
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let movieDetails = try JSONDecoder().decode(OMDBMovieDTO.self, from: data)
+
+            if movieDetails.response == "False" {
+                if let error = movieDetails.error {
+                    throw OMDBError.apiError(error)
+                }
+                throw OMDBError.movieNotFound
             }
-            throw OMDBError.movieNotFound
-        }
 
-        return movieDetails
+            return movieDetails
+        } catch {
+            print("OMDB request failed: \(error)")
+            throw error
+        }
     }
 }
