@@ -22,7 +22,7 @@ final class OpenAIService {
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let genresString = movieGenre.map { $0.rawValue }.joined(separator: ", ")
 
         let prompt = """
@@ -39,7 +39,7 @@ final class OpenAIService {
           "poster_url": "https://valid.image.url/of/poster.jpg",
           "platforms": ["..."]
         }
-        
+
         The "poster_url" must be a valid public link to an actual image of the movie poster.
         Use a reliable source like Wikipedia, IMDb, or an official image hosting site.
         Do not write placeholder values. Always include a real image URL.
@@ -48,9 +48,9 @@ final class OpenAIService {
         let body: [String: Any] = [
             "model": "gpt-4o",
             "messages": [
-                ["role": "user", "content": prompt]
+                ["role": "user", "content": prompt],
             ],
-            "temperature": 1.0
+            "temperature": 1.0,
         ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -61,19 +61,33 @@ final class OpenAIService {
         let content = decoded.choices.first?.message.content ?? ""
         print("OpenAI content:\n\(content)")
 
-        guard let jsonText = extractJSON(from: content),
-              let jsonData = jsonText.data(using: .utf8) else {
+        // Vérifier si la réponse contient une erreur ou un refus
+        if content.lowercased().contains("i'm unable") ||
+            content.lowercased().contains("i can't") ||
+            content.lowercased().contains("i'm sorry")
+        {
             throw URLError(.badServerResponse)
         }
 
-        let suggestion = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
+        guard let jsonText = extractJSON(from: content),
+              let jsonData = jsonText.data(using: .utf8)
+        else {
+            print("Failed to extract JSON from OpenAI response")
+            throw URLError(.badServerResponse)
+        }
 
-        return OpenAIMovieDTO(title: suggestion.title, genres: suggestion.genres, posterUrl: suggestion.posterUrl, platforms: suggestion.platforms)
+        do {
+            let suggestion = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
+            return OpenAIMovieDTO(title: suggestion.title, genres: suggestion.genres, posterUrl: suggestion.posterUrl, platforms: suggestion.platforms)
+        } catch {
+            print("Failed to decode OpenAI response: \(error)")
+            throw URLError(.cannotParseResponse)
+        }
     }
 
     private func extractJSON(from content: String) -> String? {
         guard let start = content.firstIndex(of: "{"),
               let end = content.lastIndex(of: "}") else { return nil }
-        return String(content[start...end])
+        return String(content[start ... end])
     }
 }

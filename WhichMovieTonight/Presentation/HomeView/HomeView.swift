@@ -112,7 +112,6 @@ struct HomeView: View {
                     actorsInput: $actorsInput,
                     onStartSearch: {
                         Task {
-                            viewModel.isLoading = true
                             try await viewModel.findTonightMovie()
                         }
                     }

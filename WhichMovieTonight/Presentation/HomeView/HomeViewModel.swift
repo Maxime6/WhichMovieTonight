@@ -30,6 +30,7 @@ final class HomeViewModel: ObservableObject {
     @Published var showGenreSelection = false
 
     private let findMovieUseCase: FindTonightMovieUseCase
+    private var lastSearchTime: Date = .distantPast
     private var authViewModel: AuthenticationViewModel?
     private var cancellables = Set<AnyCancellable>()
 
@@ -51,6 +52,9 @@ final class HomeViewModel: ObservableObject {
 
     func fetchUser() {
         updateUserName()
+        // Reset des états temporaires au démarrage
+        resetSearchState()
+        isLoading = false
     }
 
     private func updateUserName() {
@@ -70,6 +74,20 @@ final class HomeViewModel: ObservableObject {
     }
 
     func findTonightMovie() async throws {
+        // Éviter les recherches multiples simultanées
+        guard !isLoading else { return }
+
+        // Éviter les recherches trop rapprochées (minimum 2 secondes)
+        let now = Date()
+        if now.timeIntervalSince(lastSearchTime) < 2.0 {
+            toastMessage = "Veuillez patienter avant de relancer une recherche"
+            showToast = true
+            isLoading = false
+            return
+        }
+        lastSearchTime = now
+
+        isLoading = true
         showGenreSelection = false // Fermer l'écran de sélection
 
         do {
@@ -78,11 +96,13 @@ final class HomeViewModel: ObservableObject {
             showMovieConfirmation = true // Afficher l'écran de confirmation
         } catch {
             print("Error suggesting movie : \(error)")
+            // En cas d'erreur, afficher un message et reset l'état
+            toastMessage = "Erreur lors de la recherche. Veuillez réessayer."
+            showToast = true
+            resetSearchState()
         }
 
-        withAnimation {
-            self.isLoading = false
-        }
+        isLoading = false
     }
 
     func confirmMovie() {
@@ -91,17 +111,20 @@ final class HomeViewModel: ObservableObject {
             toastMessage = "Film sélectionné ! Bon visionnage !"
             showToast = true
         }
-        suggestedMovie = nil
-        showMovieConfirmation = false
+        resetSearchState()
     }
 
     func searchAgain() {
-        suggestedMovie = nil
-        showMovieConfirmation = false
+        resetSearchState()
         // Relancer automatiquement une nouvelle recherche
         Task {
-            isLoading = true
             try await findTonightMovie()
         }
+    }
+
+    private func resetSearchState() {
+        suggestedMovie = nil
+        showMovieConfirmation = false
+        showGenreSelection = false
     }
 }

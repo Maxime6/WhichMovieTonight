@@ -86,7 +86,6 @@ struct GenreActorSelectionView: View {
                 // Action Button
                 AIActionButton(title: "Lancer la recherche IA") {
                     onStartSearch()
-                    dismiss()
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 32)
