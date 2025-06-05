@@ -17,6 +17,10 @@ struct HomeView: View {
     @State private var genresSelected: [MovieGenre] = []
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
+    @State private var showingMovieDetail = false
+    @Namespace private var heroAnimation
+    @State var counter: Int = 0
+    @State var origin: CGPoint = .zero
 
     init() {
         _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
@@ -26,38 +30,41 @@ struct HomeView: View {
         ZStack(alignment: .bottom) {
             Color(.systemGray6).edgesIgnoringSafeArea(.all)
 
-            VStack {
+            VStack(spacing: 0) {
+                // Header
                 headerView
 
                 Spacer()
 
+                // Main content area (film du soir)
                 if let movie = viewModel.selectedMovie {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            MovieCardView(movie: movie)
-                                .onAppear {
-                                    triggerHaptic()
-                                }
-                            
-                            Button("Choisir un autre film") {
-                                viewModel.clearSelectedMovie()
-                            }
-                            .font(.subheadline.weight(.medium))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.secondary.opacity(0.1))
-                            .clipShape(Capsule())
+                    VStack(spacing: 20) {
+                        Text("Film du soir")
+                            .font(.title2.bold())
+                            .foregroundColor(.primary)
+
+                        movieCardView(movie: movie)
+
+                        Button("Changer de film") {
+                            viewModel.showGenreSelection = true
                         }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .clipShape(Capsule())
                     }
                 } else {
                     emptyStateView
                 }
+
                 Spacer()
 
+                // Last suggestions at bottom
                 LastSuggestionsView(suggestions: viewModel.lastSuggestions) { movie in
                     viewModel.selectedMovie = movie
-                    
+
                     if let userId = Auth.auth().currentUser?.uid {
                         Task {
                             do {
@@ -67,11 +74,9 @@ struct HomeView: View {
                             }
                         }
                     }
-                    
+
                     triggerHaptic()
                 }
-
-                Spacer()
             }
             .padding()
             .blur(radius: viewModel.isLoading ? 10 : 0)
@@ -149,31 +154,123 @@ struct HomeView: View {
                 )
             }
         }
-    }
-
-    private var headerView: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text("Hi \(viewModel.userName),")
-                    .font(.title2.bold())
-                    .foregroundStyle(.primary)
-
-                Text("What are you in the mood for tonight ?")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button(action: {
-                showingProfileMenu = true
-            }) {
-                Image(systemName: "person.crop.circle")
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .foregroundStyle(.primary)
+        .sheet(isPresented: $showingMovieDetail) {
+            if let movie = viewModel.selectedMovie {
+                MovieDetailSheet(
+                    movie: movie,
+                    namespace: heroAnimation,
+                    isPresented: $showingMovieDetail
+                )
             }
         }
+    }
+
+    // MARK: - Movie Card View
+
+    @ViewBuilder
+    private func movieCardView(movie: Movie) -> some View {
+        VStack(spacing: 16) {
+            // Movie poster (tappable)
+            Button(action: {
+                showingMovieDetail = true
+                triggerHaptic()
+            }) {
+                if let url = movie.posterURL {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 200, height: 300)
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 200, height: 300)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .shadow(color: .primary.opacity(0.2), radius: 10)
+                                .onPressingChanged { point in
+                                    if let point {
+                                        origin = point
+                                        counter += 1
+                                    }
+                                }
+                                .modifier(RippleEffect(at: origin, trigger: counter))
+                        case .failure:
+                            posterPlaceholder
+                        @unknown default:
+                            posterPlaceholder
+                        }
+                    }
+                    .matchedGeometryEffect(id: "moviePoster", in: heroAnimation)
+                } else {
+                    posterPlaceholder
+                        .matchedGeometryEffect(id: "moviePoster", in: heroAnimation)
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            // Movie title
+            Text(movie.title)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .foregroundColor(.primary)
+
+            // Movie info row (Date de sortie, IMDB rating, Durée)
+            HStack(spacing: 20) {
+                if let year = movie.year {
+                    VStack(spacing: 4) {
+                        Text(year)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("Date de sortie")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if let imdbRating = movie.imdbRating {
+                    VStack(spacing: 4) {
+                        Text(imdbRating)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("IMDB rating")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if let runtime = movie.runtime {
+                    VStack(spacing: 4) {
+                        Text(runtime)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("Durée")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray5).opacity(0.5))
+        .cornerRadius(20)
+        .onAppear {
+            triggerHaptic()
+        }
+    }
+
+    @ViewBuilder
+    private var posterPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(.gray.opacity(0.2))
+            .frame(width: 200, height: 300)
+            .overlay {
+                Image(systemName: "film")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundStyle(.secondary)
+            }
     }
 
     private var emptyStateView: some View {
@@ -201,6 +298,31 @@ struct HomeView: View {
         .padding()
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(radius: 10)
+    }
+
+    private var headerView: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text("Hi \(viewModel.userName),")
+                    .font(.title2.bold())
+                    .foregroundStyle(.primary)
+
+                Text("Phrase d'introduction")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button(action: {
+                showingProfileMenu = true
+            }) {
+                Image(systemName: "person.crop.circle")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .foregroundStyle(.primary)
+            }
+        }
     }
 
     private func triggerHaptic() {

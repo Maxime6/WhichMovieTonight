@@ -11,138 +11,97 @@ struct MovieCardView: View {
     @Environment(\.colorScheme) var colorScheme
 
     let movie: Movie
+    let namespace: Namespace.ID?
+    let onPosterTap: (() -> Void)?
 
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
 
-    var body: some View {
-        VStack(spacing: 16) {
-            if let url = movie.posterURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case let .success(image):
-                        ZStack {
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 300)
-                                .cornerRadius(16)
-                                .shadow(color: .primary.opacity(0.2), radius: 10)
-                                .onPressingChanged { point in
-                                    if let point {
-                                        origin = point
-                                        counter += 1
-                                    }
-                                }
-                                .modifier(RippleEffect(at: origin, trigger: counter))
-                        }
-                    case .failure:
-                        placeHolderPoster
-                    @unknown default:
-                        placeHolderPoster
-                    }
-                }
-            } else {
-                placeHolderPoster
-            }
+    init(movie: Movie, namespace: Namespace.ID? = nil, onPosterTap: (() -> Void)? = nil) {
+        self.movie = movie
+        self.namespace = namespace
+        self.onPosterTap = onPosterTap
+    }
 
+    var body: some View {
+        GeometryReader { geometry in
             VStack(spacing: 12) {
+                // Responsive poster
+                posterView(geometry: geometry)
+
+                // Movie title only (simplified for HomeView)
                 Text(movie.title)
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
-
-                // Informations OMDB
-                if let year = movie.year, let rated = movie.rated {
-                    HStack(spacing: 16) {
-                        Text(year)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Text("•")
-                            .foregroundStyle(.secondary)
-
-                        Text(rated)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        if let runtime = movie.runtime {
-                            Text("•")
-                                .foregroundStyle(.secondary)
-
-                            Text(runtime)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                if let imdbRating = movie.imdbRating {
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .foregroundStyle(.yellow)
-                            .font(.caption)
-
-                        Text(imdbRating)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-
-                        Text("IMDb")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if let director = movie.director {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Directed by \(director)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-
-                if let actors = movie.actors {
-                    Text(actors)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                }
-
-                if let overview = movie.overview {
-                    Text(overview)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                        .padding(.top, 4)
-                }
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
             }
-
-            genreTags
-        }
-        .padding()
-        .cornerRadius(24)
-        .padding(.horizontal)
-        .onAppear {
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
         }
     }
 
-    private var placeHolderPoster: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(.gray.opacity(0.2))
-            .frame(height: 300)
-            .overlay {
-                Image(systemName: "film")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .foregroundStyle(.secondary)
+    @ViewBuilder
+    private func posterView(geometry: GeometryProxy) -> some View {
+        let posterHeight = min(geometry.size.height * 0.75, geometry.size.width * 1.5)
+        let posterWidth = posterHeight * 0.67 // Aspect ratio 2:3
+
+        if let url = movie.posterURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                        .frame(width: posterWidth, height: posterHeight)
+                case let .success(image):
+                    Button(action: {
+                        onPosterTap?()
+                    }) {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: posterWidth, height: posterHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .primary.opacity(0.2), radius: 10)
+                            .onPressingChanged { point in
+                                if let point {
+                                    origin = point
+                                    counter += 1
+                                }
+                            }
+                            .modifier(RippleEffect(at: origin, trigger: counter))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .if(namespace != nil) { view in
+                        view.matchedGeometryEffect(id: "moviePoster", in: namespace!)
+                    }
+                case .failure:
+                    placeHolderPoster(width: posterWidth, height: posterHeight)
+                @unknown default:
+                    placeHolderPoster(width: posterWidth, height: posterHeight)
+                }
             }
+        } else {
+            placeHolderPoster(width: posterWidth, height: posterHeight)
+        }
+    }
+
+    private func placeHolderPoster(width: CGFloat, height: CGFloat) -> some View {
+        Button(action: {
+            onPosterTap?()
+        }) {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.gray.opacity(0.2))
+                .frame(width: width, height: height)
+                .overlay {
+                    Image(systemName: "film")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .foregroundStyle(.secondary)
+                }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .if(namespace != nil) { view in
+            view.matchedGeometryEffect(id: "moviePoster", in: namespace!)
+        }
     }
 
     private var genreTags: some View {
@@ -166,7 +125,7 @@ struct MovieCardView: View {
 }
 
 #Preview {
-    MovieCardView(movie: MockMovie.sample)
+    MovieCardView(movie: Movie.preview)
 }
 
 struct StreamingPlatformLogoView: View {
@@ -196,5 +155,16 @@ struct WrapHStack<Content: View>: View {
         /// Flow layout from SwiftUI-Introspect or custom
         /// Using a LazyVgrid for now
         FlowLayout(spacing: spacing, alignment: alignment, content: content)
+    }
+}
+
+// Extension to conditionally apply modifiers
+extension View {
+    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
     }
 }

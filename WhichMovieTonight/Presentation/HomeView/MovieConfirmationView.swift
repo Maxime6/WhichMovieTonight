@@ -37,6 +37,7 @@ struct MovieConfirmationView: View {
                 ScrollView {
                     MovieCardView(movie: movie)
                         .padding(.horizontal)
+                        .frame(height: 300)
                 }
 
                 Spacer()
