@@ -6,22 +6,16 @@
 //
 
 import Combine
+import FirebaseAuth
 import Foundation
 import SwiftUI
-
-// enum HomeViewState: Equatable {
-//    case idle
-//    case selectingGenres
-//    case loading
-//    case showingResult(Movie)
-//    case error
-// }
 
 @MainActor
 final class HomeViewModel: ObservableObject {
     @Published var userName: String = ""
     @Published var selectedMovie: Movie?
     @Published var suggestedMovie: Movie?
+    @Published var lastSuggestions: [Movie] = []
     @Published var isLoading = false
     @Published var selectedGenres: [MovieGenre] = []
     @Published var showToast: Bool = false
@@ -30,19 +24,20 @@ final class HomeViewModel: ObservableObject {
     @Published var showGenreSelection = false
 
     private let findMovieUseCase: FindTonightMovieUseCase
+    private let firestoreService: FirestoreServiceProtocol
     private var lastSearchTime: Date = .distantPast
-    private var authViewModel: AuthenticationViewModel?
+    var authViewModel: AuthenticationViewModel?
     private var cancellables = Set<AnyCancellable>()
 
-    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl())) {
+    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl()), firestoreService: FirestoreServiceProtocol = FirestoreService()) {
         self.findMovieUseCase = findMovieUseCase
+        self.firestoreService = firestoreService
     }
 
     func setAuthViewModel(_ authViewModel: AuthenticationViewModel) {
         self.authViewModel = authViewModel
         updateUserName()
 
-        // Observe changes in displayName
         authViewModel.$displayName
             .sink { [weak self] _ in
                 self?.updateUserName()
@@ -52,12 +47,28 @@ final class HomeViewModel: ObservableObject {
 
     func fetchUser() {
         updateUserName()
-        // Reset des états temporaires au démarrage
         resetSearchState()
         isLoading = false
-
-        // Vérifier la configuration au démarrage
         verifyConfiguration()
+        loadUserData()
+    }
+
+    private func loadUserData() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        Task {
+            do {
+                let userData = try await firestoreService.getUserMovieData(for: userId)
+                if let userData = userData {
+                    if let selectedMovieFirestore = userData.selectedMovie {
+                        selectedMovie = selectedMovieFirestore.toMovie()
+                    }
+                    lastSuggestions = userData.lastSuggestions.map { $0.toMovie() }
+                }
+            } catch {
+                print("Erreur lors du chargement des données utilisateur: \(error)")
+            }
+        }
     }
 
     private func verifyConfiguration() {
@@ -79,17 +90,14 @@ final class HomeViewModel: ObservableObject {
         if displayName.isEmpty {
             userName = "Utilisateur"
         } else {
-            // Extract first name from display name
             let components = displayName.components(separatedBy: " ")
             userName = components.first ?? displayName
         }
     }
 
     func findTonightMovie() async throws {
-        // Éviter les recherches multiples simultanées
         guard !isLoading else { return }
 
-        // Vérifier qu'au moins un genre est sélectionné
         guard !selectedGenres.isEmpty else {
             toastMessage = "Veuillez sélectionner au moins un genre"
             showToast = true
@@ -107,16 +115,26 @@ final class HomeViewModel: ObservableObject {
         lastSearchTime = now
 
         isLoading = true
-        showGenreSelection = false // Fermer l'écran de sélection
+        showGenreSelection = false
 
         do {
             let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
-            suggestedMovie = movie // Stocker le film suggéré pour l'écran de confirmation
-            showMovieConfirmation = true // Afficher l'écran de confirmation
+            suggestedMovie = movie
+
+            // Sauvegarder la suggestion dans Firestore
+            if let userId = Auth.auth().currentUser?.uid {
+                try await firestoreService.saveMovieSuggestion(movie, for: userId)
+                // Mettre à jour les suggestions locales
+                lastSuggestions.insert(movie, at: 0)
+                if lastSuggestions.count > 10 {
+                    lastSuggestions = Array(lastSuggestions.prefix(10))
+                }
+            }
+
+            showMovieConfirmation = true
         } catch {
             print("Error suggesting movie : \(error)")
 
-            // Gestion d'erreur spécifique selon le type d'erreur
             let errorMessage: String
             if let urlError = error as? URLError {
                 switch urlError.code {
@@ -146,13 +164,38 @@ final class HomeViewModel: ObservableObject {
             selectedMovie = movie
             toastMessage = "Film sélectionné ! Bon visionnage !"
             showToast = true
+
+            // Sauvegarder le film sélectionné dans Firestore
+            if let userId = Auth.auth().currentUser?.uid {
+                Task {
+                    do {
+                        try await firestoreService.saveSelectedMovie(movie, for: userId)
+                    } catch {
+                        print("Erreur lors de la sauvegarde du film sélectionné: \(error)")
+                    }
+                }
+            }
         }
         resetSearchState()
     }
 
+    func clearSelectedMovie() {
+        selectedMovie = nil
+
+        // Supprimer le film sélectionné de Firestore
+        if let userId = Auth.auth().currentUser?.uid {
+            Task {
+                do {
+                    try await firestoreService.clearSelectedMovie(for: userId)
+                } catch {
+                    print("Erreur lors de la suppression du film sélectionné: \(error)")
+                }
+            }
+        }
+    }
+
     func searchAgain() {
         resetSearchState()
-        // Relancer automatiquement une nouvelle recherche
         Task {
             try await findTonightMovie()
         }

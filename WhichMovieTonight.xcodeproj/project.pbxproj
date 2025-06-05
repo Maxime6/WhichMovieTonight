@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */; };
+		9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */; };
+		9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */; };
+		9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */; };
 		9C4959492DDE180700BD170D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4959482DDE180700BD170D /* OnboardingView.swift */; };
 		9C49594B2DDE181A00BD170D /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C49594A2DDE181A00BD170D /* OnboardingViewModel.swift */; };
 		9C49594D2DDE182300BD170D /* OnboardingSlide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C49594C2DDE182300BD170D /* OnboardingSlide.swift */; };
@@ -65,6 +69,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
+		9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMovieData.swift; sourceTree = "<group>"; };
+		9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastSuggestionsView.swift; sourceTree = "<group>"; };
+		9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestFirestoreView.swift; sourceTree = "<group>"; };
 		9C4959482DDE180700BD170D /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		9C49594A2DDE181A00BD170D /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		9C49594C2DDE182300BD170D /* OnboardingSlide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlide.swift; sourceTree = "<group>"; };
@@ -207,6 +215,7 @@
 		9C6EAEC32DD3B10F00C2A6D2 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */,
 				9CF0B5F32DE4BCB0002002B4 /* OMDBService.swift */,
 				9C4959522DDE21F700BD170D /* UserPreferencesService.swift */,
 				9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */,
@@ -227,6 +236,7 @@
 		9C6EAEC62DD3B10F00C2A6D2 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */,
 				9C6EAEC52DD3B10F00C2A6D2 /* Movie.swift */,
 			);
 			path = Models;
@@ -271,6 +281,8 @@
 		9C6EAED42DD3B10F00C2A6D2 /* HomeView */ = {
 			isa = PBXGroup;
 			children = (
+				9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */,
+				9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */,
 				9CE050822DE4C53100A0EB8B /* GenreActorSelectionView.swift */,
 				9CE050802DE4C37100A0EB8B /* AISearchingView.swift */,
 				9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */,
@@ -462,10 +474,14 @@
 				9CF0B5E72DE49D77002002B4 /* AuthenticationViewModel.swift in Sources */,
 				9C4959702DDF6F2600BD170D /* AuthenticationView.swift in Sources */,
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
+				9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */,
 				9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */,
 				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
+				9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */,
+				9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */,
 				9C49595B2DDE22E200BD170D /* GenreSelectionView.swift in Sources */,
+				9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */,
 				9C6EAEF22DD3B10F00C2A6D2 /* ContentView.swift in Sources */,
 				9C6EAEF32DD3B10F00C2A6D2 /* Ripple.swift in Sources */,
 				9C6EAEF42DD3B10F00C2A6D2 /* HomeView.swift in Sources */,

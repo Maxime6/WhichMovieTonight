@@ -5,6 +5,7 @@
 //  Created by Maxime Tanter on 25/04/2025.
 //
 
+import FirebaseAuth
 import SwiftUI
 
 struct HomeView: View {
@@ -18,7 +19,6 @@ struct HomeView: View {
     @State private var showingDeleteAlert = false
 
     init() {
-        // Initialize authViewModel with a placeholder, will be updated in onAppear
         _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
     }
 
@@ -32,12 +32,43 @@ struct HomeView: View {
                 Spacer()
 
                 if let movie = viewModel.selectedMovie {
-                    MovieCardView(movie: movie)
-                        .onAppear {
-                            triggerHaptic()
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            MovieCardView(movie: movie)
+                                .onAppear {
+                                    triggerHaptic()
+                                }
+                            
+                            Button("Choisir un autre film") {
+                                viewModel.clearSelectedMovie()
+                            }
+                            .font(.subheadline.weight(.medium))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.secondary.opacity(0.1))
+                            .clipShape(Capsule())
                         }
+                    }
                 } else {
                     emptyStateView
+                }
+                Spacer()
+
+                LastSuggestionsView(suggestions: viewModel.lastSuggestions) { movie in
+                    viewModel.selectedMovie = movie
+                    
+                    if let userId = Auth.auth().currentUser?.uid {
+                        Task {
+                            do {
+                                try await FirestoreService().saveSelectedMovie(movie, for: userId)
+                            } catch {
+                                print("Erreur lors de la sauvegarde: \(error)")
+                            }
+                        }
+                    }
+                    
+                    triggerHaptic()
                 }
 
                 Spacer()

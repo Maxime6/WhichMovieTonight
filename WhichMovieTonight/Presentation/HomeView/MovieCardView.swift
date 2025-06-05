@@ -27,7 +27,7 @@ struct MovieCardView: View {
                             image
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 350)
+                                .frame(height: 300)
                                 .cornerRadius(16)
                                 .shadow(color: .primary.opacity(0.2), radius: 10)
                                 .onPressingChanged { point in
@@ -78,7 +78,6 @@ struct MovieCardView: View {
                     }
                 }
 
-                // Note IMDB
                 if let imdbRating = movie.imdbRating {
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")
@@ -95,7 +94,6 @@ struct MovieCardView: View {
                     }
                 }
 
-                // Réalisateur et acteurs
                 if let director = movie.director {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Directed by \(director)")
@@ -113,7 +111,6 @@ struct MovieCardView: View {
                         .lineLimit(2)
                 }
 
-                // Synopsis
                 if let overview = movie.overview {
                     Text(overview)
                         .font(.caption)

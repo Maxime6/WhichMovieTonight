@@ -6,6 +6,7 @@
 //
 
 import FirebaseCore
+import FirebaseFirestore
 import SwiftUI
 
 class Appdelegate: UIResponder, UIApplicationDelegate {
