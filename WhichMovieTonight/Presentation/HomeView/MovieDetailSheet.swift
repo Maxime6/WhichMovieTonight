@@ -11,6 +11,8 @@ struct MovieDetailSheet: View {
     let movie: Movie
     let namespace: Namespace.ID
     @Binding var isPresented: Bool
+    let source: MovieDetailSource
+    let onSelectForTonight: (() -> Void)?
     @State private var scrollOffset: CGFloat = 0
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
@@ -29,9 +31,19 @@ struct MovieDetailSheet: View {
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Fermer") {
                         isPresented = false
+                    }
+                }
+
+                if source == .suggestion {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Choisir pour ce soir") {
+                            onSelectForTonight?()
+                        }
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
                     }
                 }
             }
@@ -125,6 +137,11 @@ struct MovieDetailSheet: View {
 
             // Streaming platforms (if available)
             streamingSection
+
+            // Select for tonight button (only from suggestions)
+            if source == .suggestion {
+                selectForTonightButton
+            }
         }
         .padding()
     }
@@ -279,6 +296,33 @@ struct MovieDetailSheet: View {
             }
         }
     }
+
+    private var selectForTonightButton: some View {
+        VStack(spacing: 16) {
+            Divider()
+                .padding(.vertical)
+
+            Button(action: {
+                onSelectForTonight?()
+            }) {
+                HStack {
+                    Image(systemName: "star.fill")
+                    Text("Choisir pour ce soir")
+                        .fontWeight(.semibold)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+
+            Text("Ce film deviendra votre film du soir")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
 }
 
 #Preview {
@@ -286,6 +330,10 @@ struct MovieDetailSheet: View {
     return MovieDetailSheet(
         movie: Movie.preview,
         namespace: namespace,
-        isPresented: .constant(true)
+        isPresented: .constant(true),
+        source: .suggestion,
+        onSelectForTonight: {
+            print("Selected for tonight!")
+        }
     )
 }

@@ -18,6 +18,8 @@ struct HomeView: View {
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
     @State private var showingMovieDetail = false
+    @State private var movieDetailSource: MovieDetailSource = .currentMovie
+    @State private var selectedSuggestionMovie: Movie?
     @Namespace private var heroAnimation
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
@@ -63,18 +65,9 @@ struct HomeView: View {
 
                 // Last suggestions at bottom
                 LastSuggestionsView(suggestions: viewModel.lastSuggestions) { movie in
-                    viewModel.selectedMovie = movie
-
-                    if let userId = Auth.auth().currentUser?.uid {
-                        Task {
-                            do {
-                                try await FirestoreService().saveSelectedMovie(movie, for: userId)
-                            } catch {
-                                print("Erreur lors de la sauvegarde: \(error)")
-                            }
-                        }
-                    }
-
+                    selectedSuggestionMovie = movie
+                    movieDetailSource = .suggestion
+                    showingMovieDetail = true
                     triggerHaptic()
                 }
             }
@@ -155,11 +148,24 @@ struct HomeView: View {
             }
         }
         .sheet(isPresented: $showingMovieDetail) {
-            if let movie = viewModel.selectedMovie {
+            let movieToShow: Movie? = {
+                switch movieDetailSource {
+                case .currentMovie:
+                    return viewModel.selectedMovie
+                case .suggestion:
+                    return selectedSuggestionMovie
+                }
+            }()
+
+            if let movie = movieToShow {
                 MovieDetailSheet(
                     movie: movie,
                     namespace: heroAnimation,
-                    isPresented: $showingMovieDetail
+                    isPresented: $showingMovieDetail,
+                    source: movieDetailSource,
+                    onSelectForTonight: movieDetailSource == .suggestion ? {
+                        selectMovieForTonight(movie)
+                    } : nil
                 )
             }
         }
@@ -172,6 +178,7 @@ struct HomeView: View {
         VStack(spacing: 16) {
             // Movie poster (tappable)
             Button(action: {
+                movieDetailSource = .currentMovie
                 showingMovieDetail = true
                 triggerHaptic()
             }) {
@@ -323,6 +330,23 @@ struct HomeView: View {
                     .foregroundStyle(.primary)
             }
         }
+    }
+
+    private func selectMovieForTonight(_ movie: Movie) {
+        viewModel.selectedMovie = movie
+
+        if let userId = Auth.auth().currentUser?.uid {
+            Task {
+                do {
+                    try await FirestoreService().saveSelectedMovie(movie, for: userId)
+                } catch {
+                    print("Erreur lors de la sauvegarde: \(error)")
+                }
+            }
+        }
+
+        showingMovieDetail = false
+        triggerHaptic()
     }
 
     private func triggerHaptic() {
