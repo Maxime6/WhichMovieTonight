@@ -13,6 +13,8 @@
 		9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */; };
 		9C467E052DF21A8B002A78F6 /* MovieDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E042DF21A8B002A78F6 /* MovieDetailSheet.swift */; };
 		9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */; };
+		9C467E0E2DF2D57E002A78F6 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E0D2DF2D57E002A78F6 /* WatchlistView.swift */; };
+		9C467E0F2DF2D57E002A78F6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E0C2DF2D57E002A78F6 /* SettingsView.swift */; };
 		9C4959492DDE180700BD170D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4959482DDE180700BD170D /* OnboardingView.swift */; };
 		9C49594B2DDE181A00BD170D /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C49594A2DDE181A00BD170D /* OnboardingViewModel.swift */; };
 		9C49594D2DDE182300BD170D /* OnboardingSlide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C49594C2DDE182300BD170D /* OnboardingSlide.swift */; };
@@ -77,6 +79,8 @@
 		9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestFirestoreView.swift; sourceTree = "<group>"; };
 		9C467E042DF21A8B002A78F6 /* MovieDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSheet.swift; sourceTree = "<group>"; };
 		9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSource.swift; sourceTree = "<group>"; };
+		9C467E0C2DF2D57E002A78F6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9C467E0D2DF2D57E002A78F6 /* WatchlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistView.swift; sourceTree = "<group>"; };
 		9C4959482DDE180700BD170D /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		9C49594A2DDE181A00BD170D /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		9C49594C2DDE182300BD170D /* OnboardingSlide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlide.swift; sourceTree = "<group>"; };
@@ -304,6 +308,8 @@
 		9C6EAED52DD3B10F00C2A6D2 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				9C467E0C2DF2D57E002A78F6 /* SettingsView.swift */,
+				9C467E0D2DF2D57E002A78F6 /* WatchlistView.swift */,
 				9C49596F2DDF6F2600BD170D /* Authentication */,
 				9C4959472DDE17F300BD170D /* Onboarding */,
 				9C6EAED42DD3B10F00C2A6D2 /* HomeView */,
@@ -488,6 +494,8 @@
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
 				9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */,
 				9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */,
+				9C467E0E2DF2D57E002A78F6 /* WatchlistView.swift in Sources */,
+				9C467E0F2DF2D57E002A78F6 /* SettingsView.swift in Sources */,
 				9C49595B2DDE22E200BD170D /* GenreSelectionView.swift in Sources */,
 				9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */,
 				9C6EAEF22DD3B10F00C2A6D2 /* ContentView.swift in Sources */,

@@ -70,7 +70,7 @@ struct MovieCardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .if(namespace != nil) { view in
-                        view.matchedGeometryEffect(id: "moviePoster", in: namespace!)
+                        view.matchedGeometryEffect(id: "moviePoster-\(movie.id)", in: namespace!, isSource: false)
                     }
                 case .failure:
                     placeHolderPoster(width: posterWidth, height: posterHeight)
@@ -100,7 +100,7 @@ struct MovieCardView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .if(namespace != nil) { view in
-            view.matchedGeometryEffect(id: "moviePoster", in: namespace!)
+            view.matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace!, isSource: false)
         }
     }
 

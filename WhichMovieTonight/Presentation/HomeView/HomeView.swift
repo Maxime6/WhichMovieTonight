@@ -33,14 +33,12 @@ struct HomeView: View {
             Color(.systemGray6).edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
-                // Header
                 headerView
 
                 Spacer()
 
-                // Main content area (film du soir)
                 if let movie = viewModel.selectedMovie {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 10) {
                         Text("Film du soir")
                             .font(.title2.bold())
                             .foregroundColor(.primary)
@@ -208,10 +206,10 @@ struct HomeView: View {
                             posterPlaceholder
                         }
                     }
-                    .matchedGeometryEffect(id: "moviePoster", in: heroAnimation)
+                    .matchedGeometryEffect(id: "moviePoster-\(movie.id)", in: heroAnimation, isSource: !showingMovieDetail)
                 } else {
                     posterPlaceholder
-                        .matchedGeometryEffect(id: "moviePoster", in: heroAnimation)
+                        .matchedGeometryEffect(id: "moviePoster-placeholder", in: heroAnimation, isSource: !showingMovieDetail)
                 }
             }
             .buttonStyle(PlainButtonStyle())

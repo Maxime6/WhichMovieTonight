@@ -82,18 +82,18 @@ struct MovieDetailSheet: View {
                                     }
                                 }
                                 .modifier(RippleEffect(at: origin, trigger: counter))
-                                .matchedGeometryEffect(id: "moviePoster", in: namespace)
+                                .matchedGeometryEffect(id: "moviePoster-\(movie.id)", in: namespace, isSource: false)
                         case .failure:
                             posterPlaceholder
-                                .matchedGeometryEffect(id: "moviePoster", in: namespace)
+                                .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
                         @unknown default:
                             posterPlaceholder
-                                .matchedGeometryEffect(id: "moviePoster", in: namespace)
+                                .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
                         }
                     }
                 } else {
                     posterPlaceholder
-                        .matchedGeometryEffect(id: "moviePoster", in: namespace)
+                        .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
                 }
 
                 // Movie title
