@@ -14,11 +14,20 @@ protocol FirestoreServiceProtocol {
     func saveMovieSuggestion(_ movie: Movie, for userId: String) async throws
     func getUserMovieData(for userId: String) async throws -> UserMovieData?
     func clearSelectedMovie(for userId: String) async throws
+
+    // Movie interactions
+    func saveMovieInteraction(_ interaction: UserMovieInteraction, for userId: String) async throws
+    func getUserMovieInteractions(for userId: String) async throws -> UserMovieInteractions?
+    func getMovieInteraction(movieId: String, for userId: String) async throws -> UserMovieInteraction?
+    func toggleMovieLike(movie: Movie, for userId: String) async throws -> MovieLikeStatus
+    func toggleMovieDislike(movie: Movie, for userId: String) async throws -> MovieLikeStatus
+    func toggleMovieFavorite(movie: Movie, for userId: String) async throws -> Bool
 }
 
 final class FirestoreService: FirestoreServiceProtocol {
     private let db = Firestore.firestore()
     private let collection = "userMovieData"
+    private let interactionsCollection = "userMovieInteractions"
 
     func saveSelectedMovie(_ movie: Movie, for userId: String) async throws {
         let movieFirestore = MovieFirestore(from: movie)
@@ -157,5 +166,115 @@ final class FirestoreService: FirestoreServiceProtocol {
             print("❌ Erreur lors de la suppression du film sélectionné: \(error)")
             throw error
         }
+    }
+
+    // MARK: - Movie Interactions
+
+    func saveMovieInteraction(_ interaction: UserMovieInteraction, for userId: String) async throws {
+        do {
+            var userInteractions = try await getUserMovieInteractions(for: userId) ?? UserMovieInteractions(userId: userId)
+
+            var updatedInteraction = interaction
+            updatedInteraction.updatedAt = Date()
+            userInteractions.interactions[interaction.movieId] = updatedInteraction
+            userInteractions.updatedAt = Date()
+
+            try await db.collection(interactionsCollection).document(userId).setData([
+                "userId": userInteractions.userId,
+                "interactions": userInteractions.interactions.mapValues { try Firestore.Encoder().encode($0) },
+                "createdAt": userInteractions.createdAt,
+                "updatedAt": userInteractions.updatedAt,
+            ])
+
+            print("✅ Interaction film sauvegardée pour l'utilisateur \(userId)")
+        } catch {
+            print("❌ Erreur lors de la sauvegarde de l'interaction: \(error)")
+            throw error
+        }
+    }
+
+    func getUserMovieInteractions(for userId: String) async throws -> UserMovieInteractions? {
+        do {
+            let document = try await db.collection(interactionsCollection).document(userId).getDocument()
+
+            guard document.exists, let data = document.data() else {
+                print("📄 Aucune interaction trouvée pour l'utilisateur \(userId)")
+                return nil
+            }
+
+            let interactionsData = data["interactions"] as? [String: [String: Any]] ?? [:]
+            let interactions = try interactionsData.compactMapValues { interactionData in
+                try Firestore.Decoder().decode(UserMovieInteraction.self, from: interactionData)
+            }
+
+            var userInteractions = UserMovieInteractions(userId: userId)
+            userInteractions.interactions = interactions
+
+            if let createdAt = data["createdAt"] as? Timestamp {
+                userInteractions = UserMovieInteractions(userId: userId)
+                userInteractions.interactions = interactions
+            }
+
+            print("✅ Interactions utilisateur récupérées pour \(userId)")
+            return userInteractions
+        } catch {
+            print("❌ Erreur lors de la récupération des interactions: \(error)")
+            throw error
+        }
+    }
+
+    func getMovieInteraction(movieId: String, for userId: String) async throws -> UserMovieInteraction? {
+        let userInteractions = try await getUserMovieInteractions(for: userId)
+        return userInteractions?.interactions[movieId]
+    }
+
+    func toggleMovieLike(movie: Movie, for userId: String) async throws -> MovieLikeStatus {
+        let movieId = movie.uniqueId
+        var interaction = try await getMovieInteraction(movieId: movieId, for: userId) ??
+            UserMovieInteraction(movieId: movieId, movieTitle: movie.title, posterURL: movie.posterURL?.absoluteString)
+
+        // Toggle like status
+        switch interaction.likeStatus {
+        case .none:
+            interaction.likeStatus = .liked
+        case .liked:
+            interaction.likeStatus = .none
+        case .disliked:
+            interaction.likeStatus = .liked
+        }
+
+        try await saveMovieInteraction(interaction, for: userId)
+        return interaction.likeStatus
+    }
+
+    func toggleMovieDislike(movie: Movie, for userId: String) async throws -> MovieLikeStatus {
+        let movieId = movie.uniqueId
+        var interaction = try await getMovieInteraction(movieId: movieId, for: userId) ??
+            UserMovieInteraction(movieId: movieId, movieTitle: movie.title, posterURL: movie.posterURL?.absoluteString)
+
+        // Toggle dislike status
+        switch interaction.likeStatus {
+        case .none:
+            interaction.likeStatus = .disliked
+        case .disliked:
+            interaction.likeStatus = .none
+        case .liked:
+            interaction.likeStatus = .disliked
+        }
+
+        try await saveMovieInteraction(interaction, for: userId)
+        return interaction.likeStatus
+    }
+
+    func toggleMovieFavorite(movie: Movie, for userId: String) async throws -> Bool {
+        let movieId = movie.uniqueId
+        var interaction = try await getMovieInteraction(movieId: movieId, for: userId) ??
+            UserMovieInteraction(movieId: movieId, movieTitle: movie.title, posterURL: movie.posterURL?.absoluteString)
+
+        // Toggle favorite status
+        interaction.isFavorite.toggle()
+
+        try await saveMovieInteraction(interaction, for: userId)
+        return interaction.isFavorite
     }
 }

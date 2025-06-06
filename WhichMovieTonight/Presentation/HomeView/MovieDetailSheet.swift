@@ -126,6 +126,9 @@ struct MovieDetailSheet: View {
             // Quick info row
             quickInfoRow
 
+            // Movie interaction buttons (like, dislike, favorite)
+            MovieInteractionButtons(movie: movie)
+
             // Genres
             genresSection
 

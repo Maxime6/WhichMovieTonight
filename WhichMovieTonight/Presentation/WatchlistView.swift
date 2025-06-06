@@ -10,14 +10,15 @@ import SwiftUI
 
 struct WatchlistView: View {
     @State private var selectedTab = 0
+    @StateObject private var viewModel = WatchlistViewModel()
 
     var body: some View {
         NavigationView {
             VStack {
                 // Tab selector
                 Picker("Watchlist Options", selection: $selectedTab) {
-                    Text("Watched").tag(0)
-                    Text("Favorites").tag(1)
+                    Text("J'aime").tag(0)
+                    Text("Favoris").tag(1)
                     Text("Suggestions").tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
@@ -25,7 +26,7 @@ struct WatchlistView: View {
 
                 // Content based on selected tab
                 TabView(selection: $selectedTab) {
-                    watchedMoviesView
+                    likedMoviesView
                         .tag(0)
 
                     favoritesView
@@ -37,47 +38,104 @@ struct WatchlistView: View {
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             }
             .navigationTitle("Watchlist")
+            .refreshable {
+                await viewModel.refreshData()
+            }
+            .task {
+                await viewModel.loadUserInteractions()
+            }
         }
     }
 
-    private var watchedMoviesView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 60))
-                .foregroundColor(.green)
+    private var likedMoviesView: some View {
+        Group {
+            if viewModel.isLoading {
+                VStack {
+                    ProgressView()
+                    Text("Chargement des films aimés...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.likedMovies.isEmpty {
+                VStack(spacing: 20) {
+                    Image(systemName: "hand.thumbsup.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
 
-            Text("Watched Movies")
-                .font(.title2.bold())
+                    Text("Films Aimés")
+                        .font(.title2.bold())
 
-            Text("Your viewing history will appear here")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    Text("Les films que vous aimez apparaîtront ici")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
 
-            Spacer()
+                    Spacer()
+                }
+                .padding()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.likedMovies) { interaction in
+                            FavoriteMovieCard(interaction: interaction)
+                        }
+                    }
+                    .padding()
+                }
+            }
         }
-        .padding()
     }
 
     private var favoritesView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "heart.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.red)
+        Group {
+            if viewModel.isLoading {
+                VStack {
+                    ProgressView()
+                    Text("Chargement des favoris...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.favoriteMovies.isEmpty {
+                VStack(spacing: 20) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.red)
 
-            Text("Favorite Movies")
-                .font(.title2.bold())
+                    Text("Films Favoris")
+                        .font(.title2.bold())
 
-            Text("Movies you've marked as favorites will be saved here")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    Text("Les films que vous marquez comme favoris apparaîtront ici")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
 
-            Spacer()
+                    Spacer()
+                }
+                .padding()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.favoriteMovies) { interaction in
+                            FavoriteMovieCard(interaction: interaction)
+                        }
+                    }
+                    .padding()
+                }
+            }
         }
-        .padding()
+        .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+            }
+        }
     }
 
     private var suggestionsView: some View {
