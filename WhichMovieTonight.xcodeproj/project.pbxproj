@@ -10,7 +10,6 @@
 		9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */; };
 		9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */; };
 		9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */; };
-		9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */; };
 		9C467E052DF21A8B002A78F6 /* MovieDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E042DF21A8B002A78F6 /* MovieDetailSheet.swift */; };
 		9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */; };
 		9C467E0E2DF2D57E002A78F6 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E0D2DF2D57E002A78F6 /* WatchlistView.swift */; };
@@ -81,7 +80,6 @@
 /* Begin PBXFileReference section */
 		9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
 		9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMovieData.swift; sourceTree = "<group>"; };
-		9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastSuggestionsView.swift; sourceTree = "<group>"; };
 		9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestFirestoreView.swift; sourceTree = "<group>"; };
 		9C467E042DF21A8B002A78F6 /* MovieDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSheet.swift; sourceTree = "<group>"; };
 		9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSource.swift; sourceTree = "<group>"; };
@@ -307,7 +305,6 @@
 				9C467E132DF30FA8002A78F6 /* MovieInteractionViewModel.swift */,
 				9C467E142DF30FA8002A78F6 /* TestMovieInteractions.swift */,
 				9C467E042DF21A8B002A78F6 /* MovieDetailSheet.swift */,
-				9C467E002DF1FF0D002A78F6 /* LastSuggestionsView.swift */,
 				9C467E012DF1FF0D002A78F6 /* TestFirestoreView.swift */,
 				9CE050822DE4C53100A0EB8B /* GenreActorSelectionView.swift */,
 				9CE050802DE4C37100A0EB8B /* AISearchingView.swift */,
@@ -517,7 +514,6 @@
 				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
 				9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */,
-				9C467E032DF1FF0D002A78F6 /* LastSuggestionsView.swift in Sources */,
 				9C467E0E2DF2D57E002A78F6 /* WatchlistView.swift in Sources */,
 				9C467E0F2DF2D57E002A78F6 /* SettingsView.swift in Sources */,
 				9C49595B2DDE22E200BD170D /* GenreSelectionView.swift in Sources */,
