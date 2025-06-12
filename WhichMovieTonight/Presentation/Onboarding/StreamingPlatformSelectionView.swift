@@ -40,29 +40,6 @@ struct StreamingPlatformSelectionView: View {
     }
 }
 
-struct StreamingPlatformButton: View {
-    let platform: StreamingPlatform
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: platform.icon)
-                    .font(.system(size: 16))
-                Text(platform.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .foregroundColor(isSelected ? .white : .primary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.cyan.gradient : Color.gray.opacity(0.1).gradient)
-            .cornerRadius(8)
-        }
-    }
-}
-
 #Preview {
     StreamingPlatformSelectionView()
         .environmentObject(UserPreferencesService())

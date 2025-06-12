@@ -40,29 +40,6 @@ struct GenreSelectionView: View {
     }
 }
 
-struct GenreButton: View {
-    let genre: MovieGenre
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: genre.icon)
-                    .font(.system(size: 16))
-                Text(genre.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .foregroundColor(isSelected ? .white : .primary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.cyan.gradient : Color.gray.opacity(0.1).gradient)
-            .cornerRadius(8)
-        }
-    }
-}
-
 #Preview {
     GenreSelectionView()
         .environmentObject(UserPreferencesService())

@@ -67,6 +67,9 @@
 		9C91ECF22DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */; };
 		9C91ECF52DFB2CEE00A08BD9 /* SettingsGenreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */; };
 		9C91ECF62DFB2CEE00A08BD9 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */; };
+		9C91ECFB2DFB30CF00A08BD9 /* GenreButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF82DFB30CF00A08BD9 /* GenreButton.swift */; };
+		9C91ECFC2DFB30CF00A08BD9 /* StreamingPlatformButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF92DFB30CF00A08BD9 /* StreamingPlatformButton.swift */; };
+		9C91ECFD2DFB30CF00A08BD9 /* ActorChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF72DFB30CF00A08BD9 /* ActorChip.swift */; };
 		9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */; };
 		9CE050812DE4C37100A0EB8B /* AISearchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050802DE4C37100A0EB8B /* AISearchingView.swift */; };
 		9CE050832DE4C53100A0EB8B /* GenreActorSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050822DE4C53100A0EB8B /* GenreActorSelectionView.swift */; };
@@ -138,6 +141,9 @@
 		9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStreamingPlatformView.swift; sourceTree = "<group>"; };
 		9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsActorView.swift; sourceTree = "<group>"; };
 		9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGenreView.swift; sourceTree = "<group>"; };
+		9C91ECF72DFB30CF00A08BD9 /* ActorChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorChip.swift; sourceTree = "<group>"; };
+		9C91ECF82DFB30CF00A08BD9 /* GenreButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenreButton.swift; sourceTree = "<group>"; };
+		9C91ECF92DFB30CF00A08BD9 /* StreamingPlatformButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingPlatformButton.swift; sourceTree = "<group>"; };
 		9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhichMovieTonight.entitlements; sourceTree = "<group>"; };
 		9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfirmationView.swift; sourceTree = "<group>"; };
 		9CE050802DE4C37100A0EB8B /* AISearchingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISearchingView.swift; sourceTree = "<group>"; };
@@ -330,6 +336,7 @@
 		9C6EAED52DD3B10F00C2A6D2 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				9C91ECFA2DFB30CF00A08BD9 /* Components */,
 				9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */,
 				9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */,
 				9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */,
@@ -386,6 +393,16 @@
 				9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9C91ECFA2DFB30CF00A08BD9 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				9C91ECF72DFB30CF00A08BD9 /* ActorChip.swift */,
+				9C91ECF82DFB30CF00A08BD9 /* GenreButton.swift */,
+				9C91ECF92DFB30CF00A08BD9 /* StreamingPlatformButton.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		9CF0B5F12DE4BC9E002002B4 /* Extensions */ = {
@@ -482,6 +499,9 @@
 				9C4959612DDE2BFB00BD170D /* OnboardingActionButton.swift in Sources */,
 				9C6EAEDE2DD3B10F00C2A6D2 /* OpenAIResponse.swift in Sources */,
 				9C6EAEDF2DD3B10F00C2A6D2 /* HomeViewModel.swift in Sources */,
+				9C91ECFB2DFB30CF00A08BD9 /* GenreButton.swift in Sources */,
+				9C91ECFC2DFB30CF00A08BD9 /* StreamingPlatformButton.swift in Sources */,
+				9C91ECFD2DFB30CF00A08BD9 /* ActorChip.swift in Sources */,
 				9C6EAEE02DD3B10F00C2A6D2 /* Shaders.metal in Sources */,
 				9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */,
 				9CF0B5F42DE4BCB0002002B4 /* OMDBService.swift in Sources */,

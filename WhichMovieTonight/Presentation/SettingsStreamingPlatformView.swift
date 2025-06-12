@@ -27,7 +27,7 @@ struct StreamingPlatformSettingsView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(StreamingPlatform.allCases) { platform in
-                        StreamingPlatformSettingsButton(
+                        StreamingPlatformButton(
                             platform: platform,
                             isSelected: preferencesService.isStreamingPlatformSelected(platform),
                             action: {
@@ -51,34 +51,6 @@ struct StreamingPlatformSettingsView: View {
                 .fontWeight(.semibold)
             }
         }
-    }
-}
-
-struct StreamingPlatformSettingsButton: View {
-    let platform: StreamingPlatform
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: platform.icon)
-                    .font(.system(size: 16))
-                Text(platform.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .foregroundColor(isSelected ? .white : .primary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.cyan.gradient : Color.gray.opacity(0.1).gradient)
-            .cornerRadius(8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.cyan : Color.clear, lineWidth: 2)
-            )
-        }
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
 

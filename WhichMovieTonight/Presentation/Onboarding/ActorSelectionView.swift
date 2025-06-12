@@ -71,30 +71,6 @@ struct ActorSelectionView: View {
     }
 }
 
-struct ActorChip: View {
-    let actor: String
-    let onRemove: () -> Void
-
-    var body: some View {
-        HStack {
-            Text(actor)
-                .font(.subheadline)
-                .fontWeight(.medium)
-
-            Button {
-                onRemove()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
-    }
-}
-
 #Preview {
     ActorSelectionView()
         .environmentObject(UserPreferencesService())
