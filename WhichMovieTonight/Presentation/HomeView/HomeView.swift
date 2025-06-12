@@ -9,9 +9,10 @@ import FirebaseAuth
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
+    @StateObject private var viewModel: HomeViewModel
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var authViewModel: AuthenticationViewModel
+    @StateObject private var preferencesService = UserPreferencesService()
 
     @State private var actorsInput: String = ""
     @State private var genresSelected: [MovieGenre] = []
@@ -24,6 +25,9 @@ struct HomeView: View {
 
     init() {
         _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
+        let preferencesService = UserPreferencesService()
+        _preferencesService = StateObject(wrappedValue: preferencesService)
+        _viewModel = StateObject(wrappedValue: HomeViewModel(preferencesService: preferencesService))
     }
 
     var body: some View {

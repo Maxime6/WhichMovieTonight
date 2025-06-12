@@ -63,6 +63,7 @@
 		9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */; };
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
+		9C91ECF02DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECEF2DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift */; };
 		9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */; };
 		9CE050812DE4C37100A0EB8B /* AISearchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050802DE4C37100A0EB8B /* AISearchingView.swift */; };
 		9CE050832DE4C53100A0EB8B /* GenreActorSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050822DE4C53100A0EB8B /* GenreActorSelectionView.swift */; };
@@ -130,6 +131,7 @@
 		9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C91ECEF2DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingPlatformSelectionView.swift; sourceTree = "<group>"; };
 		9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhichMovieTonight.entitlements; sourceTree = "<group>"; };
 		9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfirmationView.swift; sourceTree = "<group>"; };
 		9CE050802DE4C37100A0EB8B /* AISearchingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISearchingView.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 		9C4959472DDE17F300BD170D /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				9C91ECEF2DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift */,
 				9C49595E2DDE269C00BD170D /* ActorSelectionView.swift */,
 				9C4959582DDE22E200BD170D /* GenreSelectionView.swift */,
 				9C4959482DDE180700BD170D /* OnboardingView.swift */,
@@ -510,6 +513,7 @@
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
 				9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */,
 				9C467E112DF30F97002A78F6 /* UserMovieInteraction.swift in Sources */,
+				9C91ECF02DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift in Sources */,
 				9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */,
 				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,

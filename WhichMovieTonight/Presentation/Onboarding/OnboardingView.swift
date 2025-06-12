@@ -31,6 +31,10 @@ struct OnboardingView: View {
                             ActorSelectionView()
                                 .environmentObject(preferencesService)
                                 .tag(index)
+                        } else if slide.isStreamingPlatformSelection {
+                            StreamingPlatformSelectionView()
+                                .environmentObject(preferencesService)
+                                .tag(index)
                         } else {
                             OnboardingSlideView(slide: slide)
                                 .tag(index)
@@ -62,6 +66,8 @@ struct OnboardingView: View {
         let currentSlide = OnboardingSlide.slides[viewModel.currentPage]
         if currentSlide.isGenreSelection {
             return preferencesService.favoriteGenres.count < 3
+        } else if currentSlide.isStreamingPlatformSelection {
+            return preferencesService.favoriteStreamingPlatforms.isEmpty
         }
         return false
     }

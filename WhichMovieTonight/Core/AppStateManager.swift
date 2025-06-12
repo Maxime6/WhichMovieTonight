@@ -95,6 +95,7 @@ class AppStateManager: ObservableObject {
         let keysToRemove = [
             "favoriteGenres",
             "favoriteActors",
+            "favoriteStreamingPlatforms",
             "userPreferences",
             // Add other keys as needed
         ]

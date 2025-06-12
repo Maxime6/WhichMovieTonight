@@ -11,6 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var authViewModel: AuthenticationViewModel
+    @StateObject private var preferencesService = UserPreferencesService()
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
 
@@ -44,10 +45,42 @@ struct SettingsView: View {
                 // Preferences Section
                 Section("Preferences") {
                     HStack {
+                        Image(systemName: "tv.fill")
+                            .foregroundColor(.purple)
+                            .frame(width: 20)
+                        VStack(alignment: .leading) {
+                            Text("Plateformes de streaming")
+                            if preferencesService.favoriteStreamingPlatforms.isEmpty {
+                                Text("Aucune plateforme sélectionnée")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text(preferencesService.favoriteStreamingPlatforms.map { $0.rawValue }.joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
                         Image(systemName: "heart.fill")
                             .foregroundColor(.red)
                             .frame(width: 20)
-                        Text("Favorite Genres")
+                        VStack(alignment: .leading) {
+                            Text("Genres favoris")
+                            if preferencesService.favoriteGenres.isEmpty {
+                                Text("Aucun genre sélectionné")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text(preferencesService.favoriteGenres.map { $0.rawValue }.joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
@@ -57,7 +90,18 @@ struct SettingsView: View {
                         Image(systemName: "person.2.fill")
                             .foregroundColor(.green)
                             .frame(width: 20)
-                        Text("Favorite Actors")
+                        VStack(alignment: .leading) {
+                            Text("Acteurs favoris")
+                            if preferencesService.favoriteActors.isEmpty {
+                                Text("Aucun acteur ajouté")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text(preferencesService.favoriteActors.joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
@@ -79,27 +123,27 @@ struct SettingsView: View {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.blue)
                             .frame(width: 20)
-                        Text("App Version")
+                        Text("Version")
                         Spacer()
                         Text("1.0.0")
                             .foregroundColor(.secondary)
                     }
 
                     HStack {
-                        Image(systemName: "questionmark.circle.fill")
-                            .foregroundColor(.purple)
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
                             .frame(width: 20)
-                        Text("Help & Support")
+                        Text("Rate App")
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
                     }
 
                     HStack {
-                        Image(systemName: "doc.text.fill")
+                        Image(systemName: "questionmark.circle.fill")
                             .foregroundColor(.gray)
                             .frame(width: 20)
-                        Text("Privacy Policy")
+                        Text("Help & Support")
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
@@ -108,21 +152,28 @@ struct SettingsView: View {
 
                 // Account Section
                 Section("Account") {
-                    Button(action: {
-                        authViewModel.signOut()
-                    }) {
+                    Button {
+                        Task {
+                            do {
+                                try Auth.auth().signOut()
+                                appStateManager.handleSignOut()
+                            } catch {
+                                print("Error signing out: \(error)")
+                            }
+                        }
+                    } label: {
                         HStack {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
-                                .foregroundColor(.orange)
+                                .foregroundColor(.red)
                                 .frame(width: 20)
                             Text("Sign Out")
-                                .foregroundColor(.primary)
+                                .foregroundColor(.red)
                         }
                     }
 
-                    Button(action: {
+                    Button {
                         showingDeleteAlert = true
-                    }) {
+                    } label: {
                         HStack {
                             Image(systemName: "trash.fill")
                                 .foregroundColor(.red)
@@ -134,24 +185,17 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .onAppear {
-                if authViewModel.appStateManager == nil {
-                    authViewModel.appStateManager = appStateManager
+        }
+        .alert("Delete Account", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task {
+                    await authViewModel.deleteAccount()
+                    appStateManager.handleAccountDeletion()
                 }
             }
-            .alert("Delete Account", isPresented: $showingDeleteAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
-                    Task {
-                        let success = await authViewModel.deleteAccount()
-                        if success {
-                            // Account deletion handled by AppStateManager
-                        }
-                    }
-                }
-            } message: {
-                Text("This action is irreversible. All your data will be deleted and you will need to go through onboarding again.")
-            }
+        } message: {
+            Text("This action cannot be undone. All your data will be permanently deleted.")
         }
     }
 }

@@ -4,14 +4,19 @@ class UserPreferencesService: ObservableObject {
     private let userDefaults = UserDefaults.standard
     private let favoriteGenresKey = "favoriteGenres"
     private let favoriteActorsKey = "favoriteActors"
+    private let favoriteStreamingPlatformsKey = "favoriteStreamingPlatforms"
 
     @Published var favoriteGenres: [MovieGenre] = []
     @Published var favoriteActors: [String] = []
+    @Published var favoriteStreamingPlatforms: [StreamingPlatform] = []
 
     init() {
         loadFavoriteGenres()
         loadFavoriteActors()
+        loadFavoriteStreamingPlatforms()
     }
+
+    // MARK: - Genres
 
     func loadFavoriteGenres() {
         if let data = userDefaults.data(forKey: favoriteGenresKey),
@@ -43,6 +48,8 @@ class UserPreferencesService: ObservableObject {
         favoriteGenres.contains(genre)
     }
 
+    // MARK: - Actors
+
     func loadFavoriteActors() {
         if let actors = userDefaults.stringArray(forKey: favoriteActorsKey) {
             favoriteActors = actors
@@ -64,5 +71,37 @@ class UserPreferencesService: ObservableObject {
         var updatedActors = favoriteActors
         updatedActors.removeAll { $0 == actor }
         saveFavoriteActors(updatedActors)
+    }
+
+    // MARK: - Streaming Platforms
+
+    func loadFavoriteStreamingPlatforms() {
+        if let data = userDefaults.data(forKey: favoriteStreamingPlatformsKey),
+           let platformStrings = try? JSONDecoder().decode([String].self, from: data)
+        {
+            favoriteStreamingPlatforms = platformStrings.compactMap { StreamingPlatform(rawValue: $0) }
+        }
+    }
+
+    func saveFavoriteStreamingPlatforms(_ platforms: [StreamingPlatform]) {
+        let platformStrings = platforms.map { $0.rawValue }
+        if let data = try? JSONEncoder().encode(platformStrings) {
+            userDefaults.set(data, forKey: favoriteStreamingPlatformsKey)
+            favoriteStreamingPlatforms = platforms
+        }
+    }
+
+    func toggleStreamingPlatform(_ platform: StreamingPlatform) {
+        var updatedPlatforms = favoriteStreamingPlatforms
+        if favoriteStreamingPlatforms.contains(platform) {
+            updatedPlatforms.removeAll { $0 == platform }
+        } else {
+            updatedPlatforms.append(platform)
+        }
+        saveFavoriteStreamingPlatforms(updatedPlatforms)
+    }
+
+    func isStreamingPlatformSelected(_ platform: StreamingPlatform) -> Bool {
+        favoriteStreamingPlatforms.contains(platform)
     }
 }

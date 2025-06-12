@@ -8,5 +8,5 @@
 import Foundation
 
 protocol MovieRepository {
-    func findSuggestedMovie(movieGenre: [MovieGenre]) async throws -> Movie
+    func findSuggestedMovie(movieGenre: [MovieGenre], streamingPlatforms: [StreamingPlatform]) async throws -> Movie
 }

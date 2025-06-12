@@ -25,13 +25,15 @@ final class HomeViewModel: ObservableObject {
 
     private let findMovieUseCase: FindTonightMovieUseCase
     private let firestoreService: FirestoreServiceProtocol
+    private let preferencesService: UserPreferencesService
     private var lastSearchTime: Date = .distantPast
     var authViewModel: AuthenticationViewModel?
     private var cancellables = Set<AnyCancellable>()
 
-    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl()), firestoreService: FirestoreServiceProtocol = FirestoreService()) {
+    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl()), firestoreService: FirestoreServiceProtocol = FirestoreService(), preferencesService: UserPreferencesService = UserPreferencesService()) {
         self.findMovieUseCase = findMovieUseCase
         self.firestoreService = firestoreService
+        self.preferencesService = preferencesService
     }
 
     func setAuthViewModel(_ authViewModel: AuthenticationViewModel) {
@@ -104,6 +106,12 @@ final class HomeViewModel: ObservableObject {
             return
         }
 
+        guard !preferencesService.favoriteStreamingPlatforms.isEmpty else {
+            toastMessage = "Veuillez sélectionner au moins une plateforme de streaming dans vos préférences"
+            showToast = true
+            return
+        }
+
         // Éviter les recherches trop rapprochées (minimum 2 secondes)
         let now = Date()
         if now.timeIntervalSince(lastSearchTime) < 2.0 {
@@ -118,7 +126,7 @@ final class HomeViewModel: ObservableObject {
         showGenreSelection = false
 
         do {
-            let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres)
+            let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres, streamingPlatforms: preferencesService.favoriteStreamingPlatforms)
             suggestedMovie = movie
 
             // Sauvegarder la suggestion dans Firestore

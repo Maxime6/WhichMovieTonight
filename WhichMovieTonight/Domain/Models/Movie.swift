@@ -103,6 +103,11 @@ enum StreamingPlatform: String, CaseIterable, Identifiable {
     case appleTV = "Apple TV+"
     case disneyPlus = "Disney+"
     case paramountPlus = "Paramount+"
+    case hboMax = "HBO Max"
+    case hulu = "Hulu"
+    case peacock = "Peacock"
+    case crunchyroll = "Crunchyroll"
+    case starz = "Starz"
 
     var id: String { rawValue }
 
@@ -113,6 +118,11 @@ enum StreamingPlatform: String, CaseIterable, Identifiable {
         case .appleTV: return "appletv.fill"
         case .disneyPlus: return "sparkles.tv.fill"
         case .paramountPlus: return "play.circle.fill"
+        case .hboMax: return "tv.fill"
+        case .hulu: return "play.rectangle.fill"
+        case .peacock: return "tv.circle.fill"
+        case .crunchyroll: return "play.tv"
+        case .starz: return "star.circle.fill"
         }
     }
 }
