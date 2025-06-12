@@ -23,6 +23,10 @@ final class HomeViewModel: ObservableObject {
     @Published var showMovieConfirmation = false
     @Published var showGenreSelection = false
 
+    // Nouvelles propriétés pour les données utilisateur
+    @Published var userInteractions: UserMovieInteractions?
+    @Published var userData: UserMovieData?
+
     private let findMovieUseCase: FindTonightMovieUseCase
     private let firestoreService: FirestoreServiceProtocol
     private let preferencesService: UserPreferencesService
@@ -60,13 +64,20 @@ final class HomeViewModel: ObservableObject {
 
         Task {
             do {
+                // Charger les données de films utilisateur
                 let userData = try await firestoreService.getUserMovieData(for: userId)
                 if let userData = userData {
                     if let selectedMovieFirestore = userData.selectedMovie {
                         selectedMovie = selectedMovieFirestore.toMovie()
                     }
                     lastSuggestions = userData.lastSuggestions.map { $0.toMovie() }
+                    self.userData = userData
                 }
+
+                // Charger les interactions utilisateur
+                let userInteractions = try await firestoreService.getUserMovieInteractions(for: userId)
+                self.userInteractions = userInteractions
+
             } catch {
                 print("Erreur lors du chargement des données utilisateur: \(error)")
             }
@@ -126,7 +137,14 @@ final class HomeViewModel: ObservableObject {
         showGenreSelection = false
 
         do {
-            let movie = try await findMovieUseCase.execute(movieGenre: selectedGenres, streamingPlatforms: preferencesService.favoriteStreamingPlatforms)
+            let movie = try await findMovieUseCase.execute(
+                movieGenre: selectedGenres,
+                streamingPlatforms: preferencesService.favoriteStreamingPlatforms,
+                userInteractions: userInteractions,
+                favoriteActors: preferencesService.favoriteActors,
+                favoriteGenres: preferencesService.favoriteGenres,
+                recentSuggestions: userData?.lastSuggestions ?? []
+            )
             suggestedMovie = movie
 
             // Sauvegarder la suggestion dans Firestore

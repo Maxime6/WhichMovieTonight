@@ -12,11 +12,13 @@ struct OpenAIMovieDTO: Decodable {
     let genres: [String]
     let posterUrl: String
     let platforms: [String]
+    let recommendationReason: String?
 
     enum CodingKeys: String, CodingKey {
         case title
         case genres
         case posterUrl = "poster_url"
         case platforms
+        case recommendationReason = "recommendation_reason"
     }
 }

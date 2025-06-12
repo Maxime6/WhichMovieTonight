@@ -126,35 +126,3 @@ enum StreamingPlatform: String, CaseIterable, Identifiable {
         }
     }
 }
-
-// MARK: - Mood
-
-enum Mood: String, CaseIterable, Identifiable {
-    case happy = "Happy"
-    case relaxed = "Relaxed"
-    case excited = "Excited"
-    case sad = "Sad"
-    case tired = "Tired"
-
-    var id: String { rawValue }
-
-    var icon: String {
-        switch self {
-        case .happy: return "face.smiling.fill"
-        case .relaxed: return "zzz"
-        case .excited: return "star.fill"
-        case .sad: return "cloud.rain.fill"
-        case .tired: return "powersleep"
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .happy: return "I want something light and fun"
-        case .relaxed: return "I want something easy to watch"
-        case .excited: return "I want something thrilling"
-        case .sad: return "I want something uplifting"
-        case .tired: return "I want something not too intense"
-        }
-    }
-}

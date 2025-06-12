@@ -11,7 +11,14 @@ final class MovieRepositoryImpl: MovieRepository {
     private let openAIService = OpenAIService()
     private let omdbService = OMDBService()
 
-    func findSuggestedMovie(movieGenre: [MovieGenre], streamingPlatforms: [StreamingPlatform]) async throws -> Movie {
+    func findSuggestedMovie(
+        movieGenre: [MovieGenre],
+        streamingPlatforms: [StreamingPlatform],
+        userInteractions: UserMovieInteractions?,
+        favoriteActors: [String],
+        favoriteGenres: [MovieGenre],
+        recentSuggestions: [MovieFirestore]
+    ) async throws -> Movie {
         // Vérifications préalables
         guard !movieGenre.isEmpty else {
             throw URLError(.badURL)
@@ -24,7 +31,14 @@ final class MovieRepositoryImpl: MovieRepository {
         // 1. Obtenir la suggestion d'OpenAI
         do {
             let platformNames = streamingPlatforms.map { $0.rawValue }
-            let movieDTO = try await openAIService.getMovieSuggestion(for: platformNames, movieGenre: movieGenre, mood: "happy")
+            let movieDTO = try await openAIService.getMovieSuggestion(
+                for: platformNames,
+                movieGenre: movieGenre,
+                userInteractions: userInteractions,
+                favoriteActors: favoriteActors,
+                favoriteGenres: favoriteGenres,
+                recentSuggestions: recentSuggestions
+            )
             print("OpenAI suggested movie: \(movieDTO.title)")
 
             return try await processMovieSuggestion(movieDTO)

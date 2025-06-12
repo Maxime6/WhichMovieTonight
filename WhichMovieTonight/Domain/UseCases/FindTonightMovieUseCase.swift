@@ -8,7 +8,14 @@
 import Foundation
 
 protocol FindTonightMovieUseCase {
-    func execute(movieGenre: [MovieGenre], streamingPlatforms: [StreamingPlatform]) async throws -> Movie
+    func execute(
+        movieGenre: [MovieGenre],
+        streamingPlatforms: [StreamingPlatform],
+        userInteractions: UserMovieInteractions?,
+        favoriteActors: [String],
+        favoriteGenres: [MovieGenre],
+        recentSuggestions: [MovieFirestore]
+    ) async throws -> Movie
 }
 
 final class FindTonightMovieUseCaseImpl: FindTonightMovieUseCase {
@@ -18,7 +25,21 @@ final class FindTonightMovieUseCaseImpl: FindTonightMovieUseCase {
         self.repository = repository
     }
 
-    func execute(movieGenre: [MovieGenre], streamingPlatforms: [StreamingPlatform]) async throws -> Movie {
-        try await repository.findSuggestedMovie(movieGenre: movieGenre, streamingPlatforms: streamingPlatforms)
+    func execute(
+        movieGenre: [MovieGenre],
+        streamingPlatforms: [StreamingPlatform],
+        userInteractions: UserMovieInteractions?,
+        favoriteActors: [String],
+        favoriteGenres: [MovieGenre],
+        recentSuggestions: [MovieFirestore]
+    ) async throws -> Movie {
+        try await repository.findSuggestedMovie(
+            movieGenre: movieGenre,
+            streamingPlatforms: streamingPlatforms,
+            userInteractions: userInteractions,
+            favoriteActors: favoriteActors,
+            favoriteGenres: favoriteGenres,
+            recentSuggestions: recentSuggestions
+        )
     }
 }
