@@ -64,6 +64,9 @@
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
 		9C91ECF02DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECEF2DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift */; };
+		9C91ECF22DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */; };
+		9C91ECF52DFB2CEE00A08BD9 /* SettingsGenreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */; };
+		9C91ECF62DFB2CEE00A08BD9 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */; };
 		9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */; };
 		9CE050812DE4C37100A0EB8B /* AISearchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050802DE4C37100A0EB8B /* AISearchingView.swift */; };
 		9CE050832DE4C53100A0EB8B /* GenreActorSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050822DE4C53100A0EB8B /* GenreActorSelectionView.swift */; };
@@ -132,6 +135,9 @@
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C91ECEF2DFB26A100A08BD9 /* StreamingPlatformSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingPlatformSelectionView.swift; sourceTree = "<group>"; };
+		9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStreamingPlatformView.swift; sourceTree = "<group>"; };
+		9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsActorView.swift; sourceTree = "<group>"; };
+		9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGenreView.swift; sourceTree = "<group>"; };
 		9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhichMovieTonight.entitlements; sourceTree = "<group>"; };
 		9CE0507E2DE4C23900A0EB8B /* MovieConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfirmationView.swift; sourceTree = "<group>"; };
 		9CE050802DE4C37100A0EB8B /* AISearchingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISearchingView.swift; sourceTree = "<group>"; };
@@ -324,6 +330,9 @@
 		9C6EAED52DD3B10F00C2A6D2 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				9C91ECF32DFB2CEE00A08BD9 /* SettingsActorView.swift */,
+				9C91ECF42DFB2CEE00A08BD9 /* SettingsGenreView.swift */,
+				9C91ECF12DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift */,
 				9C467E182DF30FB6002A78F6 /* FavoriteMovieCard.swift */,
 				9C467E192DF30FB6002A78F6 /* WatchlistViewModel.swift */,
 				9C467E0C2DF2D57E002A78F6 /* SettingsView.swift */,
@@ -492,6 +501,7 @@
 				9CE050832DE4C53100A0EB8B /* GenreActorSelectionView.swift in Sources */,
 				9C6EAEE92DD3B10F00C2A6D2 /* Ripple.metal in Sources */,
 				9CE0507F2DE4C23900A0EB8B /* MovieConfirmationView.swift in Sources */,
+				9C91ECF22DFB2CC400A08BD9 /* SettingsStreamingPlatformView.swift in Sources */,
 				9C467E052DF21A8B002A78F6 /* MovieDetailSheet.swift in Sources */,
 				9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */,
 				9C4959492DDE180700BD170D /* OnboardingView.swift in Sources */,
@@ -517,6 +527,8 @@
 				9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */,
 				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
+				9C91ECF52DFB2CEE00A08BD9 /* SettingsGenreView.swift in Sources */,
+				9C91ECF62DFB2CEE00A08BD9 /* SettingsActorView.swift in Sources */,
 				9C467E022DF1FF0D002A78F6 /* TestFirestoreView.swift in Sources */,
 				9C467E0E2DF2D57E002A78F6 /* WatchlistView.swift in Sources */,
 				9C467E0F2DF2D57E002A78F6 /* SettingsView.swift in Sources */,

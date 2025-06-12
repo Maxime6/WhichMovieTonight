@@ -20,7 +20,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 // Profile Section
                 Section("Profile") {
@@ -44,67 +44,73 @@ struct SettingsView: View {
 
                 // Preferences Section
                 Section("Preferences") {
-                    HStack {
-                        Image(systemName: "tv.fill")
-                            .foregroundColor(.purple)
-                            .frame(width: 20)
-                        VStack(alignment: .leading) {
-                            Text("Plateformes de streaming")
-                            if preferencesService.favoriteStreamingPlatforms.isEmpty {
-                                Text("Aucune plateforme sélectionnée")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text(preferencesService.favoriteStreamingPlatforms.map { $0.rawValue }.joined(separator: ", "))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    NavigationLink {
+                        StreamingPlatformSettingsView()
+                            .environmentObject(preferencesService)
+                    } label: {
+                        HStack {
+                            Image(systemName: "tv.fill")
+                                .foregroundColor(.purple)
+                                .frame(width: 20)
+                            VStack(alignment: .leading) {
+                                Text("Plateformes de streaming")
+                                if preferencesService.favoriteStreamingPlatforms.isEmpty {
+                                    Text("Aucune plateforme sélectionnée")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text(preferencesService.favoriteStreamingPlatforms.map { $0.rawValue }.joined(separator: ", "))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
                     }
 
-                    HStack {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
-                            .frame(width: 20)
-                        VStack(alignment: .leading) {
-                            Text("Genres favoris")
-                            if preferencesService.favoriteGenres.isEmpty {
-                                Text("Aucun genre sélectionné")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text(preferencesService.favoriteGenres.map { $0.rawValue }.joined(separator: ", "))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    NavigationLink {
+                        GenreSettingsView()
+                            .environmentObject(preferencesService)
+                    } label: {
+                        HStack {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(.red)
+                                .frame(width: 20)
+                            VStack(alignment: .leading) {
+                                Text("Genres favoris")
+                                if preferencesService.favoriteGenres.isEmpty {
+                                    Text("Aucun genre sélectionné")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text(preferencesService.favoriteGenres.map { $0.rawValue }.joined(separator: ", "))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
                     }
 
-                    HStack {
-                        Image(systemName: "person.2.fill")
-                            .foregroundColor(.green)
-                            .frame(width: 20)
-                        VStack(alignment: .leading) {
-                            Text("Acteurs favoris")
-                            if preferencesService.favoriteActors.isEmpty {
-                                Text("Aucun acteur ajouté")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text(preferencesService.favoriteActors.joined(separator: ", "))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    NavigationLink {
+                        ActorSettingsView()
+                            .environmentObject(preferencesService)
+                    } label: {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                                .foregroundColor(.green)
+                                .frame(width: 20)
+                            VStack(alignment: .leading) {
+                                Text("Acteurs favoris")
+                                if preferencesService.favoriteActors.isEmpty {
+                                    Text("Aucun acteur ajouté")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text(preferencesService.favoriteActors.joined(separator: ", "))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
                     }
 
                     HStack {
