@@ -40,8 +40,8 @@ final class OpenAIService {
         // Analyser les préférences de l'utilisateur
         let userPreferencesContext = buildUserPreferencesContext(
             userInteractions: userInteractions,
-            favoriteActors: favoriteActors,
-            favoriteGenres: favoriteGenres,
+            favoriteActorsString: favoriteActorsString,
+            favoriteGenresString: favoriteGenresString,
             recentSuggestions: recentSuggestions
         )
 
@@ -119,20 +119,20 @@ final class OpenAIService {
 
     private func buildUserPreferencesContext(
         userInteractions: UserMovieInteractions?,
-        favoriteActors: [String],
-        favoriteGenres: [MovieGenre],
+        favoriteActorsString: String,
+        favoriteGenresString: String,
         recentSuggestions: [MovieFirestore]
     ) -> String {
         var context = ""
 
         // Genres favoris de l'utilisateur
-        if !favoriteGenres.isEmpty {
-            context += "- Favorite genres: \(favoriteGenres.map { $0.rawValue }.joined(separator: ", "))\n"
+        if !favoriteGenresString.isEmpty {
+            context += "- Favorite genres: \(favoriteGenresString)\n"
         }
 
         // Acteurs favoris
-        if !favoriteActors.isEmpty {
-            context += "- Favorite actors: \(favoriteActors.joined(separator: ", "))\n"
+        if !favoriteActorsString.isEmpty {
+            context += "- Favorite actors: \(favoriteActorsString)\n"
         }
 
         // Analyse des interactions utilisateur

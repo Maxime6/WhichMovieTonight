@@ -109,6 +109,17 @@ final class HomeViewModel: ObservableObject {
     }
 
     func findTonightMovie() async throws {
+        await findTonightMovieInternal(enforceDelay: true)
+    }
+
+    func searchAgain() {
+        resetSearchState()
+        Task {
+            await findTonightMovieInternal(enforceDelay: false)
+        }
+    }
+
+    private func findTonightMovieInternal(enforceDelay: Bool) async {
         guard !isLoading else { return }
 
         guard !selectedGenres.isEmpty else {
@@ -123,27 +134,39 @@ final class HomeViewModel: ObservableObject {
             return
         }
 
-        // Éviter les recherches trop rapprochées (minimum 2 secondes)
-        let now = Date()
-        if now.timeIntervalSince(lastSearchTime) < 2.0 {
-            toastMessage = "Veuillez patienter avant de relancer une recherche"
-            showToast = true
-            isLoading = false
-            return
+        // Éviter les recherches trop rapprochées uniquement pour la recherche initiale
+        if enforceDelay {
+            let now = Date()
+            if now.timeIntervalSince(lastSearchTime) < 2.0 {
+                toastMessage = "Veuillez patienter avant de relancer une recherche"
+                showToast = true
+                isLoading = false
+                return
+            }
+            lastSearchTime = now
         }
-        lastSearchTime = now
 
         isLoading = true
         showGenreSelection = false
 
         do {
+            // Utiliser les suggestions locales les plus récentes pour éviter les doublons
+            var recentSuggestionsFirestore = lastSuggestions.map { movie in
+                MovieFirestore(from: movie)
+            }
+
+            // Ajouter le film actuellement suggéré pour l'éviter lors d'une nouvelle recherche
+            if let currentSuggestion = suggestedMovie {
+                recentSuggestionsFirestore.insert(MovieFirestore(from: currentSuggestion), at: 0)
+            }
+
             let movie = try await findMovieUseCase.execute(
                 movieGenre: selectedGenres,
                 streamingPlatforms: preferencesService.favoriteStreamingPlatforms,
                 userInteractions: userInteractions,
                 favoriteActors: preferencesService.favoriteActors,
                 favoriteGenres: preferencesService.favoriteGenres,
-                recentSuggestions: userData?.lastSuggestions ?? []
+                recentSuggestions: recentSuggestionsFirestore
             )
             suggestedMovie = movie
 
@@ -217,13 +240,6 @@ final class HomeViewModel: ObservableObject {
                     print("Erreur lors de la suppression du film sélectionné: \(error)")
                 }
             }
-        }
-    }
-
-    func searchAgain() {
-        resetSearchState()
-        Task {
-            try await findTonightMovie()
         }
     }
 
