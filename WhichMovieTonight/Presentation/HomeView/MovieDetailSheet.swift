@@ -16,98 +16,58 @@ struct MovieDetailSheet: View {
     @State private var scrollOffset: CGFloat = 0
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
-
+    
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 0) {
+                VStack(spacing: 10) {
                     // Hero poster section
                     heroSection
-
+                    
                     // Movie details
                     movieDetailsSection
                 }
             }
             .background(Color(.systemBackground))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Fermer") {
-                        isPresented = false
-                    }
-                }
-
-                if source == .suggestion {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Choisir pour ce soir") {
-                            onSelectForTonight?()
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundColor(.blue)
-                    }
-                }
-            }
         }
     }
-
+    
     private var heroSection: some View {
         ZStack(alignment: .bottom) {
-            // Background gradient
-            LinearGradient(
-                colors: [Color.black.opacity(0.6), Color.clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 300)
-
-            VStack(spacing: 16) {
-                // Hero poster with matched geometry
-                if let url = movie.posterURL {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 160, height: 240)
-                        case let .success(image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 160, height: 240)
-                                .cornerRadius(16)
-                                .shadow(color: .black.opacity(0.3), radius: 10)
-                                .onPressingChanged { point in
-                                    if let point {
-                                        origin = point
-                                        counter += 1
-                                    }
+            if let url = movie.posterURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: 240)
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .onPressingChanged { point in
+                                if let point {
+                                    origin = point
+                                    counter += 1
                                 }
-                                .modifier(RippleEffect(at: origin, trigger: counter))
-                                .matchedGeometryEffect(id: "moviePoster-\(movie.id)", in: namespace, isSource: false)
-                        case .failure:
-                            posterPlaceholder
-                                .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
-                        @unknown default:
-                            posterPlaceholder
-                                .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
-                        }
+                            }
+                            .modifier(RippleEffect(at: origin, trigger: counter))
+                    case .failure:
+                        posterPlaceholder
+                    @unknown default:
+                        posterPlaceholder
                     }
-                } else {
-                    posterPlaceholder
-                        .matchedGeometryEffect(id: "moviePoster-placeholder", in: namespace, isSource: false)
                 }
-
-                // Movie title
-                Text(movie.title)
-                    .font(.title.bold())
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .shadow(color: .black.opacity(0.5), radius: 2)
-                    .padding(.horizontal)
+            } else {
+                posterPlaceholder
             }
-            .padding(.bottom, 24)
+            
+            quickInfoRow
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 10)
+            .background(.ultraThinMaterial)
         }
     }
-
+    
     private var posterPlaceholder: some View {
         RoundedRectangle(cornerRadius: 16)
             .fill(.gray.opacity(0.2))
@@ -120,27 +80,24 @@ struct MovieDetailSheet: View {
                     .foregroundStyle(.secondary)
             }
     }
-
+    
     private var movieDetailsSection: some View {
         VStack(spacing: 24) {
-            // Quick info row
-            quickInfoRow
-
             // Movie interaction buttons (like, dislike, favorite)
             MovieInteractionButtons(movie: movie)
-
+            
             // Genres
             genresSection
-
+            
             // Synopsis
             synopsisSection
-
+            
             // Cast & Crew
             castCrewSection
-
+            
             // Streaming platforms (if available)
             streamingSection
-
+            
             // Select for tonight button (only from suggestions)
             if source == .suggestion {
                 selectForTonightButton
@@ -148,62 +105,53 @@ struct MovieDetailSheet: View {
         }
         .padding()
     }
-
+    
     private var quickInfoRow: some View {
-        VStack(spacing: 16) {
-            // Rating and basic info
+        VStack(spacing: 10) {
+            Text(movie.title)
+                .font(.title.bold())
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
             HStack(spacing: 20) {
                 if let imdbRating = movie.imdbRating {
-                    VStack(spacing: 4) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                                .font(.title3)
-                            Text(imdbRating)
-                                .font(.title3.bold())
-                        }
-                        Text("IMDb")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .foregroundStyle(.yellow.gradient)
+                        Text(imdbRating)
                     }
                 }
-
+                
                 if let year = movie.year {
                     VStack(spacing: 4) {
                         Text(year)
-                            .font(.title3.bold())
-                        Text("Année")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                     }
                 }
-
-                if let rated = movie.rated {
-                    VStack(spacing: 4) {
-                        Text(rated)
-                            .font(.title3.bold())
-                        Text("Classification")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
+                
                 if let runtime = movie.runtime {
                     VStack(spacing: 4) {
                         Text(runtime)
-                            .font(.title3.bold())
-                        Text("Durée")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                if let rated = movie.rated {
+                    VStack(spacing: 4) {
+                        Text(rated)
                     }
                 }
             }
+            .foregroundStyle(.white)
+            
+            HStack(spacing: 8) {
+                ForEach(movie.genres, id: \.self) { genre in
+                    Text(genre)
+                        .foregroundStyle(.white)
+                }
+            }
         }
-        .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
     }
-
+    
     private var genresSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -211,14 +159,14 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-
-            FlowLayout(spacing: 8) {
+            
+            HStack(spacing: 8) {
                 ForEach(movie.genres, id: \.self) { genre in
                     Text(genre)
                         .font(.caption)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(.ultraThinMaterial)
+                        .background(.thinMaterial)
                         .cornerRadius(12)
                         .overlay {
                             Capsule()
@@ -228,7 +176,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-
+    
     private var synopsisSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -236,7 +184,7 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-
+            
             if let overview = movie.overview {
                 Text(overview)
                     .font(.body)
@@ -250,7 +198,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-
+    
     private var castCrewSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let director = movie.director {
@@ -262,7 +210,7 @@ struct MovieDetailSheet: View {
                         .foregroundColor(.secondary)
                 }
             }
-
+            
             if let actors = movie.actors {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Acteurs principaux")
@@ -275,7 +223,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-
+    
     private var streamingSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -283,11 +231,11 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-
+            
             // Placeholder for streaming platforms
             // This would need to be implemented based on your streaming data model
             HStack(spacing: 12) {
-                ForEach(["Netflix", "Prime Video", "Apple TV+"], id: \.self) { platform in
+                ForEach(movie.streamingPlatforms, id: \.self) { platform in
                     Text(platform)
                         .font(.caption)
                         .padding(.horizontal, 12)
@@ -299,12 +247,12 @@ struct MovieDetailSheet: View {
             }
         }
     }
-
+    
     private var selectForTonightButton: some View {
         VStack(spacing: 16) {
             Divider()
                 .padding(.vertical)
-
+            
             Button(action: {
                 onSelectForTonight?()
             }) {
@@ -319,7 +267,7 @@ struct MovieDetailSheet: View {
                 .background(Color.blue)
                 .cornerRadius(12)
             }
-
+            
             Text("Ce film deviendra votre film du soir")
                 .font(.caption)
                 .foregroundColor(.secondary)

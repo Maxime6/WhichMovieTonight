@@ -21,17 +21,17 @@ struct ToastView: View {
             HStack(spacing: 12) {
                 if let icon {
                     Image(systemName: icon)
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(.blue)
                 }
                 Text(message)
                     .font(.callout.bold())
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 24)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color(.systemBackground).opacity(colorScheme == .dark ? 0.85 : 0.95))
+                Capsule()
+                    .fill(.ultraThinMaterial)
                     .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
             )
             .padding(.bottom, 40)

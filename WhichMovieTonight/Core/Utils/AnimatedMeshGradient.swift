@@ -20,9 +20,9 @@ struct AnimatedMeshGradient: View {
                 [0.0, 0.5], appear ? [0.1, 0.5] : [0.8, 0.2], [1.0, -0.5],
                 [0.0, 1.0], [1.0, appear2 ? 2.0 : 1.0], [1.0, 1.0]
             ], colors: [
-                appear2 ? .cyan : .mint, appear2 ? .blue : .cyan, .purple,
-                appear ? .blue : .purple, appear ? .cyan : .white, appear ? .mint : .purple,
-                appear ? .white : .cyan, appear ? .mint : .blue, appear2 ? .purple : .blue
+                appear2 ? .red : .mint, appear2 ? .yellow : .cyan, .orange,
+                appear ? .blue : .red, appear ? .cyan : .white, appear ? .red : .purple,
+                appear ? .red : .cyan, appear ? .mint : .blue, appear2 ? .red : .blue
             ]
         )
         .onAppear {

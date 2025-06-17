@@ -266,7 +266,7 @@ struct HomeView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
-                .foregroundStyle(.ultraThickMaterial)
+                .foregroundStyle(.secondary)
 
             Text("No movie selected yet")
                 .font(.title3)
@@ -283,20 +283,14 @@ struct HomeView: View {
             }
         }
         .padding()
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(radius: 10)
     }
 
     private var headerView: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text("Hi \(viewModel.userName),")
+                Text("Hi \(viewModel.userName)")
                     .font(.title2.bold())
                     .foregroundStyle(.primary)
-
-                Text("Phrase d'introduction")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()
