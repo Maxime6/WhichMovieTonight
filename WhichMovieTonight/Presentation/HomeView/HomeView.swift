@@ -5,7 +5,6 @@
 //  Created by Maxime Tanter on 25/04/2025.
 //
 
-import FirebaseAuth
 import SwiftUI
 
 struct HomeView: View {
@@ -14,76 +13,75 @@ struct HomeView: View {
     @StateObject private var authViewModel: AuthenticationViewModel
     @StateObject private var preferencesService = UserPreferencesService()
 
-    @State private var actorsInput: String = ""
-    @State private var genresSelected: [MovieGenre] = []
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
     @State private var showingMovieDetail = false
+    @State private var selectedMovie: Movie?
     @Namespace private var heroAnimation
-    @State var counter: Int = 0
-    @State var origin: CGPoint = .zero
 
     init() {
         _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
         let preferencesService = UserPreferencesService()
         _preferencesService = StateObject(wrappedValue: preferencesService)
-        _viewModel = StateObject(wrappedValue: HomeViewModel(preferencesService: preferencesService))
+        _viewModel = StateObject(wrappedValue: HomeViewModel())
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Color(.systemGray6).edgesIgnoringSafeArea(.all)
 
-            VStack(spacing: 0) {
-                headerView
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Hero Section
+                    heroSection
 
-                Spacer()
+                    // Daily Recommendations Section
+                    recommendationsSection
 
-                if let movie = viewModel.selectedMovie {
-                    VStack(spacing: 10) {
-                        Text("Film du soir")
-                            .font(.title2.bold())
-                            .foregroundColor(.primary)
-
-                        movieCardView(movie: movie)
-
-                        Button("Changer de film") {
-                            viewModel.showGenreSelection = true
-                        }
-                        .font(.subheadline.weight(.medium))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.blue)
-                        .clipShape(Capsule())
-                    }
-                } else {
-                    emptyStateView
+                    // Bottom spacing
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: 100)
                 }
-
-                Spacer()
-            }
-            .padding()
-            .blur(radius: viewModel.isLoading ? 10 : 0)
-            .onAppear {
-                if authViewModel.appStateManager == nil {
-                    authViewModel.appStateManager = appStateManager
-                }
-                viewModel.setAuthViewModel(authViewModel)
-                viewModel.fetchUser()
+                .padding(.horizontal)
             }
 
+            // Loading Overlay
             if viewModel.isLoading {
-                AISearchingView()
+                loadingOverlay
             }
         }
-        .animation(.easeInOut, value: viewModel.isLoading)
+        .onAppear {
+            setupViewModels()
+            Task {
+                await viewModel.loadInitialData()
+            }
+        }
         .overlay(
             Group {
+                // Toast Messages
                 if let message = viewModel.toastMessage, viewModel.showToast {
-                    ToastView(message: message, icon: "checkmark.seal.fill", onDismiss: { viewModel.toastMessage = nil }, isShowing: $viewModel.showToast)
+                    VStack {
+                        Spacer()
+                        ToastView(
+                            message: message,
+                            icon: "checkmark.seal.fill",
+                            onDismiss: { viewModel.toastMessage = nil },
+                            isShowing: $viewModel.showToast
+                        )
+                        .padding(.bottom, 100)
+                    }
                 }
-            }, alignment: .bottom
+
+                // Error Messages
+                if let errorMessage = viewModel.errorMessage {
+                    VStack {
+                        ErrorBannerView(message: errorMessage)
+                            .padding(.horizontal)
+                        Spacer()
+                    }
+                }
+            }
         )
         .sheet(isPresented: $showingProfileMenu) {
             ProfileMenuView(
@@ -111,230 +109,240 @@ struct HomeView: View {
         } message: {
             Text("Cette action est irréversible. Toutes vos données seront supprimées et vous devrez refaire l'onboarding.")
         }
-        .fullScreenCover(isPresented: $viewModel.showMovieConfirmation) {
-            if let movie = viewModel.suggestedMovie {
-                NavigationView {
-                    MovieConfirmationView(
-                        movie: movie,
-                        onConfirm: {
-                            viewModel.confirmMovie()
-                        },
-                        onSearchAgain: {
-                            viewModel.searchAgain()
-                        }
-                    )
-                }
-            }
-        }
-        .fullScreenCover(isPresented: $viewModel.showGenreSelection) {
-            NavigationView {
-                GenreActorSelectionView(
-                    selectedGenres: $viewModel.selectedGenres,
-                    actorsInput: $actorsInput,
-                    onStartSearch: {
-                        Task {
-                            try await viewModel.findTonightMovie()
-                        }
-                    }
-                )
-            }
-        }
         .sheet(isPresented: $showingMovieDetail) {
-            if let movie = viewModel.selectedMovie {
+            if let movie = selectedMovie {
                 MovieDetailSheet(
                     movie: movie,
                     namespace: heroAnimation,
                     isPresented: $showingMovieDetail,
-                    source: .currentMovie,
+                    source: .suggestion,
                     onSelectForTonight: nil
                 )
             }
         }
     }
 
-    // MARK: - Movie Card View
+    // MARK: - Hero Section
 
-    @ViewBuilder
-    private func movieCardView(movie: Movie) -> some View {
+    private var heroSection: some View {
         VStack(spacing: 16) {
-            // Movie poster (tappable)
-            Button(action: {
-                showingMovieDetail = true
-                triggerHaptic()
-            }) {
-                if let url = movie.posterURL {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 200, height: 300)
-                        case let .success(image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 200, height: 300)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .shadow(color: .primary.opacity(0.2), radius: 10)
-                                .onPressingChanged { point in
-                                    if let point {
-                                        origin = point
-                                        counter += 1
+            // Header with Profile
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(viewModel.heroMessage)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+
+                    if let lastRefresh = viewModel.lastRefreshDate {
+                        Text("Last updated: \(formatDate(lastRefresh))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                Button(action: {
+                    showingProfileMenu = true
+                }) {
+                    Image(systemName: "person.crop.circle")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundStyle(.primary)
+                }
+            }
+
+            // Refresh Button
+            if !viewModel.isLoading && !viewModel.dailyRecommendations.isEmpty {
+                Button(action: {
+                    Task {
+                        await viewModel.refreshRecommendations()
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Refresh recommendations")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.blue)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                            .background(Capsule().fill(Color.blue.opacity(0.1)))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+
+    // MARK: - Recommendations Section
+
+    private var recommendationsSection: some View {
+        VStack(spacing: 16) {
+            if viewModel.shouldShowEmptyState {
+                emptyStateView
+            } else if !viewModel.dailyRecommendations.isEmpty {
+                VStack(spacing: 16) {
+                    HStack {
+                        Text("Today's Picks")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+
+                        Spacer()
+
+                        Text("\(viewModel.dailyRecommendations.count) films")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(viewModel.dailyRecommendations, id: \.title) { movie in
+                                RecommendationCard(
+                                    movie: movie,
+                                    onTap: {
+                                        selectedMovie = movie
+                                        showingMovieDetail = true
+                                    },
+                                    onMarkAsSeen: {
+                                        Task {
+                                            await viewModel.markMovieAsSeen(movie)
+                                        }
                                     }
-                                }
-                                .modifier(RippleEffect(at: origin, trigger: counter))
-                        case .failure:
-                            posterPlaceholder
-                        @unknown default:
-                            posterPlaceholder
+                                )
+                                .matchedGeometryEffect(
+                                    id: "movie-\(movie.title)",
+                                    in: heroAnimation
+                                )
+                            }
                         }
+                        .padding(.horizontal)
                     }
-                    .matchedGeometryEffect(id: "moviePoster-\(movie.id)", in: heroAnimation, isSource: !showingMovieDetail)
-                } else {
-                    posterPlaceholder
-                        .matchedGeometryEffect(id: "moviePoster-placeholder", in: heroAnimation, isSource: !showingMovieDetail)
-                }
-            }
-            .buttonStyle(PlainButtonStyle())
-
-            // Movie title
-            Text(movie.title)
-                .font(.title2.bold())
-                .multilineTextAlignment(.center)
-                .foregroundColor(.primary)
-
-            // Movie info row (Date de sortie, IMDB rating, Durée)
-            HStack(spacing: 20) {
-                if let year = movie.year {
-                    VStack(spacing: 4) {
-                        Text(year)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Text("Date de sortie")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if let imdbRating = movie.imdbRating {
-                    VStack(spacing: 4) {
-                        Text(imdbRating)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Text("IMDB rating")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if let runtime = movie.runtime {
-                    VStack(spacing: 4) {
-                        Text(runtime)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Text("Durée")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    .padding(.horizontal, -16)
                 }
             }
         }
-        .padding()
-        .background(Color(.systemGray5).opacity(0.5))
-        .cornerRadius(20)
-        .onAppear {
-            triggerHaptic()
+    }
+
+    // MARK: - Loading Overlay
+
+    private var loadingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .edgesIgnoringSafeArea(.all)
+
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+
+                Text("Generating your daily recommendations...")
+                    .font(.headline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+
+                Text("This may take a few moments")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            .padding(32)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThickMaterial)
+            )
+            .padding(.horizontal, 32)
         }
     }
 
-    @ViewBuilder
-    private var posterPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(.gray.opacity(0.2))
-            .frame(width: 200, height: 300)
-            .overlay {
-                Image(systemName: "film")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .foregroundStyle(.secondary)
-            }
-    }
+    // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 24) {
             Image(systemName: "movieclapper")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 70, height: 70)
+                .frame(width: 80, height: 80)
                 .foregroundStyle(.secondary)
 
-            Text("No movie selected yet")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                Text("No recommendations yet")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
 
-            Text("Tap below to let AI find the perfect movie for tonight !")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-
-            AIActionButton(title: "Which Movie tonight ?") {
-                viewModel.showGenreSelection = true
+                Text("Pull to refresh or check your preferences in settings")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
             }
-        }
-        .padding()
-    }
-
-    private var headerView: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text("Hi \(viewModel.userName)")
-                    .font(.title2.bold())
-                    .foregroundStyle(.primary)
-            }
-
-            Spacer()
 
             Button(action: {
-                showingProfileMenu = true
+                Task {
+                    await viewModel.refreshRecommendations()
+                }
             }) {
-                Image(systemName: "person.crop.circle")
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .foregroundStyle(.primary)
+                Text("Generate Recommendations")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.blue)
+                    .clipShape(Capsule())
             }
         }
+        .padding(.vertical, 40)
     }
 
-    private func triggerHaptic() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+    // MARK: - Helper Methods
+
+    private func setupViewModels() {
+        if authViewModel.appStateManager == nil {
+            authViewModel.appStateManager = appStateManager
+        }
+        viewModel.setAuthViewModel(authViewModel)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - Supporting Views
+
+struct ErrorBannerView: View {
+    let message: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(.primary)
+
+            Spacer()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.orange.opacity(0.1))
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+        )
     }
 }
 
 #Preview {
     HomeView()
         .environmentObject(AppStateManager())
-}
-
-struct WaveRenderer: TextRenderer {
-    var strength: Double
-    var frequency: Double
-    var animatableData: Double {
-        get { strength }
-        set { strength = newValue }
-    }
-
-    func draw(layout: Text.Layout, in context: inout GraphicsContext) {
-        for line in layout {
-            for run in line {
-                for (index, glyph) in run.enumerated() {
-                    let yOffset = strength * sin(Double(index) * frequency)
-                    var copy = context
-                    copy.translateBy(x: 0, y: yOffset)
-                    copy.draw(glyph, options: .disablesSubpixelQuantization)
-                }
-            }
-        }
-    }
 }

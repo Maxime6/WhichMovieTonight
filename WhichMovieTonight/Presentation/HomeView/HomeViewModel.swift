@@ -12,33 +12,47 @@ import SwiftUI
 
 @MainActor
 final class HomeViewModel: ObservableObject {
+    // MARK: - Published Properties
+
     @Published var userName: String = ""
-    @Published var selectedMovie: Movie?
-    @Published var suggestedMovie: Movie?
-    @Published var lastSuggestions: [Movie] = []
+    @Published var dailyRecommendations: [Movie] = []
     @Published var isLoading = false
-    @Published var selectedGenres: [MovieGenre] = []
-    @Published var showToast: Bool = false
-    @Published var toastMessage: String? = nil
-    @Published var showMovieConfirmation = false
-    @Published var showGenreSelection = false
+    @Published var showToast = false
+    @Published var toastMessage: String?
+    @Published var errorMessage: String?
+    @Published var lastRefreshDate: Date?
 
-    // Nouvelles propriétés pour les données utilisateur
-    @Published var userInteractions: UserMovieInteractions?
-    @Published var userData: UserMovieData?
+    // MARK: - Dependencies
 
-    private let findMovieUseCase: FindTonightMovieUseCase
-    private let firestoreService: FirestoreServiceProtocol
+    private let getDailyRecommendationsUseCase: GetDailyRecommendationsUseCase
+    private let recommendationCacheService: RecommendationCacheServiceProtocol
+    private let notificationService: DailyNotificationServiceProtocol
     private let preferencesService: UserPreferencesService
-    private var lastSearchTime: Date = .distantPast
-    var authViewModel: AuthenticationViewModel?
-    private var cancellables = Set<AnyCancellable>()
+    private let firestoreService: FirestoreServiceProtocol
 
-    init(findMovieUseCase: FindTonightMovieUseCase = FindTonightMovieUseCaseImpl(repository: MovieRepositoryImpl()), firestoreService: FirestoreServiceProtocol = FirestoreService(), preferencesService: UserPreferencesService = UserPreferencesService()) {
-        self.findMovieUseCase = findMovieUseCase
-        self.firestoreService = firestoreService
+    private var authViewModel: AuthenticationViewModel?
+    private var cancellables = Set<AnyCancellable>()
+    private var userInteractions: UserMovieInteractions?
+
+    // MARK: - Initialization
+
+    init(
+        getDailyRecommendationsUseCase: GetDailyRecommendationsUseCase = GetDailyRecommendationsUseCaseImpl(repository: MovieRepositoryImpl()),
+        recommendationCacheService: RecommendationCacheServiceProtocol = RecommendationCacheService(),
+        notificationService: DailyNotificationServiceProtocol = DailyNotificationService(),
+        preferencesService: UserPreferencesService = UserPreferencesService(),
+        firestoreService: FirestoreServiceProtocol = FirestoreService()
+    ) {
+        self.getDailyRecommendationsUseCase = getDailyRecommendationsUseCase
+        self.recommendationCacheService = recommendationCacheService
+        self.notificationService = notificationService
         self.preferencesService = preferencesService
+        self.firestoreService = firestoreService
+
+        setupNotificationObservers()
     }
+
+    // MARK: - Setup Methods
 
     func setAuthViewModel(_ authViewModel: AuthenticationViewModel) {
         self.authViewModel = authViewModel
@@ -51,201 +65,206 @@ final class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func fetchUser() {
-        updateUserName()
-        resetSearchState()
-        isLoading = false
-        verifyConfiguration()
-        loadUserData()
-    }
-
-    private func loadUserData() {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-
-        Task {
-            do {
-                // Charger les données de films utilisateur
-                let userData = try await firestoreService.getUserMovieData(for: userId)
-                if let userData = userData {
-                    if let selectedMovieFirestore = userData.selectedMovie {
-                        selectedMovie = selectedMovieFirestore.toMovie()
-                    }
-                    lastSuggestions = userData.lastSuggestions.map { $0.toMovie() }
-                    self.userData = userData
+    private func setupNotificationObservers() {
+        NotificationCenter.default.publisher(for: .shouldGenerateRecommendations)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.generateDailyRecommendations()
                 }
-
-                // Charger les interactions utilisateur
-                let userInteractions = try await firestoreService.getUserMovieInteractions(for: userId)
-                self.userInteractions = userInteractions
-
-            } catch {
-                print("Erreur lors du chargement des données utilisateur: \(error)")
             }
-        }
-    }
-
-    private func verifyConfiguration() {
-        let validation = Config.validateConfiguration()
-        if !validation.isValid {
-            print("Warning: Missing API keys: \(validation.missingKeys.joined(separator: ", "))")
-            toastMessage = "Configuration incomplète. Vérifiez vos clés API."
-            showToast = true
-        }
+            .store(in: &cancellables)
     }
 
     private func updateUserName() {
         guard let authViewModel = authViewModel else {
-            userName = "Utilisateur"
+            userName = "User"
             return
         }
 
         let displayName = authViewModel.displayName
         if displayName.isEmpty {
-            userName = "Utilisateur"
+            userName = "User"
         } else {
             let components = displayName.components(separatedBy: " ")
             userName = components.first ?? displayName
         }
     }
 
-    func findTonightMovie() async throws {
-        await findTonightMovieInternal(enforceDelay: true)
+    // MARK: - Public Methods
+
+    func loadInitialData() async {
+        await loadUserData()
+        await loadTodaysRecommendations()
+        await setupNotifications()
     }
 
-    func searchAgain() {
-        resetSearchState()
-        Task {
-            await findTonightMovieInternal(enforceDelay: false)
+    func refreshRecommendations() async {
+        await generateDailyRecommendations()
+    }
+
+    func markMovieAsSeen(_ movie: Movie) async {
+        do {
+            try await recommendationCacheService.markMovieAsSeen(movie)
+            showToastMessage("Film marqué comme déjà vu")
+            // Optionnel : supprimer le film des recommandations actuelles
+            dailyRecommendations.removeAll { $0.title == movie.title }
+        } catch {
+            showErrorMessage("Erreur lors du marquage du film")
         }
     }
 
-    private func findTonightMovieInternal(enforceDelay: Bool) async {
-        guard !isLoading else { return }
+    // MARK: - Private Methods
 
-        guard !selectedGenres.isEmpty else {
-            toastMessage = "Veuillez sélectionner au moins un genre"
-            showToast = true
+    private func loadUserData() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        do {
+            userInteractions = try await firestoreService.getUserMovieInteractions(for: userId)
+        } catch {
+            print("Erreur lors du chargement des interactions utilisateur: \(error)")
+        }
+    }
+
+    private func loadTodaysRecommendations() async {
+        do {
+            print("🔍 Recherche des recommandations du jour...")
+            // Vérifier si des recommandations existent déjà pour aujourd'hui
+            if let todaysRecommendations = try await recommendationCacheService.getTodaysRecommendations() {
+                dailyRecommendations = todaysRecommendations.movies.map { $0.toMovie() }
+                lastRefreshDate = todaysRecommendations.generatedAt
+                print("✅ Recommandations du jour chargées depuis le cache: \(dailyRecommendations.count) films")
+            } else {
+                print("📄 Aucune recommandation trouvée pour aujourd'hui, génération en cours...")
+                // Générer de nouvelles recommandations
+                await generateDailyRecommendations()
+            }
+        } catch {
+            print("❌ Erreur lors du chargement des recommandations: \(error)")
+            // Ignorer l'erreur de l'index manquant et générer des recommandations
+            if error.localizedDescription.contains("requires an index") {
+                print("⚠️ Index Firestore manquant, génération de nouvelles recommandations...")
+                await generateDailyRecommendations()
+            } else {
+                showErrorMessage("Impossible de charger les recommandations")
+            }
+        }
+    }
+
+    private func generateDailyRecommendations() async {
+        guard !isLoading else {
+            print("⏳ Génération déjà en cours, abandon...")
+            return
+        }
+
+        print("🎬 Début de génération des recommandations quotidiennes")
+
+        // Validation des préférences
+        guard !preferencesService.favoriteGenres.isEmpty else {
+            print("❌ Aucun genre favori configuré")
+            showErrorMessage("Veuillez configurer vos genres favoris dans les paramètres")
             return
         }
 
         guard !preferencesService.favoriteStreamingPlatforms.isEmpty else {
-            toastMessage = "Veuillez sélectionner au moins une plateforme de streaming dans vos préférences"
-            showToast = true
+            print("❌ Aucune plateforme de streaming configurée")
+            showErrorMessage("Veuillez configurer vos plateformes de streaming dans les paramètres")
             return
         }
 
-        // Éviter les recherches trop rapprochées uniquement pour la recherche initiale
-        if enforceDelay {
-            let now = Date()
-            if now.timeIntervalSince(lastSearchTime) < 2.0 {
-                toastMessage = "Veuillez patienter avant de relancer une recherche"
-                showToast = true
-                isLoading = false
-                return
-            }
-            lastSearchTime = now
-        }
+        print("✅ Préférences valides - Genres: \(preferencesService.favoriteGenres.count), Plateformes: \(preferencesService.favoriteStreamingPlatforms.count)")
 
         isLoading = true
-        showGenreSelection = false
+        errorMessage = nil
 
         do {
-            // Utiliser les suggestions locales les plus récentes pour éviter les doublons
-            var recentSuggestionsFirestore = lastSuggestions.map { movie in
-                MovieFirestore(from: movie)
-            }
+            // Obtenir les IDs des films à exclure
+            let excludedMovieIds = try await recommendationCacheService.getExcludedMovieIds()
 
-            // Ajouter le film actuellement suggéré pour l'éviter lors d'une nouvelle recherche
-            if let currentSuggestion = suggestedMovie {
-                recentSuggestionsFirestore.insert(MovieFirestore(from: currentSuggestion), at: 0)
-            }
-
-            let movie = try await findMovieUseCase.execute(
-                movieGenre: selectedGenres,
-                streamingPlatforms: preferencesService.favoriteStreamingPlatforms,
+            // Générer 5 nouvelles recommandations
+            let newRecommendations = try await getDailyRecommendationsUseCase.execute(
+                userPreferences: preferencesService,
                 userInteractions: userInteractions,
-                favoriteActors: preferencesService.favoriteActors,
-                favoriteGenres: preferencesService.favoriteGenres,
-                recentSuggestions: recentSuggestionsFirestore
+                excludeMovieIds: excludedMovieIds
             )
-            suggestedMovie = movie
 
-            // Sauvegarder la suggestion dans Firestore
-            if let userId = Auth.auth().currentUser?.uid {
-                try await firestoreService.saveMovieSuggestion(movie, for: userId)
-                // Mettre à jour les suggestions locales
-                lastSuggestions.insert(movie, at: 0)
-                if lastSuggestions.count > 10 {
-                    lastSuggestions = Array(lastSuggestions.prefix(10))
-                }
+            // Sauvegarder les recommandations
+            guard let userId = Auth.auth().currentUser?.uid else {
+                throw RecommendationError.generationFailed("Utilisateur non authentifié")
             }
 
-            showMovieConfirmation = true
+            let dailyRecommendationsModel = DailyRecommendations(
+                userId: userId,
+                date: Calendar.current.startOfDay(for: Date()),
+                movies: newRecommendations.map { MovieFirestore(from: $0) }
+            )
+            try await recommendationCacheService.saveDailyRecommendations(dailyRecommendationsModel)
+
+            // Mettre à jour l'interface
+            dailyRecommendations = newRecommendations
+            lastRefreshDate = Date()
+
+            showToastMessage("5 nouveaux films sélectionnés pour vous !")
+
+        } catch let RecommendationError.missingPreferences(message) {
+            showErrorMessage(message)
+        } catch let RecommendationError.generationFailed(message) {
+            showErrorMessage(message)
+            // Essayer de charger les recommandations du jour précédent
+            await loadPreviousDayRecommendations()
         } catch {
-            print("Error suggesting movie : \(error)")
-
-            let errorMessage: String
-            if let urlError = error as? URLError {
-                switch urlError.code {
-                case .userAuthenticationRequired:
-                    errorMessage = "Configuration manquante. Veuillez redémarrer l'application."
-                case .notConnectedToInternet:
-                    errorMessage = "Pas de connexion internet. Vérifiez votre réseau."
-                case .timedOut:
-                    errorMessage = "Délai d'attente dépassé. Veuillez réessayer."
-                default:
-                    errorMessage = "Erreur de réseau. Veuillez réessayer."
-                }
-            } else {
-                errorMessage = "Erreur lors de la recherche. Veuillez réessayer."
-            }
-
-            toastMessage = errorMessage
-            showToast = true
-            resetSearchState()
+            showErrorMessage("Erreur lors de la génération des recommandations")
+            await loadPreviousDayRecommendations()
         }
 
         isLoading = false
     }
 
-    func confirmMovie() {
-        if let movie = suggestedMovie {
-            selectedMovie = movie
-            toastMessage = "Film sélectionné ! Bon visionnage !"
-            showToast = true
-
-            // Sauvegarder le film sélectionné dans Firestore
-            if let userId = Auth.auth().currentUser?.uid {
-                Task {
-                    do {
-                        try await firestoreService.saveSelectedMovie(movie, for: userId)
-                    } catch {
-                        print("Erreur lors de la sauvegarde du film sélectionné: \(error)")
-                    }
-                }
+    private func loadPreviousDayRecommendations() async {
+        do {
+            let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+            if let previousRecommendations = try await recommendationCacheService.getDailyRecommendations(for: previousDay) {
+                dailyRecommendations = previousRecommendations.movies.map { $0.toMovie() }
+                showToastMessage("Recommandations du jour précédent affichées")
             }
-        }
-        resetSearchState()
-    }
-
-    func clearSelectedMovie() {
-        selectedMovie = nil
-
-        // Supprimer le film sélectionné de Firestore
-        if let userId = Auth.auth().currentUser?.uid {
-            Task {
-                do {
-                    try await firestoreService.clearSelectedMovie(for: userId)
-                } catch {
-                    print("Erreur lors de la suppression du film sélectionné: \(error)")
-                }
-            }
+        } catch {
+            print("Impossible de charger les recommandations du jour précédent: \(error)")
         }
     }
 
-    private func resetSearchState() {
-        suggestedMovie = nil
-        showMovieConfirmation = false
-        showGenreSelection = false
+    private func setupNotifications() async {
+        let granted = await notificationService.requestPermission()
+        if granted {
+            notificationService.scheduleDailyRecommendationNotification()
+        }
+    }
+
+    private func showToastMessage(_ message: String) {
+        toastMessage = message
+        showToast = true
+
+        // Auto-hide après 3 secondes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.showToast = false
+            self.toastMessage = nil
+        }
+    }
+
+    private func showErrorMessage(_ message: String) {
+        errorMessage = message
+
+        // Auto-hide après 5 secondes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            self.errorMessage = nil
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    var shouldShowEmptyState: Bool {
+        dailyRecommendations.isEmpty && !isLoading
+    }
+
+    var heroMessage: String {
+        "Hey \(userName), here are your daily recommendations"
     }
 }
