@@ -13,6 +13,11 @@ protocol GetDailyRecommendationsUseCase {
         userInteractions: UserMovieInteractions?,
         excludeMovieIds: [String]
     ) async throws -> [Movie]
+
+    func execute(
+        preferences: UserPreferences,
+        userId: String
+    ) async throws -> [Movie]
 }
 
 final class GetDailyRecommendationsUseCaseImpl: GetDailyRecommendationsUseCase {
@@ -24,15 +29,23 @@ final class GetDailyRecommendationsUseCaseImpl: GetDailyRecommendationsUseCase {
 
     func execute(
         userPreferences: UserPreferencesService,
-        userInteractions: UserMovieInteractions?,
-        excludeMovieIds: [String]
+        userInteractions _: UserMovieInteractions?,
+        excludeMovieIds _: [String]
+    ) async throws -> [Movie] {
+        let preferences = userPreferences.getUserPreferences()
+        return try await execute(preferences: preferences, userId: "")
+    }
+
+    func execute(
+        preferences: UserPreferences,
+        userId _: String
     ) async throws -> [Movie] {
         // Validation des préférences utilisateur
-        guard !userPreferences.favoriteGenres.isEmpty else {
+        guard !preferences.favoriteGenres.isEmpty else {
             throw RecommendationError.missingPreferences("Aucun genre favori défini")
         }
 
-        guard !userPreferences.favoriteStreamingPlatforms.isEmpty else {
+        guard !preferences.favoriteStreamingPlatforms.isEmpty else {
             throw RecommendationError.missingPreferences("Aucune plateforme de streaming définie")
         }
 
@@ -41,37 +54,15 @@ final class GetDailyRecommendationsUseCaseImpl: GetDailyRecommendationsUseCase {
         let maxAttempts = 10 // Éviter les boucles infinies
         var attempts = 0
 
-        // Convertir les IDs à exclure en MovieFirestore pour compatibilité
-        let excludeMoviesFirestore = excludeMovieIds.map { id in
-            // Créer un Movie temporaire avec l'ID à exclure
-            let tempMovie = Movie(
-                title: "",
-                overview: nil,
-                posterURL: nil,
-                releaseDate: nil,
-                genres: [],
-                streamingPlatforms: [],
-                director: nil,
-                actors: nil,
-                runtime: nil,
-                imdbRating: nil,
-                imdbID: id,
-                year: nil,
-                rated: nil,
-                awards: nil
-            )
-            return MovieFirestore(from: tempMovie)
-        }
-
         while recommendations.count < 5 && attempts < maxAttempts {
             do {
                 let movie = try await repository.findSuggestedMovie(
-                    movieGenre: userPreferences.favoriteGenres,
-                    streamingPlatforms: userPreferences.favoriteStreamingPlatforms,
-                    userInteractions: userInteractions,
-                    favoriteActors: userPreferences.favoriteActors,
-                    favoriteGenres: userPreferences.favoriteGenres,
-                    recentSuggestions: excludeMoviesFirestore + recommendations.map { MovieFirestore(from: $0) }
+                    movieGenre: preferences.favoriteGenres,
+                    streamingPlatforms: preferences.favoriteStreamingPlatforms,
+                    userInteractions: nil,
+                    favoriteActors: preferences.favoriteActors,
+                    favoriteGenres: preferences.favoriteGenres,
+                    recentSuggestions: recommendations.map { MovieFirestore(from: $0) }
                 )
 
                 // Vérifier que le film n'est pas déjà dans les recommandations

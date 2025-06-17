@@ -98,12 +98,10 @@ struct RecommendationCache: Codable {
         return !calendar.isDate(lastGenerationDate, inSameDayAs: Date())
     }
 
-    func getRecentMovieIds(daysBack: Int = 30) -> [String] {
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -daysBack, to: Date()) ?? Date.distantPast
-        return recommendationHistory.filter { _ in
-            // This is simplified - in real implementation we'd need dates for each recommendation
-            true
-        }
+    func getRecentMovieIds(daysBack _: Int = 30) -> [String] {
+        // Cette implémentation simplifiée retourne tous les IDs d'historique
+        // Dans une implémentation plus complexe, nous filtrerions par date
+        return recommendationHistory
     }
 
     func getSeenMovieIds() -> [String] {

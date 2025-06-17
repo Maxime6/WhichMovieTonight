@@ -221,11 +221,6 @@ final class FirestoreService: FirestoreServiceProtocol {
             var userInteractions = UserMovieInteractions(userId: userId)
             userInteractions.interactions = interactions
 
-            if let createdAt = data["createdAt"] as? Timestamp {
-                userInteractions = UserMovieInteractions(userId: userId)
-                userInteractions.interactions = interactions
-            }
-
             print("✅ Interactions utilisateur récupérées pour \(userId)")
             return userInteractions
         } catch {

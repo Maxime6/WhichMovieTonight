@@ -73,7 +73,7 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
     }
 
     func getExcludedMovieIds() async throws -> [String] {
-        guard let userId = Auth.auth().currentUser?.uid else {
+        guard Auth.auth().currentUser?.uid != nil else {
             throw CacheError.userNotAuthenticated
         }
 

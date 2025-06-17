@@ -12,6 +12,10 @@ import SwiftUI
 class Appdelegate: UIResponder, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
+
+        // Configure Dependency Injection
+        DependencyManager.registerAllDependencies()
+
         return true
     }
 }
