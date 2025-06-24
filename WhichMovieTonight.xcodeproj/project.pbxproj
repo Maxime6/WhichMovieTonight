@@ -79,6 +79,7 @@
 		9C73ED8A2E01FD4A00AD4811 /* HomeDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED852E01FD4A00AD4811 /* HomeDataService.swift */; };
 		9C73ED8B2E01FD4A00AD4811 /* UserDataServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED862E01FD4A00AD4811 /* UserDataServiceProtocol.swift */; };
 		9C73ED8D2E01FD6900AD4811 /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED8C2E01FD6900AD4811 /* UserPreferences.swift */; };
+		9C73ED8F2E0B031800AD4811 /* SelectedMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */; };
 		9CE050852DE5F5CD00A0EB8B /* APIKeys.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9CE050842DE5F5CD00A0EB8B /* APIKeys.plist */; };
 		9CE050872DE5F60A00A0EB8B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE050862DE5F60A00A0EB8B /* Config.swift */; };
 		9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */; };
@@ -156,6 +157,7 @@
 		9C73ED862E01FD4A00AD4811 /* UserDataServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDataServiceProtocol.swift; sourceTree = "<group>"; };
 		9C73ED882E01FD4A00AD4811 /* UserMovieDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMovieDataService.swift; sourceTree = "<group>"; };
 		9C73ED8C2E01FD6900AD4811 /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
+		9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedMovieCard.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhichMovieTonight.entitlements; sourceTree = "<group>"; };
 		9CE050842DE5F5CD00A0EB8B /* APIKeys.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = APIKeys.plist; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 		9C73ED632E01FCBA00AD4811 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */,
 				9C73ED5E2E01FCBA00AD4811 /* ActorChip.swift */,
 				9C73ED5F2E01FCBA00AD4811 /* FavoriteMovieCard.swift */,
 				9C73ED602E01FCBA00AD4811 /* GenreButton.swift */,
@@ -632,6 +635,7 @@
 				9C73ED692E01FCBA00AD4811 /* SettingsGenreView.swift in Sources */,
 				9C73ED6A2E01FCBA00AD4811 /* WatchlistViewModel.swift in Sources */,
 				9C73ED6B2E01FCBA00AD4811 /* AuthenticationViewModel.swift in Sources */,
+				9C73ED8F2E0B031800AD4811 /* SelectedMovieCard.swift in Sources */,
 				9C73ED6C2E01FCBA00AD4811 /* OnboardingViewModel.swift in Sources */,
 				9C73ED6D2E01FCBA00AD4811 /* RecommendationCard.swift in Sources */,
 				9C73ED6E2E01FCBA00AD4811 /* TestsUI.swift in Sources */,

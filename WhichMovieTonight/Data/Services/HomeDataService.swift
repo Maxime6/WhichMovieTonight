@@ -43,31 +43,58 @@ final class HomeDataService: HomeDataServiceProtocol {
         do {
             print("🔄 Chargement des recommandations pour \(userId)")
 
+            // Vérifier d'abord si des recommandations existent en cache
             if let cachedRecommendations = try await recommendationCacheService.getTodaysRecommendations() {
-                print("📋 Recommandations trouvées en cache: \(cachedRecommendations.movies.count) films")
-                return cachedRecommendations.movies.map { $0.toMovie() }
+                print("✅ Recommandations trouvées en cache: \(cachedRecommendations.movies.count) films")
+                let movies = cachedRecommendations.movies.map { $0.toMovie() }
+
+                // Log des films trouvés
+                for (index, movie) in movies.enumerated() {
+                    print("📽️ \(index + 1). \(movie.title) (\(movie.year ?? "N/A"))")
+                }
+
+                return movies
             }
 
-            print("📄 Aucune recommandation en cache, génération de nouvelles recommandations")
-            return try await generateDailyRecommendations(userId: userId)
+            print("📄 Aucune recommandation en cache pour aujourd'hui")
+
+            // Vérifier si nous devons générer automatiquement ou attendre
+            let shouldGenerate = try await recommendationCacheService.shouldGenerateNewRecommendations()
+
+            if shouldGenerate {
+                print("🎬 Génération immédiate de nouvelles recommandations")
+                return try await generateDailyRecommendations(userId: userId)
+            } else {
+                print("⏳ En attente des recommandations programmées")
+                // Retourner une liste vide - les recommandations seront générées à 6h
+                return []
+            }
+
         } catch {
             print("❌ Erreur lors du chargement des recommandations: \(error)")
-            // En cas d'erreur (ex: index Firestore manquant), générer de nouvelles recommandations
+            // En cas d'erreur, essayer de générer de nouvelles recommandations
+            print("🔄 Tentative de génération de nouvelles recommandations en fallback")
             return try await generateDailyRecommendations(userId: userId)
         }
     }
 
     func generateDailyRecommendations(userId: String) async throws -> [Movie] {
-        print("🎬 Génération de nouvelles recommandations quotidiennes")
+        print("🎬 Génération de nouvelles recommandations quotidiennes pour \(userId)")
 
         do {
             let userPreferences = userPreferencesService.getUserPreferences()
+
+            // Vérifier que les préférences sont valides
+            guard userPreferences.isValid else {
+                throw RecommendationError.missingPreferences("Préférences utilisateur incomplètes")
+            }
+
             let movies = try await getDailyRecommendationsUseCase.execute(
                 preferences: userPreferences,
                 userId: userId
             )
 
-            // Sauvegarder les nouvelles recommandations
+            // Sauvegarder les nouvelles recommandations avec la date d'aujourd'hui
             let dailyRecommendations = DailyRecommendations(
                 userId: userId,
                 date: Calendar.current.startOfDay(for: Date()),
@@ -77,6 +104,10 @@ final class HomeDataService: HomeDataServiceProtocol {
             try await recommendationCacheService.saveDailyRecommendations(dailyRecommendations)
 
             print("✅ \(movies.count) nouvelles recommandations générées et sauvegardées")
+
+            // Poster une notification pour informer que les recommandations sont prêtes
+            NotificationCenter.default.post(name: .recommendationsGenerated, object: movies)
+
             return movies
         } catch {
             print("❌ Erreur lors de la génération des recommandations: \(error)")
@@ -90,12 +121,35 @@ final class HomeDataService: HomeDataServiceProtocol {
     }
 
     func setupNotifications() async throws {
+        print("📱 Configuration des notifications quotidiennes")
+
         let granted = await dailyNotificationService.requestPermission()
         if granted {
+            // Programmer la génération à 6h
+            dailyNotificationService.scheduleRecommendationGeneration()
+
+            // Programmer la notification à 8h
             dailyNotificationService.scheduleDailyRecommendationNotification()
-            print("✅ Notifications configurées avec succès")
+
+            print("✅ Notifications configurées avec succès:")
+            print("   - Génération: 6h00 (silencieuse)")
+            print("   - Notification: 8h00 (visible)")
         } else {
             print("⚠️ Permission de notification refusée")
+            throw NotificationError.permissionDenied
+        }
+    }
+}
+
+// MARK: - Errors
+
+enum NotificationError: LocalizedError {
+    case permissionDenied
+
+    var errorDescription: String? {
+        switch self {
+        case .permissionDenied:
+            return "Permission de notification refusée"
         }
     }
 }

@@ -20,7 +20,7 @@ protocol RecommendationCacheServiceProtocol {
 
 final class RecommendationCacheService: RecommendationCacheServiceProtocol {
     private let firestoreService: FirestoreServiceProtocol
-    private let cacheHistoryDays = 30
+    private let cacheHistoryDays = 7 // Reduced from 30 to 7 days for better variety
 
     init(firestoreService: FirestoreServiceProtocol = FirestoreService()) {
         self.firestoreService = firestoreService
@@ -33,6 +33,9 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
 
         // Sauvegarder dans Firestore
         try await firestoreService.saveDailyRecommendations(recommendations, for: userId)
+
+        // Log pour debugging
+        print("✅ Recommandations sauvegardées: \(recommendations.movies.count) films pour le \(formatDate(recommendations.date))")
     }
 
     func getDailyRecommendations(for date: Date) async throws -> DailyRecommendations? {
@@ -62,6 +65,7 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
         )
 
         try await firestoreService.markMovieAsSeen(seenMovie, for: userId)
+        print("✅ Film marqué comme vu: \(movie.title)")
     }
 
     func getSeenMovies() async throws -> [SeenMovie] {
@@ -77,12 +81,13 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
             throw CacheError.userNotAuthenticated
         }
 
-        // Combiner les films vus et l'historique des recommandations récentes
+        // Combiner les films vus et l'historique des recommandations récentes (7 jours)
         var seenMovieIds: [String] = []
         var recentRecommendations: [String] = []
 
         do {
             seenMovieIds = try await getSeenMovies().map { $0.movieId }
+            print("📋 Films déjà vus exclus: \(seenMovieIds.count)")
         } catch {
             print("⚠️ Impossible de récupérer les films vus (index manquant ?): \(error)")
             // Continuer sans les films vus pour l'instant
@@ -90,17 +95,31 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
 
         do {
             recentRecommendations = try await getRecentRecommendationIds()
+            print("📋 Films des 7 derniers jours exclus: \(recentRecommendations.count)")
         } catch {
-            print("⚠️ Impossible de récupérer l'historique: \(error)")
+            print("⚠️ Impossible de récupérer l'historique récent: \(error)")
             // Continuer sans l'historique pour l'instant
         }
 
-        return seenMovieIds + recentRecommendations
+        let allExcluded = seenMovieIds + recentRecommendations
+        let uniqueExcluded = Array(Set(allExcluded)) // Remove duplicates
+
+        print("🚫 Total films exclus: \(uniqueExcluded.count) (vus: \(seenMovieIds.count), récents: \(recentRecommendations.count))")
+
+        return uniqueExcluded
     }
 
     func shouldGenerateNewRecommendations() async throws -> Bool {
         let todaysRecommendations = try await getTodaysRecommendations()
-        return todaysRecommendations == nil
+        let shouldGenerate = todaysRecommendations == nil
+
+        if shouldGenerate {
+            print("🔄 Pas de recommandations pour aujourd'hui, génération nécessaire")
+        } else {
+            print("✅ Recommandations déjà disponibles pour aujourd'hui")
+        }
+
+        return shouldGenerate
     }
 
     // MARK: - Private Methods
@@ -110,9 +129,21 @@ final class RecommendationCacheService: RecommendationCacheServiceProtocol {
             throw CacheError.userNotAuthenticated
         }
 
+        // Get movies from last 7 days instead of 30
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -cacheHistoryDays, to: Date()) ?? Date.distantPast
 
-        return try await firestoreService.getRecentRecommendationIds(since: cutoffDate, for: userId)
+        let recentIds = try await firestoreService.getRecentRecommendationIds(since: cutoffDate, for: userId)
+
+        print("📅 Récupération des recommandations depuis le \(formatDate(cutoffDate)): \(recentIds.count) films")
+
+        return recentIds
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }
 

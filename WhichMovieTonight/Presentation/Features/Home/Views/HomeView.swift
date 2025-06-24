@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var showingDeleteAlert = false
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
+    @State private var showingRefreshConfirmation = false
     @Namespace private var heroAnimation
 
     init() {
@@ -35,6 +36,9 @@ struct HomeView: View {
                     // Hero Section
                     heroSection
 
+                    // Selected Movie For Tonight Section
+                    selectedMovieSection
+
                     // Daily Recommendations Section
                     recommendationsSection
 
@@ -44,6 +48,19 @@ struct HomeView: View {
                         .frame(height: 100)
                 }
                 .padding(.horizontal)
+            }
+
+            // Floating Refresh Button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    if !viewModel.isLoading && !viewModel.dailyRecommendations.isEmpty {
+                        floatingRefreshButton
+                    }
+                }
+                .padding(.trailing, 20)
+                .padding(.bottom, 100)
             }
 
             // Loading Overlay
@@ -96,8 +113,7 @@ struct HomeView: View {
             )
             .presentationDetents([.medium])
         }
-        .alert("Supprimer le compte", isPresented: $showingDeleteAlert) {
-            Button("Annuler", role: .cancel) {}
+        .confirmationDialog("Supprimer le compte", isPresented: $showingDeleteAlert, titleVisibility: .visible) {
             Button("Supprimer", role: .destructive) {
                 Task {
                     let success = await authViewModel.deleteAccount()
@@ -106,8 +122,19 @@ struct HomeView: View {
                     }
                 }
             }
+            Button("Annuler", role: .cancel) {}
         } message: {
             Text("Cette action est irréversible. Toutes vos données seront supprimées et vous devrez refaire l'onboarding.")
+        }
+        .confirmationDialog("Today's picks ain't hitting right?", isPresented: $showingRefreshConfirmation, titleVisibility: .visible) {
+            Button("Get me new ones!", role: .destructive) {
+                Task {
+                    await viewModel.refreshRecommendations()
+                }
+            }
+            Button("Never mind", role: .cancel) {}
+        } message: {
+            Text("You sure you want different recommendations?")
         }
         .sheet(isPresented: $showingMovieDetail) {
             if let movie = selectedMovie {
@@ -116,8 +143,26 @@ struct HomeView: View {
                     namespace: heroAnimation,
                     isPresented: $showingMovieDetail,
                     source: .suggestion,
-                    onSelectForTonight: nil
+                    onSelectForTonight: {
+                        Task {
+                            await viewModel.selectMovieForTonight(movie)
+                        }
+                        showingMovieDetail = false
+                    }
                 )
+            } else {
+                // Fallback view if selectedMovie is nil
+                VStack {
+                    Text("Error loading movie details")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    Button("Close") {
+                        showingMovieDetail = false
+                    }
+                    .padding()
+                }
+                .presentationDetents([.medium])
             }
         }
     }
@@ -152,32 +197,81 @@ struct HomeView: View {
                         .foregroundStyle(.primary)
                 }
             }
+        }
+    }
 
-            // Refresh Button
-            if !viewModel.isLoading && !viewModel.dailyRecommendations.isEmpty {
-                Button(action: {
-                    Task {
-                        await viewModel.refreshRecommendations()
+    // MARK: - Selected Movie Section
+
+    private var selectedMovieSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Tonight's pick")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                Spacer()
+            }
+
+            if let selectedMovie = viewModel.selectedMovieForTonight {
+                SelectedMovieCard(
+                    movie: selectedMovie,
+                    onTap: {
+                        // We're already on MainActor since this is a SwiftUI View
+                        self.selectedMovie = selectedMovie
+                        showingMovieDetail = true
+                    },
+                    onDeselect: {
+                        Task {
+                            await viewModel.deselectMovieForTonight()
+                        }
                     }
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.clockwise")
-                        Text("Refresh recommendations")
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.blue)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        Capsule()
-                            .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                            .background(Capsule().fill(Color.blue.opacity(0.1)))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
+                )
+                .matchedGeometryEffect(
+                    id: "selected-movie-\(selectedMovie.title)",
+                    in: heroAnimation
+                )
+            } else {
+                noMovieSelectedView
             }
         }
+    }
+
+    private var noMovieSelectedView: some View {
+        HStack {
+            Image(systemName: "questionmark.circle")
+                .font(.title3)
+                .foregroundColor(.secondary)
+
+            Text("No film selected for tonight")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .stroke(.secondary.opacity(0.3), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Floating Refresh Button
+
+    private var floatingRefreshButton: some View {
+        Button(action: {
+            showingRefreshConfirmation = true
+        }) {
+            Image(systemName: "arrow.clockwise")
+                .font(.title3)
+                .foregroundColor(.white)
+                .frame(width: 44, height: 44)
+                .background(Color.blue)
+                .clipShape(Circle())
+                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 
     // MARK: - Recommendations Section
@@ -207,6 +301,7 @@ struct HomeView: View {
                                 RecommendationCard(
                                     movie: movie,
                                     onTap: {
+                                        // We're already on MainActor since this is a SwiftUI View
                                         selectedMovie = movie
                                         showingMovieDetail = true
                                     },

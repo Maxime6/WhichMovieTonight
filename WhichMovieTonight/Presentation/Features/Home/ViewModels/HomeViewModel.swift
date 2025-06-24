@@ -17,6 +17,7 @@ final class HomeViewModel: ObservableObject {
 
     @Published var userName: String = "Cinéphile"
     @Published var dailyRecommendations: [Movie] = []
+    @Published var selectedMovieForTonight: Movie?
     @Published var isLoading = false
     @Published var showToast = false
     @Published var toastMessage: String?
@@ -27,6 +28,7 @@ final class HomeViewModel: ObservableObject {
 
     @Injected private var homeDataService: HomeDataServiceProtocol
     @Injected private var recommendationCacheService: RecommendationCacheServiceProtocol
+    @Injected private var userDataService: UserDataServiceProtocol
 
     // MARK: - Private Properties
 
@@ -86,6 +88,7 @@ final class HomeViewModel: ObservableObject {
         }
 
         await loadUserDisplayName(userId: userId)
+        await loadSelectedMovieForTonight(userId: userId)
         await loadTodaysRecommendations(userId: userId)
         await setupNotifications()
     }
@@ -124,11 +127,79 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Selected Movie For Tonight Methods
+
+    func selectMovieForTonight(_ movie: Movie) async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            showErrorMessage("Utilisateur non authentifié")
+            return
+        }
+
+        do {
+            try await userDataService.saveSelectedMovie(movie, for: userId)
+            selectedMovieForTonight = movie
+            showToastMessage("Film sélectionné pour ce soir !")
+        } catch {
+            showErrorMessage("Erreur lors de la sélection du film")
+            print("❌ Erreur select movie: \(error)")
+        }
+    }
+
+    func deselectMovieForTonight() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            showErrorMessage("Utilisateur non authentifié")
+            return
+        }
+
+        do {
+            try await userDataService.clearSelectedMovie(for: userId)
+            selectedMovieForTonight = nil
+            showToastMessage("Film désélectionné")
+        } catch {
+            showErrorMessage("Erreur lors de la désélection du film")
+            print("❌ Erreur deselect movie: \(error)")
+        }
+    }
+
     // MARK: - Private Methods
 
     private func loadUserDisplayName(userId: String) async {
         let displayName = await homeDataService.loadUserDisplayName(userId: userId)
         userName = displayName
+    }
+
+    private func loadSelectedMovieForTonight(userId: String) async {
+        do {
+            if let userData = try await userDataService.getUserMovieData(for: userId),
+               let selectedMovieData = userData.selectedMovie
+            {
+                // Check if the selected movie is still valid (before 6am next day)
+                if isSelectedMovieStillValid(userData.updatedAt) {
+                    selectedMovieForTonight = selectedMovieData.toMovie()
+                } else {
+                    // Movie selection has expired, clear it
+                    try await userDataService.clearSelectedMovie(for: userId)
+                    selectedMovieForTonight = nil
+                }
+            }
+        } catch {
+            print("❌ Erreur lors du chargement du film sélectionné: \(error)")
+            selectedMovieForTonight = nil
+        }
+    }
+
+    private func isSelectedMovieStillValid(_ selectionDate: Date) -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Calculate 6am of the next day after selection
+        guard let nextDay = calendar.date(byAdding: .day, value: 1, to: selectionDate),
+              let expirationTime = calendar.date(bySettingHour: 6, minute: 0, second: 0, of: nextDay)
+        else {
+            return false
+        }
+
+        return now < expirationTime
     }
 
     private func loadTodaysRecommendations(userId: String) async {
@@ -163,19 +234,21 @@ final class HomeViewModel: ObservableObject {
         toastMessage = message
         showToast = true
 
-        // Auto-hide après 3 secondes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.showToast = false
-            self.toastMessage = nil
+        // Auto-hide après 3 secondes using Task instead of DispatchQueue
+        Task {
+            try await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            showToast = false
+            toastMessage = nil
         }
     }
 
     private func showErrorMessage(_ message: String) {
         errorMessage = message
 
-        // Auto-hide après 5 secondes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            self.errorMessage = nil
+        // Auto-hide après 5 secondes using Task instead of DispatchQueue
+        Task {
+            try await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
+            errorMessage = nil
         }
     }
 
