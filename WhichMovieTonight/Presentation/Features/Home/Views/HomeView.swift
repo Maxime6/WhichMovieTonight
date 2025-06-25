@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel: HomeViewModel
+    @EnvironmentObject private var viewModel: HomeViewModel
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var authViewModel: AuthenticationViewModel
     @StateObject private var preferencesService = UserPreferencesService()
@@ -24,7 +24,6 @@ struct HomeView: View {
         _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
         let preferencesService = UserPreferencesService()
         _preferencesService = StateObject(wrappedValue: preferencesService)
-        _viewModel = StateObject(wrappedValue: HomeViewModel())
     }
 
     var body: some View {
@@ -55,7 +54,7 @@ struct HomeView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    if !viewModel.isLoading && !viewModel.dailyRecommendations.isEmpty {
+                    if !viewModel.isGeneratingRecommendations && !viewModel.dailyRecommendations.isEmpty {
                         floatingRefreshButton
                     }
                 }
@@ -63,16 +62,11 @@ struct HomeView: View {
                 .padding(.bottom, 100)
             }
 
-            // Loading Overlay
-            if viewModel.isLoading {
-                loadingOverlay
-            }
+            // No longer using loading overlay - AI thinking indicator is integrated in recommendations section
         }
         .onAppear {
             setupViewModels()
-            Task {
-                await viewModel.loadInitialData()
-            }
+            // Initial data loading is now handled by ContentView during launch screen
         }
         .overlay(
             Group {
@@ -278,83 +272,61 @@ struct HomeView: View {
 
     private var recommendationsSection: some View {
         VStack(spacing: 16) {
-            if viewModel.shouldShowEmptyState {
-                emptyStateView
-            } else if !viewModel.dailyRecommendations.isEmpty {
-                VStack(spacing: 16) {
-                    HStack {
-                        Text("Today's Picks")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+            // Section header
+            HStack {
+                Text("Today's Picks")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
 
-                        Spacer()
+                Spacer()
 
-                        Text("\(viewModel.dailyRecommendations.count) films")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(viewModel.dailyRecommendations, id: \.title) { movie in
-                                RecommendationCard(
-                                    movie: movie,
-                                    onTap: {
-                                        // We're already on MainActor since this is a SwiftUI View
-                                        selectedMovie = movie
-                                        showingMovieDetail = true
-                                    },
-                                    onMarkAsSeen: {
-                                        Task {
-                                            await viewModel.markMovieAsSeen(movie)
-                                        }
-                                    }
-                                )
-                                .matchedGeometryEffect(
-                                    id: "movie-\(movie.title)",
-                                    in: heroAnimation
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.horizontal, -16)
+                if !viewModel.dailyRecommendations.isEmpty {
+                    Text("\(viewModel.dailyRecommendations.count) films")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
-        }
-    }
 
-    // MARK: - Loading Overlay
-
-    private var loadingOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.3)
-                .edgesIgnoringSafeArea(.all)
-
-            VStack(spacing: 16) {
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-
-                Text("Generating your daily recommendations...")
-                    .font(.headline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-
-                Text("This may take a few moments")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+            // Content based on state
+            if viewModel.shouldShowAIThinking {
+                AIThinkingIndicator()
+                    .transition(.scale.combined(with: .opacity))
+            } else if viewModel.shouldShowEmptyState {
+                emptyStateView
+            } else if !viewModel.dailyRecommendations.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(viewModel.dailyRecommendations, id: \.title) { movie in
+                            RecommendationCard(
+                                movie: movie,
+                                onTap: {
+                                    selectedMovie = movie
+                                    showingMovieDetail = true
+                                },
+                                onMarkAsSeen: {
+                                    Task {
+                                        await viewModel.markMovieAsSeen(movie)
+                                    }
+                                }
+                            )
+                            .matchedGeometryEffect(
+                                id: "movie-\(movie.title)",
+                                in: heroAnimation
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.horizontal, -16)
+                .transition(.scale.combined(with: .opacity))
             }
-            .padding(32)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.ultraThickMaterial)
-            )
-            .padding(.horizontal, 32)
         }
     }
+
+    // MARK: - Loading Overlay (Deprecated - now using AI thinking indicator)
+
+    // This overlay is no longer used in the new UX flow
 
     // MARK: - Empty State
 
@@ -383,7 +355,7 @@ struct HomeView: View {
                     await viewModel.refreshRecommendations()
                 }
             }) {
-                Text("Generate Recommendations")
+                Text("Try Again")
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundColor(.white)

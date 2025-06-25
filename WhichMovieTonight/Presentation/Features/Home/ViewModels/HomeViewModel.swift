@@ -19,10 +19,12 @@ final class HomeViewModel: ObservableObject {
     @Published var dailyRecommendations: [Movie] = []
     @Published var selectedMovieForTonight: Movie?
     @Published var isLoading = false
+    @Published var isGeneratingRecommendations = false
     @Published var showToast = false
     @Published var toastMessage: String?
     @Published var errorMessage: String?
     @Published var lastRefreshDate: Date?
+    @Published var hasInitialDataLoaded = false
 
     // MARK: - Dependencies (Injected)
 
@@ -87,10 +89,68 @@ final class HomeViewModel: ObservableObject {
             return
         }
 
-        await loadUserDisplayName(userId: userId)
-        await loadSelectedMovieForTonight(userId: userId)
-        await loadTodaysRecommendations(userId: userId)
-        await setupNotifications()
+        // Phase 1: Load essential user data quickly (for launch screen)
+        await loadEssentialData(userId: userId)
+
+        // Mark initial data as loaded
+        hasInitialDataLoaded = true
+
+        // Phase 2: Load or generate recommendations (can be async)
+        await loadOrGenerateRecommendations(userId: userId)
+    }
+
+    func loadEssentialData(userId: String) async {
+        // Load quickly displayable data
+        async let nameTask = loadUserDisplayName(userId: userId)
+        async let movieTask = loadSelectedMovieForTonight(userId: userId)
+        async let notificationTask = setupNotifications()
+
+        // Wait for all essential data
+        await nameTask
+        await movieTask
+        await notificationTask
+    }
+
+    func loadOrGenerateRecommendations(userId: String) async {
+        // Check if recommendations already exist
+        do {
+            let cachedRecommendations = try await recommendationCacheService.getTodaysRecommendations()
+
+            if let recommendations = cachedRecommendations {
+                // Show cached recommendations immediately
+                dailyRecommendations = recommendations.movies.map { $0.toMovie() }
+                lastRefreshDate = Date()
+                print("✅ Recommandations trouvées en cache: \(recommendations.movies.count) films")
+            } else {
+                // Generate new recommendations with AI indicator
+                await generateRecommendationsWithIndicator(userId: userId)
+            }
+        } catch {
+            print("❌ Erreur lors du chargement des recommandations: \(error)")
+            await generateRecommendationsWithIndicator(userId: userId)
+        }
+    }
+
+    private func generateRecommendationsWithIndicator(userId: String) async {
+        isGeneratingRecommendations = true
+
+        do {
+            let recommendations = try await homeDataService.generateDailyRecommendations(userId: userId)
+
+            // Animate the appearance of recommendations
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                dailyRecommendations = recommendations
+                lastRefreshDate = Date()
+            }
+
+            showToastMessage("🎬 5 nouveaux films sélectionnés pour toi !")
+
+        } catch {
+            showErrorMessage("Impossible de générer les recommandations")
+            print("❌ Erreur génération: \(error)")
+        }
+
+        isGeneratingRecommendations = false
     }
 
     func refreshRecommendations() async {
@@ -99,20 +159,7 @@ final class HomeViewModel: ObservableObject {
             return
         }
 
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            let recommendations = try await homeDataService.refreshRecommendations(userId: userId)
-            dailyRecommendations = recommendations
-            lastRefreshDate = Date()
-            showToastMessage("5 nouveaux films sélectionnés pour vous !")
-        } catch {
-            showErrorMessage("Erreur lors de l'actualisation des recommandations")
-            print("❌ Erreur refresh: \(error)")
-        }
-
-        isLoading = false
+        await generateRecommendationsWithIndicator(userId: userId)
     }
 
     func markMovieAsSeen(_ movie: Movie) async {
@@ -202,24 +249,8 @@ final class HomeViewModel: ObservableObject {
         return now < expirationTime
     }
 
-    private func loadTodaysRecommendations(userId: String) async {
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            let recommendations = try await homeDataService.loadTodaysRecommendations(userId: userId)
-            dailyRecommendations = recommendations
-            lastRefreshDate = Date()
-            print("✅ \(recommendations.count) recommandations chargées avec succès")
-        } catch {
-            showErrorMessage("Impossible de charger les recommandations")
-            print("❌ Erreur load recommendations: \(error)")
-            // Fallback: essayer de générer de nouvelles recommandations
-            await refreshRecommendations()
-        }
-
-        isLoading = false
-    }
+    // This method is now replaced by loadOrGenerateRecommendations
+    // Keeping for backward compatibility but not used in new flow
 
     private func setupNotifications() async {
         do {
@@ -255,7 +286,11 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Computed Properties
 
     var shouldShowEmptyState: Bool {
-        dailyRecommendations.isEmpty && !isLoading
+        dailyRecommendations.isEmpty && !isGeneratingRecommendations && hasInitialDataLoaded
+    }
+
+    var shouldShowAIThinking: Bool {
+        isGeneratingRecommendations && hasInitialDataLoaded
     }
 
     var heroMessage: String {

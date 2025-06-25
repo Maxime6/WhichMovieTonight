@@ -12,6 +12,7 @@ protocol DailyNotificationServiceProtocol {
     func requestPermission() async -> Bool
     func scheduleDailyRecommendationNotification()
     func scheduleRecommendationGeneration()
+    func cancelGenerationNotifications()
     func cancelAllNotifications()
     func handleNotificationResponse(_ response: UNNotificationResponse)
     func setupBackgroundTasks()
@@ -104,6 +105,12 @@ final class DailyNotificationService: DailyNotificationServiceProtocol {
                 print("✅ Génération de recommandations programmée pour 6h")
             }
         }
+    }
+
+    func cancelGenerationNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["generate-recommendations"])
+        print("✅ Notification de génération à 6h supprimée")
     }
 
     func cancelAllNotifications() {

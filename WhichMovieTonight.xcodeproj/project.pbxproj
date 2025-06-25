@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C0C47282E0C6998009D40D5 /* AIThinkingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47272E0C6998009D40D5 /* AIThinkingIndicator.swift */; };
+		9C0C472A2E0C69A7009D40D5 /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */; };
 		9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */; };
 		9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */; };
 		9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */; };
@@ -90,6 +92,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9C0C47272E0C6998009D40D5 /* AIThinkingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIThinkingIndicator.swift; sourceTree = "<group>"; };
+		9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
 		9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
 		9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMovieData.swift; sourceTree = "<group>"; };
 		9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSource.swift; sourceTree = "<group>"; };
@@ -188,6 +192,7 @@
 		9C6EAEB62DD3B10F00C2A6D2 /* Design */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C47272E0C6998009D40D5 /* AIThinkingIndicator.swift */,
 				9C4959602DDE2BFB00BD170D /* OnboardingActionButton.swift */,
 				9C6EAEB12DD3B10F00C2A6D2 /* AIActionButton.swift */,
 				9C6EAEB22DD3B10F00C2A6D2 /* FlowLayout.swift */,
@@ -474,6 +479,7 @@
 		9C73ED632E01FCBA00AD4811 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */,
 				9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */,
 				9C73ED5E2E01FCBA00AD4811 /* ActorChip.swift */,
 				9C73ED5F2E01FCBA00AD4811 /* FavoriteMovieCard.swift */,
@@ -638,6 +644,7 @@
 				9C73ED8F2E0B031800AD4811 /* SelectedMovieCard.swift in Sources */,
 				9C73ED6C2E01FCBA00AD4811 /* OnboardingViewModel.swift in Sources */,
 				9C73ED6D2E01FCBA00AD4811 /* RecommendationCard.swift in Sources */,
+				9C0C47282E0C6998009D40D5 /* AIThinkingIndicator.swift in Sources */,
 				9C73ED6E2E01FCBA00AD4811 /* TestsUI.swift in Sources */,
 				9C73ED8D2E01FD6900AD4811 /* UserPreferences.swift in Sources */,
 				9C73ED6F2E01FCBA00AD4811 /* MovieInteractionButtons.swift in Sources */,
@@ -659,6 +666,7 @@
 				9C73ED7F2E01FCBA00AD4811 /* GenreSelectionView.swift in Sources */,
 				9C73ED802E01FCBA00AD4811 /* MovieInteractionViewModel.swift in Sources */,
 				9C73ED812E01FCBA00AD4811 /* FavoriteMovieCard.swift in Sources */,
+				9C0C472A2E0C69A7009D40D5 /* LaunchScreen.swift in Sources */,
 				9C73ED842E01FD3900AD4811 /* DIContainer.swift in Sources */,
 				9C73ED322E01ED2700AD4811 /* DailyNotificationService.swift in Sources */,
 				9C73ED332E01ED2700AD4811 /* RecommendationCacheService.swift in Sources */,

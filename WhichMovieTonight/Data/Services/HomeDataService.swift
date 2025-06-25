@@ -125,15 +125,14 @@ final class HomeDataService: HomeDataServiceProtocol {
 
         let granted = await dailyNotificationService.requestPermission()
         if granted {
-            // Programmer la génération à 6h
-            dailyNotificationService.scheduleRecommendationGeneration()
+            // Supprimer l'ancienne notification de génération à 6h
+            dailyNotificationService.cancelGenerationNotifications()
 
-            // Programmer la notification à 8h
+            // Programmer seulement la notification à 8h (quand les films sont prêts)
             dailyNotificationService.scheduleDailyRecommendationNotification()
 
             print("✅ Notifications configurées avec succès:")
-            print("   - Génération: 6h00 (silencieuse)")
-            print("   - Notification: 8h00 (visible)")
+            print("   - Notification: 8h00 (les films sont prêts)")
         } else {
             print("⚠️ Permission de notification refusée")
             throw NotificationError.permissionDenied
