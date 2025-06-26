@@ -93,7 +93,9 @@ final class HomeViewModel: ObservableObject {
         await loadEssentialData(userId: userId)
 
         // Mark initial data as loaded
-        hasInitialDataLoaded = true
+        Task { @MainActor in
+            hasInitialDataLoaded = true
+        }
 
         // Phase 2: Load or generate recommendations (can be async)
         await loadOrGenerateRecommendations(userId: userId)
@@ -118,8 +120,10 @@ final class HomeViewModel: ObservableObject {
 
             if let recommendations = cachedRecommendations {
                 // Show cached recommendations immediately
-                dailyRecommendations = recommendations.movies.map { $0.toMovie() }
-                lastRefreshDate = Date()
+                Task { @MainActor in
+                    dailyRecommendations = recommendations.movies.map { $0.toMovie() }
+                    lastRefreshDate = Date()
+                }
                 print("✅ Recommandations trouvées en cache: \(recommendations.movies.count) films")
             } else {
                 // Generate new recommendations with AI indicator
@@ -132,15 +136,19 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func generateRecommendationsWithIndicator(userId: String) async {
-        isGeneratingRecommendations = true
+        Task { @MainActor in
+            isGeneratingRecommendations = true
+        }
 
         do {
             let recommendations = try await homeDataService.generateDailyRecommendations(userId: userId)
 
             // Animate the appearance of recommendations
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
-                dailyRecommendations = recommendations
-                lastRefreshDate = Date()
+            Task { @MainActor in
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                    dailyRecommendations = recommendations
+                    lastRefreshDate = Date()
+                }
             }
 
             showToastMessage("🎬 5 nouveaux films sélectionnés pour toi !")
@@ -150,7 +158,9 @@ final class HomeViewModel: ObservableObject {
             print("❌ Erreur génération: \(error)")
         }
 
-        isGeneratingRecommendations = false
+        Task { @MainActor in
+            isGeneratingRecommendations = false
+        }
     }
 
     func refreshRecommendations() async {
@@ -167,7 +177,9 @@ final class HomeViewModel: ObservableObject {
             try await recommendationCacheService.markMovieAsSeen(movie)
             showToastMessage("Film marqué comme déjà vu")
             // Supprimer le film des recommandations actuelles
-            dailyRecommendations.removeAll { $0.title == movie.title }
+            Task { @MainActor in
+                dailyRecommendations.removeAll { $0.title == movie.title }
+            }
         } catch {
             showErrorMessage("Erreur lors du marquage du film")
             print("❌ Erreur mark as seen: \(error)")
@@ -184,7 +196,9 @@ final class HomeViewModel: ObservableObject {
 
         do {
             try await userDataService.saveSelectedMovie(movie, for: userId)
-            selectedMovieForTonight = movie
+            Task { @MainActor in
+                selectedMovieForTonight = movie
+            }
             showToastMessage("Film sélectionné pour ce soir !")
         } catch {
             showErrorMessage("Erreur lors de la sélection du film")
@@ -200,7 +214,9 @@ final class HomeViewModel: ObservableObject {
 
         do {
             try await userDataService.clearSelectedMovie(for: userId)
-            selectedMovieForTonight = nil
+            Task { @MainActor in
+                selectedMovieForTonight = nil
+            }
             showToastMessage("Film désélectionné")
         } catch {
             showErrorMessage("Erreur lors de la désélection du film")
@@ -212,7 +228,9 @@ final class HomeViewModel: ObservableObject {
 
     private func loadUserDisplayName(userId: String) async {
         let displayName = await homeDataService.loadUserDisplayName(userId: userId)
-        userName = displayName
+        Task { @MainActor in
+            userName = displayName
+        }
     }
 
     private func loadSelectedMovieForTonight(userId: String) async {
@@ -222,16 +240,22 @@ final class HomeViewModel: ObservableObject {
             {
                 // Check if the selected movie is still valid (before 6am next day)
                 if isSelectedMovieStillValid(userData.updatedAt) {
-                    selectedMovieForTonight = selectedMovieData.toMovie()
+                    Task { @MainActor in
+                        selectedMovieForTonight = selectedMovieData.toMovie()
+                    }
                 } else {
                     // Movie selection has expired, clear it
                     try await userDataService.clearSelectedMovie(for: userId)
-                    selectedMovieForTonight = nil
+                    Task { @MainActor in
+                        selectedMovieForTonight = nil
+                    }
                 }
             }
         } catch {
             print("❌ Erreur lors du chargement du film sélectionné: \(error)")
-            selectedMovieForTonight = nil
+            Task { @MainActor in
+                selectedMovieForTonight = nil
+            }
         }
     }
 
@@ -262,24 +286,32 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func showToastMessage(_ message: String) {
-        toastMessage = message
-        showToast = true
+        Task { @MainActor in
+            toastMessage = message
+            showToast = true
 
-        // Auto-hide après 3 secondes using Task instead of DispatchQueue
-        Task {
-            try await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
-            showToast = false
-            toastMessage = nil
+            // Auto-hide après 3 secondes using Task instead of DispatchQueue
+            Task {
+                try await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+                Task { @MainActor in
+                    showToast = false
+                    toastMessage = nil
+                }
+            }
         }
     }
 
     private func showErrorMessage(_ message: String) {
-        errorMessage = message
+        Task { @MainActor in
+            errorMessage = message
 
-        // Auto-hide après 5 secondes using Task instead of DispatchQueue
-        Task {
-            try await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
-            errorMessage = nil
+            // Auto-hide après 5 secondes using Task instead of DispatchQueue
+            Task {
+                try await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
+                Task { @MainActor in
+                    errorMessage = nil
+                }
+            }
         }
     }
 

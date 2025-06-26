@@ -31,6 +31,13 @@ protocol FirestoreServiceProtocol {
     // Seen movies
     func markMovieAsSeen(_ seenMovie: SeenMovie, for userId: String) async throws
     func getSeenMovies(for userId: String) async throws -> [SeenMovie]
+
+    // Notifications
+    func saveNotification(_ notification: AppNotification) async throws
+    func getNotifications(for userId: String) async throws -> [AppNotification]
+    func markNotificationAsRead(_ notificationId: String, for userId: String) async throws
+    func markAllNotificationsAsRead(for userId: String) async throws
+    func deleteNotification(_ notificationId: String, for userId: String) async throws
 }
 
 final class FirestoreService: FirestoreServiceProtocol {
@@ -369,6 +376,133 @@ final class FirestoreService: FirestoreServiceProtocol {
             return movieIds
         } catch {
             print("❌ Erreur lors de la récupération des IDs de films récents: \(error)")
+            throw error
+        }
+    }
+
+    // MARK: - Notifications
+
+    func saveNotification(_ notification: AppNotification) async throws {
+        do {
+            let documentId = "\(notification.userId)_\(notification.id)"
+            try await db.collection("notifications").document(documentId).setData([
+                "id": notification.id,
+                "userId": notification.userId,
+                "type": notification.type.rawValue,
+                "title": notification.title,
+                "message": notification.message,
+                "timestamp": notification.timestamp,
+                "isRead": notification.isRead,
+                "actionData": notification.actionData as Any,
+            ])
+            print("✅ Notification saved: \(notification.title)")
+        } catch {
+            print("❌ Error saving notification: \(error)")
+            throw error
+        }
+    }
+
+    func getNotifications(for userId: String) async throws -> [AppNotification] {
+        do {
+            // Use simpler query to avoid index requirement - we'll sort client-side
+            let query = db.collection("notifications")
+                .whereField("userId", isEqualTo: userId)
+                .limit(to: 50) // Limit to last 50 notifications
+
+            let snapshot = try await query.getDocuments()
+
+            var notifications: [AppNotification] = []
+
+            for document in snapshot.documents {
+                let data = document.data()
+
+                guard let id = data["id"] as? String,
+                      let userId = data["userId"] as? String,
+                      let typeString = data["type"] as? String,
+                      let type = NotificationType(rawValue: typeString),
+                      let title = data["title"] as? String,
+                      let message = data["message"] as? String,
+                      let timestamp = (data["timestamp"] as? Timestamp)?.dateValue(),
+                      let isRead = data["isRead"] as? Bool
+                else {
+                    print("⚠️ Failed to decode notification document: \(document.documentID)")
+                    continue
+                }
+
+                let actionData = data["actionData"] as? [String: String]
+
+                var notification = AppNotification(
+                    userId: userId,
+                    type: type,
+                    title: title,
+                    message: message,
+                    actionData: actionData
+                )
+
+                // Override the auto-generated values with stored ones
+                notification = AppNotification(
+                    id: id,
+                    userId: userId,
+                    type: type,
+                    title: title,
+                    message: message,
+                    timestamp: timestamp,
+                    isRead: isRead,
+                    actionData: actionData
+                )
+
+                notifications.append(notification)
+            }
+
+            print("✅ Retrieved \(notifications.count) notifications for user: \(userId)")
+            return notifications
+        } catch {
+            print("❌ Error retrieving notifications: \(error)")
+            throw error
+        }
+    }
+
+    func markNotificationAsRead(_ notificationId: String, for userId: String) async throws {
+        do {
+            let documentId = "\(userId)_\(notificationId)"
+            try await db.collection("notifications").document(documentId).updateData([
+                "isRead": true,
+            ])
+            print("✅ Notification marked as read: \(notificationId)")
+        } catch {
+            print("❌ Error marking notification as read: \(error)")
+            throw error
+        }
+    }
+
+    func markAllNotificationsAsRead(for userId: String) async throws {
+        do {
+            let query = db.collection("notifications")
+                .whereField("userId", isEqualTo: userId)
+                .whereField("isRead", isEqualTo: false)
+
+            let snapshot = try await query.getDocuments()
+
+            let batch = db.batch()
+            for document in snapshot.documents {
+                batch.updateData(["isRead": true], forDocument: document.reference)
+            }
+
+            try await batch.commit()
+            print("✅ All notifications marked as read for user: \(userId)")
+        } catch {
+            print("❌ Error marking all notifications as read: \(error)")
+            throw error
+        }
+    }
+
+    func deleteNotification(_ notificationId: String, for userId: String) async throws {
+        do {
+            let documentId = "\(userId)_\(notificationId)"
+            try await db.collection("notifications").document(documentId).delete()
+            print("✅ Notification deleted: \(notificationId)")
+        } catch {
+            print("❌ Error deleting notification: \(error)")
             throw error
         }
     }

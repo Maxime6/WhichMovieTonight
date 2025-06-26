@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		9C0C47282E0C6998009D40D5 /* AIThinkingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47272E0C6998009D40D5 /* AIThinkingIndicator.swift */; };
 		9C0C472A2E0C69A7009D40D5 /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */; };
+		9C0C472C2E0C72F9009D40D5 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C472B2E0C72F9009D40D5 /* NotificationService.swift */; };
+		9C0C472E2E0C7302009D40D5 /* AppNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C472D2E0C7302009D40D5 /* AppNotification.swift */; };
+		9C0C47302E0C730D009D40D5 /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C472F2E0C730D009D40D5 /* NotificationViewModel.swift */; };
+		9C0C47332E0C731B009D40D5 /* NotificationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47322E0C731B009D40D5 /* NotificationPanel.swift */; };
+		9C0C47342E0C731B009D40D5 /* NotificationBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0C47312E0C731B009D40D5 /* NotificationBadge.swift */; };
 		9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */; };
 		9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */; };
 		9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */; };
@@ -94,6 +99,11 @@
 /* Begin PBXFileReference section */
 		9C0C47272E0C6998009D40D5 /* AIThinkingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIThinkingIndicator.swift; sourceTree = "<group>"; };
 		9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
+		9C0C472B2E0C72F9009D40D5 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		9C0C472D2E0C7302009D40D5 /* AppNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotification.swift; sourceTree = "<group>"; };
+		9C0C472F2E0C730D009D40D5 /* NotificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewModel.swift; sourceTree = "<group>"; };
+		9C0C47312E0C731B009D40D5 /* NotificationBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationBadge.swift; sourceTree = "<group>"; };
+		9C0C47322E0C731B009D40D5 /* NotificationPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPanel.swift; sourceTree = "<group>"; };
 		9C467DFC2DF1FEDC002A78F6 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
 		9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMovieData.swift; sourceTree = "<group>"; };
 		9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSource.swift; sourceTree = "<group>"; };
@@ -242,6 +252,7 @@
 		9C6EAEC32DD3B10F00C2A6D2 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C472B2E0C72F9009D40D5 /* NotificationService.swift */,
 				9C73ED852E01FD4A00AD4811 /* HomeDataService.swift */,
 				9C73ED872E01FD4A00AD4811 /* Protocols */,
 				9C73ED882E01FD4A00AD4811 /* UserMovieDataService.swift */,
@@ -268,6 +279,7 @@
 		9C6EAEC62DD3B10F00C2A6D2 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C472D2E0C7302009D40D5 /* AppNotification.swift */,
 				9C73ED8C2E01FD6900AD4811 /* UserPreferences.swift */,
 				9C73ED342E01ED3A00AD4811 /* DailyRecommendations.swift */,
 				9C467E102DF30F97002A78F6 /* UserMovieInteraction.swift */,
@@ -370,6 +382,7 @@
 		9C73ED402E01FCBA00AD4811 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C472F2E0C730D009D40D5 /* NotificationViewModel.swift */,
 				9C73ED3E2E01FCBA00AD4811 /* HomeViewModel.swift */,
 				9C73ED3F2E01FCBA00AD4811 /* MovieInteractionViewModel.swift */,
 			);
@@ -479,6 +492,8 @@
 		9C73ED632E01FCBA00AD4811 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				9C0C47312E0C731B009D40D5 /* NotificationBadge.swift */,
+				9C0C47322E0C731B009D40D5 /* NotificationPanel.swift */,
 				9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */,
 				9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */,
 				9C73ED5E2E01FCBA00AD4811 /* ActorChip.swift */,
@@ -666,6 +681,7 @@
 				9C73ED7F2E01FCBA00AD4811 /* GenreSelectionView.swift in Sources */,
 				9C73ED802E01FCBA00AD4811 /* MovieInteractionViewModel.swift in Sources */,
 				9C73ED812E01FCBA00AD4811 /* FavoriteMovieCard.swift in Sources */,
+				9C0C47302E0C730D009D40D5 /* NotificationViewModel.swift in Sources */,
 				9C0C472A2E0C69A7009D40D5 /* LaunchScreen.swift in Sources */,
 				9C73ED842E01FD3900AD4811 /* DIContainer.swift in Sources */,
 				9C73ED322E01ED2700AD4811 /* DailyNotificationService.swift in Sources */,
@@ -673,6 +689,7 @@
 				9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */,
 				9C6EAEE32DD3B10F00C2A6D2 /* AIActionButton.swift in Sources */,
 				9C73ED352E01ED3A00AD4811 /* DailyRecommendations.swift in Sources */,
+				9C0C472C2E0C72F9009D40D5 /* NotificationService.swift in Sources */,
 				9C6EAEE42DD3B10F00C2A6D2 /* MovieRepository.swift in Sources */,
 				9C6EAEE52DD3B10F00C2A6D2 /* OpenAIService.swift in Sources */,
 				9C6EAEE62DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift in Sources */,
@@ -690,8 +707,11 @@
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
 				9C467DFD2DF1FEDC002A78F6 /* FirestoreService.swift in Sources */,
 				9C467E112DF30F97002A78F6 /* UserMovieInteraction.swift in Sources */,
+				9C0C472E2E0C7302009D40D5 /* AppNotification.swift in Sources */,
 				9CF0B5EF2DE4BC8B002002B4 /* OMDBMovieDTO.swift in Sources */,
 				9C73ED892E01FD4A00AD4811 /* UserMovieDataService.swift in Sources */,
+				9C0C47332E0C731B009D40D5 /* NotificationPanel.swift in Sources */,
+				9C0C47342E0C731B009D40D5 /* NotificationBadge.swift in Sources */,
 				9C73ED8A2E01FD4A00AD4811 /* HomeDataService.swift in Sources */,
 				9C73ED8B2E01FD4A00AD4811 /* UserDataServiceProtocol.swift in Sources */,
 				9CF0B5F22DE4BC9E002002B4 /* Movie+OMDB.swift in Sources */,

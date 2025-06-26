@@ -139,6 +139,10 @@ enum DependencyManager {
             DailyNotificationService()
         }
 
+        container.register(NotificationServiceProtocol.self) {
+            NotificationService()
+        }
+
         // Register Repositories
         container.register(MovieRepository.self) {
             MovieRepositoryImpl()

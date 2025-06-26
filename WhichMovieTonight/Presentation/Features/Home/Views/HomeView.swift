@@ -12,9 +12,9 @@ struct HomeView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var authViewModel: AuthenticationViewModel
     @StateObject private var preferencesService = UserPreferencesService()
+    @StateObject private var notificationViewModel = NotificationViewModel()
 
-    @State private var showingProfileMenu = false
-    @State private var showingDeleteAlert = false
+    @State private var showingNotificationPanel = false
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
     @State private var showingRefreshConfirmation = false
@@ -64,6 +64,30 @@ struct HomeView: View {
 
             // No longer using loading overlay - AI thinking indicator is integrated in recommendations section
         }
+        .overlay(
+            // Notification Panel - only show when needed
+            Group {
+                if showingNotificationPanel {
+                    NotificationPanel(
+                        isPresented: $showingNotificationPanel,
+                        notifications: notificationViewModel.notifications,
+                        onMarkAsRead: { notificationId in
+                            notificationViewModel.markAsRead(notificationId)
+                        },
+                        onMarkAllAsRead: {
+                            notificationViewModel.markAllAsRead()
+                        },
+                        onDeleteNotification: { notificationId in
+                            notificationViewModel.deleteNotification(notificationId)
+                        }
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
+                }
+            }
+        )
         .onAppear {
             setupViewModels()
             // Initial data loading is now handled by ContentView during launch screen
@@ -94,32 +118,7 @@ struct HomeView: View {
                 }
             }
         )
-        .sheet(isPresented: $showingProfileMenu) {
-            ProfileMenuView(
-                authViewModel: authViewModel,
-                onSignOut: {
-                    authViewModel.signOut()
-                    showingProfileMenu = false
-                },
-                onDeleteAccount: {
-                    showingDeleteAlert = true
-                }
-            )
-            .presentationDetents([.medium])
-        }
-        .confirmationDialog("Supprimer le compte", isPresented: $showingDeleteAlert, titleVisibility: .visible) {
-            Button("Supprimer", role: .destructive) {
-                Task {
-                    let success = await authViewModel.deleteAccount()
-                    if success {
-                        showingProfileMenu = false
-                    }
-                }
-            }
-            Button("Annuler", role: .cancel) {}
-        } message: {
-            Text("Cette action est irréversible. Toutes vos données seront supprimées et vous devrez refaire l'onboarding.")
-        }
+        // Profile menu removed - now accessible via Settings tab
         .confirmationDialog("Today's picks ain't hitting right?", isPresented: $showingRefreshConfirmation, titleVisibility: .visible) {
             Button("Get me new ones!", role: .destructive) {
                 Task {
@@ -182,14 +181,14 @@ struct HomeView: View {
 
                 Spacer()
 
-                Button(action: {
-                    showingProfileMenu = true
-                }) {
-                    Image(systemName: "person.crop.circle")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                        .foregroundStyle(.primary)
-                }
+                NotificationBadge(
+                    unreadCount: notificationViewModel.unreadCount,
+                    onTap: {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            showingNotificationPanel.toggle()
+                        }
+                    }
+                )
             }
         }
     }
