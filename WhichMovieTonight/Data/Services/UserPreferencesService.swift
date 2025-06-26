@@ -104,4 +104,14 @@ class UserPreferencesService: ObservableObject {
     func isStreamingPlatformSelected(_ platform: StreamingPlatform) -> Bool {
         favoriteStreamingPlatforms.contains(platform)
     }
+
+    // MARK: - Preferences Model
+
+    func getUserPreferences() -> UserPreferences {
+        return UserPreferences(
+            favoriteGenres: favoriteGenres,
+            favoriteActors: favoriteActors,
+            favoriteStreamingPlatforms: favoriteStreamingPlatforms
+        )
+    }
 }

@@ -12,6 +12,7 @@ import Foundation
 class WatchlistViewModel: ObservableObject {
     @Published var userInteractions: UserMovieInteractions?
     @Published var lastSuggestions: [Movie] = []
+    @Published var seenMovies: [SeenMovie] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -36,6 +37,9 @@ class WatchlistViewModel: ObservableObject {
             if let userData = userData {
                 lastSuggestions = userData.lastSuggestions.map { $0.toMovie() }
             }
+
+            // Charger les films déjà vus
+            seenMovies = try await firestoreService.getSeenMovies(for: userId)
         } catch {
             errorMessage = "Erreur lors du chargement des interactions: \(error.localizedDescription)"
             print("❌ Erreur lors du chargement des interactions: \(error)")

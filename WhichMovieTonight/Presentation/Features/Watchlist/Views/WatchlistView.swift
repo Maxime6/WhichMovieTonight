@@ -24,6 +24,7 @@ struct WatchlistView: View {
                     Text("J'aime").tag(0)
                     Text("Favoris").tag(1)
                     Text("Suggestions").tag(2)
+                    Text("Déjà vus").tag(3)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
@@ -38,6 +39,9 @@ struct WatchlistView: View {
 
                     suggestionsView
                         .tag(2)
+
+                    seenMoviesView
+                        .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             }
@@ -213,6 +217,95 @@ struct WatchlistView: View {
                 }
             }
         }
+    }
+
+    private var seenMoviesView: some View {
+        Group {
+            if viewModel.isLoading {
+                VStack {
+                    ProgressView()
+                    Text("Chargement des films vus...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.seenMovies.isEmpty {
+                VStack(spacing: 20) {
+                    Image(systemName: "eye.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+
+                    Text("Films Déjà Vus")
+                        .font(.title2.bold())
+
+                    Text("Les films que vous marquez comme déjà vus apparaîtront ici")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    Spacer()
+                }
+                .padding()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.seenMovies) { seenMovie in
+                            SeenMovieCard(seenMovie: seenMovie)
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+    }
+}
+
+struct SeenMovieCard: View {
+    let seenMovie: SeenMovie
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Placeholder pour l'image du film
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: 60, height: 90)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    Image(systemName: "film")
+                        .foregroundColor(.gray)
+                )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(seenMovie.title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+
+                Text("Vu le \(formatDate(seenMovie.seenAt))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Spacer()
+            }
+
+            Spacer()
+
+            Image(systemName: "eye.fill")
+                .foregroundColor(.gray)
+                .font(.caption)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemGray6))
+        )
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter.string(from: date)
     }
 }
 

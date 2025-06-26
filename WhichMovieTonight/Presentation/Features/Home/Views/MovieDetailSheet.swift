@@ -16,14 +16,14 @@ struct MovieDetailSheet: View {
     @State private var scrollOffset: CGFloat = 0
     @State var counter: Int = 0
     @State var origin: CGPoint = .zero
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 10) {
                     // Hero poster section
                     heroSection
-                    
+
                     // Movie details
                     movieDetailsSection
                 }
@@ -31,7 +31,7 @@ struct MovieDetailSheet: View {
             .background(Color(.systemBackground))
         }
     }
-    
+
     private var heroSection: some View {
         ZStack(alignment: .bottom) {
             if let url = movie.posterURL {
@@ -60,14 +60,14 @@ struct MovieDetailSheet: View {
             } else {
                 posterPlaceholder
             }
-            
+
             quickInfoRow
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 10)
-            .background(.ultraThinMaterial)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 10)
+                .background(.ultraThinMaterial)
         }
     }
-    
+
     private var posterPlaceholder: some View {
         RoundedRectangle(cornerRadius: 16)
             .fill(.gray.opacity(0.2))
@@ -80,24 +80,24 @@ struct MovieDetailSheet: View {
                     .foregroundStyle(.secondary)
             }
     }
-    
+
     private var movieDetailsSection: some View {
         VStack(spacing: 24) {
             // Movie interaction buttons (like, dislike, favorite)
             MovieInteractionButtons(movie: movie)
-            
+
             // Genres
             genresSection
-            
+
             // Synopsis
             synopsisSection
-            
+
             // Cast & Crew
             castCrewSection
-            
+
             // Streaming platforms (if available)
             streamingSection
-            
+
             // Select for tonight button (only from suggestions)
             if source == .suggestion {
                 selectForTonightButton
@@ -105,7 +105,7 @@ struct MovieDetailSheet: View {
         }
         .padding()
     }
-    
+
     private var quickInfoRow: some View {
         VStack(spacing: 10) {
             Text(movie.title)
@@ -113,7 +113,7 @@ struct MovieDetailSheet: View {
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
+
             HStack(spacing: 20) {
                 if let imdbRating = movie.imdbRating {
                     HStack(spacing: 4) {
@@ -122,19 +122,19 @@ struct MovieDetailSheet: View {
                         Text(imdbRating)
                     }
                 }
-                
+
                 if let year = movie.year {
                     VStack(spacing: 4) {
                         Text(year)
                     }
                 }
-                
+
                 if let runtime = movie.runtime {
                     VStack(spacing: 4) {
                         Text(runtime)
                     }
                 }
-                
+
                 if let rated = movie.rated {
                     VStack(spacing: 4) {
                         Text(rated)
@@ -142,7 +142,7 @@ struct MovieDetailSheet: View {
                 }
             }
             .foregroundStyle(.white)
-            
+
             HStack(spacing: 8) {
                 ForEach(movie.genres, id: \.self) { genre in
                     Text(genre)
@@ -151,7 +151,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-    
+
     private var genresSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -159,7 +159,7 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-            
+
             HStack(spacing: 8) {
                 ForEach(movie.genres, id: \.self) { genre in
                     Text(genre)
@@ -176,7 +176,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-    
+
     private var synopsisSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -184,7 +184,7 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-            
+
             if let overview = movie.overview {
                 Text(overview)
                     .font(.body)
@@ -198,7 +198,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-    
+
     private var castCrewSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let director = movie.director {
@@ -210,7 +210,7 @@ struct MovieDetailSheet: View {
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             if let actors = movie.actors {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Acteurs principaux")
@@ -223,7 +223,7 @@ struct MovieDetailSheet: View {
             }
         }
     }
-    
+
     private var streamingSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -231,7 +231,7 @@ struct MovieDetailSheet: View {
                     .font(.headline)
                 Spacer()
             }
-            
+
             // Placeholder for streaming platforms
             // This would need to be implemented based on your streaming data model
             HStack(spacing: 12) {
@@ -247,12 +247,12 @@ struct MovieDetailSheet: View {
             }
         }
     }
-    
+
     private var selectForTonightButton: some View {
         VStack(spacing: 16) {
             Divider()
                 .padding(.vertical)
-            
+
             Button(action: {
                 onSelectForTonight?()
             }) {
@@ -267,7 +267,7 @@ struct MovieDetailSheet: View {
                 .background(Color.blue)
                 .cornerRadius(12)
             }
-            
+
             Text("Ce film deviendra votre film du soir")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -277,7 +277,7 @@ struct MovieDetailSheet: View {
 }
 
 #Preview {
-    @Namespace var namespace
+    @Previewable @Namespace var namespace
     return MovieDetailSheet(
         movie: Movie.preview,
         namespace: namespace,
