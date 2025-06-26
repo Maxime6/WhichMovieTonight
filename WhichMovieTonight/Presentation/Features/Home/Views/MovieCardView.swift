@@ -14,9 +14,6 @@ struct MovieCardView: View {
     let namespace: Namespace.ID?
     let onPosterTap: (() -> Void)?
 
-    @State var counter: Int = 0
-    @State var origin: CGPoint = .zero
-
     init(movie: Movie, namespace: Namespace.ID? = nil, onPosterTap: (() -> Void)? = nil) {
         self.movie = movie
         self.namespace = namespace
@@ -26,10 +23,8 @@ struct MovieCardView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 12) {
-                // Responsive poster
                 posterView(geometry: geometry)
 
-                // Movie title only (simplified for HomeView)
                 Text(movie.title)
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
@@ -60,13 +55,6 @@ struct MovieCardView: View {
                             .frame(width: posterWidth, height: posterHeight)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .shadow(color: .primary.opacity(0.2), radius: 10)
-                            .onPressingChanged { point in
-                                if let point {
-                                    origin = point
-                                    counter += 1
-                                }
-                            }
-                            .modifier(RippleEffect(at: origin, trigger: counter))
                     }
                     .buttonStyle(PlainButtonStyle())
                     .if(namespace != nil) { view in

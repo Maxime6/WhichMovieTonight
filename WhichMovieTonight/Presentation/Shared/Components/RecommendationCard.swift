@@ -13,15 +13,11 @@ struct RecommendationCard: View {
     let onMarkAsSeen: () -> Void
 
     @State private var isPressed = false
-    @State private var counter: Int = 0
-    @State private var origin: CGPoint = .zero
 
     var body: some View {
         VStack(spacing: 12) {
-            // Movie Poster
             posterView
 
-            // Movie Info
             VStack(spacing: 8) {
                 Text(movie.title)
                     .font(.headline)
@@ -30,7 +26,6 @@ struct RecommendationCard: View {
                     .lineLimit(2)
                     .foregroundColor(.primary)
 
-                // Rating and Year
                 if let imdbRating = movie.imdbRating, let year = movie.year {
                     HStack(spacing: 16) {
                         HStack(spacing: 4) {
@@ -47,8 +42,7 @@ struct RecommendationCard: View {
                             .foregroundColor(.secondary)
                     }
                 }
-
-                // Genres
+                
                 if !movie.genres.isEmpty {
                     Text(movie.genres.prefix(2).joined(separator: " • "))
                         .font(.caption)
@@ -58,7 +52,6 @@ struct RecommendationCard: View {
             }
             .padding(.horizontal, 8)
 
-            // Action Buttons
             HStack(spacing: 12) {
                 Button(action: onMarkAsSeen) {
                     Image(systemName: "eye.slash")
@@ -115,13 +108,6 @@ struct RecommendationCard: View {
                         .scaledToFill()
                         .frame(width: 120, height: 180)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .onPressingChanged { point in
-                            if let point {
-                                origin = point
-                                counter += 1
-                            }
-                        }
-                        .modifier(RippleEffect(at: origin, trigger: counter))
 
                 case .failure:
                     posterPlaceholder

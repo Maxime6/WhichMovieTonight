@@ -13,9 +13,7 @@ struct AIActionButton: View {
     var isLoading: Bool = false
     var isDisabled: Bool = false
     var action: () -> Void
-    @State var counter: Int = 0
-    @State var origin: CGPoint = .zero
-    
+
     var body: some View {
         Button {
             action()
@@ -26,7 +24,7 @@ struct AIActionButton: View {
                 } else {
                     Image(systemName: "sparkles")
                 }
-                
+
                 Text(title)
             }
             .padding()
@@ -70,19 +68,13 @@ struct AIActionButton: View {
         )
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)
-        .onPressingChanged { point in
+        .onTapGesture {
             if !isDisabled {
-                if let point {
-                    origin = point
-                    counter += 1
-                }
-                
                 triggerHaptic()
             }
         }
-        .modifier(RippleEffect(at: origin, trigger: counter))
     }
-    
+
 //    private func setButtonText() -> String {
 //        if isLoading {
 //            "AI is searching"
@@ -90,7 +82,7 @@ struct AIActionButton: View {
 //            ""
 //        }
 //    }
-    
+
     private func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
@@ -108,7 +100,7 @@ struct AIActionButton: View {
 
 struct LoadingIndicator: View {
     @State private var isAnimating = false
-    
+
     var body: some View {
         Circle()
             .trim(from: 0, to: 0.7)

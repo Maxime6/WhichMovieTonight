@@ -14,8 +14,6 @@ struct MovieDetailSheet: View {
     let source: MovieDetailSource
     let onSelectForTonight: (() -> Void)?
     @State private var scrollOffset: CGFloat = 0
-    @State var counter: Int = 0
-    @State var origin: CGPoint = .zero
 
     var body: some View {
         NavigationView {
@@ -44,13 +42,6 @@ struct MovieDetailSheet: View {
                         image
                             .resizable()
                             .scaledToFill()
-                            .onPressingChanged { point in
-                                if let point {
-                                    origin = point
-                                    counter += 1
-                                }
-                            }
-                            .modifier(RippleEffect(at: origin, trigger: counter))
                     case .failure:
                         posterPlaceholder
                     @unknown default:
@@ -83,22 +74,16 @@ struct MovieDetailSheet: View {
 
     private var movieDetailsSection: some View {
         VStack(spacing: 24) {
-            // Movie interaction buttons (like, dislike, favorite)
             MovieInteractionButtons(movie: movie)
 
-            // Genres
             genresSection
-
-            // Synopsis
+            
             synopsisSection
 
-            // Cast & Crew
             castCrewSection
 
-            // Streaming platforms (if available)
             streamingSection
 
-            // Select for tonight button (only from suggestions)
             if source == .suggestion {
                 selectForTonightButton
             }
@@ -232,8 +217,6 @@ struct MovieDetailSheet: View {
                 Spacer()
             }
 
-            // Placeholder for streaming platforms
-            // This would need to be implemented based on your streaming data model
             HStack(spacing: 12) {
                 ForEach(movie.streamingPlatforms, id: \.self) { platform in
                     Text(platform)

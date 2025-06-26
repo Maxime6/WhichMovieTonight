@@ -24,24 +24,19 @@
 		9C6EAEDC2DD3B10F00C2A6D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C6EAED82DD3B10F00C2A6D2 /* Assets.xcassets */; };
 		9C6EAEDD2DD3B10F00C2A6D2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C6EAED62DD3B10F00C2A6D2 /* Preview Assets.xcassets */; };
 		9C6EAEDE2DD3B10F00C2A6D2 /* OpenAIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC02DD3B10F00C2A6D2 /* OpenAIResponse.swift */; };
-		9C6EAEE02DD3B10F00C2A6D2 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEBB2DD3B10F00C2A6D2 /* Shaders.metal */; };
 		9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAECE2DD3B10F00C2A6D2 /* MockMovie.swift */; };
-		9C6EAEE22DD3B10F00C2A6D2 /* TextTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEBC2DD3B10F00C2A6D2 /* TextTransition.swift */; };
 		9C6EAEE32DD3B10F00C2A6D2 /* AIActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB12DD3B10F00C2A6D2 /* AIActionButton.swift */; };
 		9C6EAEE42DD3B10F00C2A6D2 /* MovieRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC82DD3B10F00C2A6D2 /* MovieRepository.swift */; };
 		9C6EAEE52DD3B10F00C2A6D2 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */; };
 		9C6EAEE62DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */; };
 		9C6EAEE72DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEBF2DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift */; };
-		9C6EAEE92DD3B10F00C2A6D2 /* Ripple.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB92DD3B10F00C2A6D2 /* Ripple.metal */; };
 		9C6EAEEA2DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC92DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift */; };
 		9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC72DD3B10F00C2A6D2 /* MockMovieRepository.swift */; };
 		9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB22DD3B10F00C2A6D2 /* FlowLayout.swift */; };
-		9C6EAEED2DD3B10F00C2A6D2 /* example-swiftui-shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB82DD3B10F00C2A6D2 /* example-swiftui-shaders.metal */; };
 		9C6EAEEE2DD3B10F00C2A6D2 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB52DD3B10F00C2A6D2 /* ToastView.swift */; };
 		9C6EAEF02DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB72DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift */; };
 		9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB32DD3B10F00C2A6D2 /* MovieGenreCapsule.swift */; };
 		9C6EAEF22DD3B10F00C2A6D2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */; };
-		9C6EAEF32DD3B10F00C2A6D2 /* Ripple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEBA2DD3B10F00C2A6D2 /* Ripple.swift */; };
 		9C6EAEF52DD3B10F00C2A6D2 /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC52DD3B10F00C2A6D2 /* Movie.swift */; };
 		9C6EAEF62DD3B10F00C2A6D2 /* MovieGenreSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB42DD3B10F00C2A6D2 /* MovieGenreSelectionView.swift */; };
 		9C6EAEFD2DD3BFAD00C2A6D2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAEFC2DD3BFAD00C2A6D2 /* FirebaseAnalytics */; };
@@ -117,11 +112,6 @@
 		9C6EAEB42DD3B10F00C2A6D2 /* MovieGenreSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieGenreSelectionView.swift; sourceTree = "<group>"; };
 		9C6EAEB52DD3B10F00C2A6D2 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		9C6EAEB72DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedMeshGradient.swift; sourceTree = "<group>"; };
-		9C6EAEB82DD3B10F00C2A6D2 /* example-swiftui-shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = "example-swiftui-shaders.metal"; sourceTree = "<group>"; };
-		9C6EAEB92DD3B10F00C2A6D2 /* Ripple.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Ripple.metal; sourceTree = "<group>"; };
-		9C6EAEBA2DD3B10F00C2A6D2 /* Ripple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ripple.swift; sourceTree = "<group>"; };
-		9C6EAEBB2DD3B10F00C2A6D2 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
-		9C6EAEBC2DD3B10F00C2A6D2 /* TextTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextTransition.swift; sourceTree = "<group>"; };
 		9C6EAEBF2DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieSuggestionDTO.swift; sourceTree = "<group>"; };
 		9C6EAEC02DD3B10F00C2A6D2 /* OpenAIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIResponse.swift; sourceTree = "<group>"; };
 		9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
@@ -218,11 +208,6 @@
 			children = (
 				9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */,
 				9C6EAEB72DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift */,
-				9C6EAEB82DD3B10F00C2A6D2 /* example-swiftui-shaders.metal */,
-				9C6EAEB92DD3B10F00C2A6D2 /* Ripple.metal */,
-				9C6EAEBA2DD3B10F00C2A6D2 /* Ripple.swift */,
-				9C6EAEBB2DD3B10F00C2A6D2 /* Shaders.metal */,
-				9C6EAEBC2DD3B10F00C2A6D2 /* TextTransition.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -646,10 +631,8 @@
 			files = (
 				9C4959612DDE2BFB00BD170D /* OnboardingActionButton.swift in Sources */,
 				9C6EAEDE2DD3B10F00C2A6D2 /* OpenAIResponse.swift in Sources */,
-				9C6EAEE02DD3B10F00C2A6D2 /* Shaders.metal in Sources */,
 				9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */,
 				9CF0B5F42DE4BCB0002002B4 /* OMDBService.swift in Sources */,
-				9C6EAEE22DD3B10F00C2A6D2 /* TextTransition.swift in Sources */,
 				9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */,
 				9C73ED672E01FCBA00AD4811 /* ProfileMenuView.swift in Sources */,
 				9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */,
@@ -694,14 +677,12 @@
 				9C6EAEE52DD3B10F00C2A6D2 /* OpenAIService.swift in Sources */,
 				9C6EAEE62DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift in Sources */,
 				9C6EAEE72DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift in Sources */,
-				9C6EAEE92DD3B10F00C2A6D2 /* Ripple.metal in Sources */,
 				9C73ED372E01ED4A00AD4811 /* GetDailyRecommendationsUseCase.swift in Sources */,
 				9C467E072DF2D3A1002A78F6 /* MovieDetailSource.swift in Sources */,
 				9C6EAEEA2DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift in Sources */,
 				9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */,
 				9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */,
 				9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */,
-				9C6EAEED2DD3B10F00C2A6D2 /* example-swiftui-shaders.metal in Sources */,
 				9C6EAEEE2DD3B10F00C2A6D2 /* ToastView.swift in Sources */,
 				9C6EAEF02DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift in Sources */,
 				9C6EAEF12DD3B10F00C2A6D2 /* MovieGenreCapsule.swift in Sources */,
@@ -718,7 +699,6 @@
 				9C4959532DDE21F700BD170D /* UserPreferencesService.swift in Sources */,
 				9C467DFF2DF1FEEB002A78F6 /* UserMovieData.swift in Sources */,
 				9C6EAEF22DD3B10F00C2A6D2 /* ContentView.swift in Sources */,
-				9C6EAEF32DD3B10F00C2A6D2 /* Ripple.swift in Sources */,
 				9CE050872DE5F60A00A0EB8B /* Config.swift in Sources */,
 				9C6EAEF52DD3B10F00C2A6D2 /* Movie.swift in Sources */,
 				9C6EAEF62DD3B10F00C2A6D2 /* MovieGenreSelectionView.swift in Sources */,
