@@ -1,11 +1,16 @@
 import FirebaseAuth
 import SwiftUI
 
+// MARK: - App State with Loading
+
 enum AppState {
     case onboarding
     case authentication
     case authenticated
+    case loading // New state for recommendation generation
 }
+
+// Removed duplicate enum - moved above with loading state
 
 @MainActor
 class AppStateManager: ObservableObject {
@@ -15,7 +20,14 @@ class AppStateManager: ObservableObject {
 
     private var authStateHandler: AuthStateDidChangeListenerHandle?
 
-    init() {
+    // MARK: - Recommendation Management
+
+    private let recommendationService: RecommendationServiceProtocol
+    @Published var dailyRecommendations: [Movie] = []
+    @Published var isGeneratingRecommendations: Bool = false
+
+    init(recommendationService: RecommendationServiceProtocol = RecommendationService()) {
+        self.recommendationService = recommendationService
         setupAuthStateListener()
         determineInitialState()
     }
@@ -49,6 +61,10 @@ class AppStateManager: ObservableObject {
             // User is authenticated
             if hasSeenOnboarding {
                 currentState = .authenticated
+                // Initialize daily recommendations when authenticated
+                Task {
+                    await initializeDailyRecommendations()
+                }
             } else {
                 // This shouldn't happen in normal flow, but handle it gracefully
                 currentState = .onboarding
@@ -103,5 +119,77 @@ class AppStateManager: ObservableObject {
         for key in keysToRemove {
             userDefaults.removeObject(forKey: key)
         }
+
+        // Clear recommendations
+        dailyRecommendations = []
+    }
+
+    // MARK: - Daily Recommendations Management
+
+    /// Initialize app after authentication - check and generate recommendations if needed
+    func initializeApp() async {
+        guard let user = Auth.auth().currentUser else {
+            print("⚠️ No authenticated user for app initialization")
+            return
+        }
+
+        await initializeDailyRecommendations()
+    }
+
+    /// Check and load/generate daily recommendations
+    private func initializeDailyRecommendations() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("⚠️ No user ID available for recommendations")
+            return
+        }
+
+        do {
+            // First, try to get cached recommendations
+            if let cachedRecommendations = try await recommendationService.getCachedRecommendations(for: userId) {
+                dailyRecommendations = cachedRecommendations
+                print("✅ Loaded \(cachedRecommendations.count) cached recommendations")
+                return
+            }
+
+            // Check if we need to generate new recommendations
+            let shouldGenerate = try await recommendationService.shouldGenerateNewRecommendations(for: userId)
+
+            if shouldGenerate {
+                await generateDailyRecommendations()
+            }
+
+        } catch {
+            print("❌ Error initializing recommendations: \(error)")
+        }
+    }
+
+    /// Generate new daily recommendations with loading state
+    func generateDailyRecommendations() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("⚠️ No user ID available for recommendation generation")
+            return
+        }
+
+        isGeneratingRecommendations = true
+        currentState = .loading
+
+        do {
+            let newRecommendations = try await recommendationService.generateDailyRecommendations(for: userId)
+            dailyRecommendations = newRecommendations
+            currentState = .authenticated
+            print("🎉 Generated \(newRecommendations.count) new recommendations")
+
+        } catch {
+            print("❌ Failed to generate recommendations: \(error)")
+            currentState = .authenticated
+            // TODO: Show error to user
+        }
+
+        isGeneratingRecommendations = false
+    }
+
+    /// Manual refresh of recommendations (for user action)
+    func refreshRecommendations() async {
+        await generateDailyRecommendations()
     }
 }

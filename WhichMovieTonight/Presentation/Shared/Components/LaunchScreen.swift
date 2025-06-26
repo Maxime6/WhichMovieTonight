@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct LaunchScreen: View {
+    @EnvironmentObject private var appStateManager: AppStateManager
     @State private var logoScale: CGFloat = 0.5
     @State private var logoOpacity: Double = 0.0
+    @State private var hasInitialized: Bool = false
 
     var body: some View {
         ZStack {
@@ -57,8 +59,25 @@ struct LaunchScreen: View {
                 logoOpacity = 1.0
             }
 
-            // No more gradient rotation animation needed
+            // Initialize app after launch screen animation
+            Task {
+                await initializeAppIfNeeded()
+            }
         }
+    }
+
+    // MARK: - App Initialization
+
+    /// Initialize app (recommendations) if user is authenticated
+    private func initializeAppIfNeeded() async {
+        // Wait for animation to complete
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+        guard !hasInitialized else { return }
+        hasInitialized = true
+
+        // Initialize recommendations if user is authenticated
+        await appStateManager.initializeApp()
     }
 }
 

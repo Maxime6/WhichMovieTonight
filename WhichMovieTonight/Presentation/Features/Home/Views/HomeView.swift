@@ -8,40 +8,31 @@
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject private var viewModel: HomeViewModel
-    @EnvironmentObject var appStateManager: AppStateManager
-    @StateObject private var authViewModel: AuthenticationViewModel
-    @StateObject private var preferencesService = UserPreferencesService()
-    @StateObject private var notificationViewModel = NotificationViewModel()
-
-    @State private var showingNotificationPanel = false
+    @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject private var appStateManager: AppStateManager
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
     @State private var showingRefreshConfirmation = false
     @Namespace private var heroAnimation
 
-    init() {
-        _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
-        let preferencesService = UserPreferencesService()
-        _preferencesService = StateObject(wrappedValue: preferencesService)
-    }
-
     var body: some View {
         ZStack {
-            Color(.systemGray6).edgesIgnoringSafeArea(.all)
+            // Background
+            Color(.systemGray6)
+                .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 24) {
                     // Hero Section
                     heroSection
 
-                    // Selected Movie For Tonight Section
-                    selectedMovieSection
-
                     // Daily Recommendations Section
                     recommendationsSection
 
-                    // Bottom spacing
+                    // Selected Movie For Tonight Section
+                    selectedMovieSection
+
+                    // Bottom spacing for tab bar
                     Rectangle()
                         .fill(Color.clear)
                         .frame(height: 100)
@@ -54,75 +45,23 @@ struct HomeView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    if !viewModel.isGeneratingRecommendations && !viewModel.dailyRecommendations.isEmpty {
+                    if !appStateManager.dailyRecommendations.isEmpty && !appStateManager.isGeneratingRecommendations {
                         floatingRefreshButton
                     }
                 }
                 .padding(.trailing, 20)
                 .padding(.bottom, 100)
             }
-
-            // No longer using loading overlay - AI thinking indicator is integrated in recommendations section
         }
-        .overlay(
-            // Notification Panel - only show when needed
-            Group {
-                if showingNotificationPanel {
-                    NotificationPanel(
-                        isPresented: $showingNotificationPanel,
-                        notifications: notificationViewModel.notifications,
-                        onMarkAsRead: { notificationId in
-                            notificationViewModel.markAsRead(notificationId)
-                        },
-                        onMarkAllAsRead: {
-                            notificationViewModel.markAllAsRead()
-                        },
-                        onDeleteNotification: { notificationId in
-                            notificationViewModel.deleteNotification(notificationId)
-                        }
-                    )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .top).combined(with: .opacity)
-                    ))
-                }
-            }
-        )
-        .onAppear {
-            setupViewModels()
-            // Initial data loading is now handled by ContentView during launch screen
-        }
-        .overlay(
-            Group {
-                // Toast Messages
-                if let message = viewModel.toastMessage, viewModel.showToast {
-                    VStack {
-                        Spacer()
-                        ToastView(
-                            message: message,
-                            icon: "checkmark.seal.fill",
-                            onDismiss: { viewModel.toastMessage = nil },
-                            isShowing: $viewModel.showToast
-                        )
-                        .padding(.bottom, 100)
-                    }
-                }
-
-                // Error Messages
-                if let errorMessage = viewModel.errorMessage {
-                    VStack {
-                        ErrorBannerView(message: errorMessage)
-                            .padding(.horizontal)
-                        Spacer()
-                    }
-                }
-            }
-        )
-        // Profile menu removed - now accessible via Settings tab
-        .confirmationDialog("Today's picks ain't hitting right?", isPresented: $showingRefreshConfirmation, titleVisibility: .visible) {
+        .overlay(toastOverlay)
+        .confirmationDialog(
+            "Today's picks not hitting right?",
+            isPresented: $showingRefreshConfirmation,
+            titleVisibility: .visible
+        ) {
             Button("Get me new ones!", role: .destructive) {
                 Task {
-                    await viewModel.refreshRecommendations()
+                    await appStateManager.refreshRecommendations()
                 }
             }
             Button("Never mind", role: .cancel) {}
@@ -143,19 +82,6 @@ struct HomeView: View {
                         showingMovieDetail = false
                     }
                 )
-            } else {
-                // Fallback view if selectedMovie is nil
-                VStack {
-                    Text("Error loading movie details")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-
-                    Button("Close") {
-                        showingMovieDetail = false
-                    }
-                    .padding()
-                }
-                .presentationDetents([.medium])
             }
         }
     }
@@ -164,31 +90,62 @@ struct HomeView: View {
 
     private var heroSection: some View {
         VStack(spacing: 16) {
-            // Header with Profile
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(viewModel.heroMessage)
+                    Text(viewModel.welcomeMessage)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
 
-                    if let lastRefresh = viewModel.lastRefreshDate {
-                        Text("Last updated: \(formatDate(lastRefresh))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("Don't miss your daily recommendations")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()
+            }
+        }
+    }
 
-                NotificationBadge(
-                    unreadCount: notificationViewModel.unreadCount,
-                    onTap: {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                            showingNotificationPanel.toggle()
+    // MARK: - Recommendations Section
+
+    private var recommendationsSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Daily Picks")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+
+                Spacer()
+            }
+
+            if appStateManager.isGeneratingRecommendations {
+                // Show AI thinking indicator
+                AIThinkingIndicator()
+                    .frame(height: 200)
+            } else if appStateManager.dailyRecommendations.isEmpty {
+                // Empty state
+                emptyRecommendationsState
+            } else {
+                // Recommendations scroll view
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(appStateManager.dailyRecommendations, id: \.id) { movie in
+                            MovieCardView(
+                                movie: movie,
+                                namespace: heroAnimation,
+                                onPosterTap: {
+                                    selectedMovie = movie
+                                    showingMovieDetail = true
+                                }
+                            )
+                            .frame(width: 160, height: 280)
                         }
                     }
-                )
+                    .padding(.horizontal)
+                }
+                .frame(height: 300)
             }
         }
     }
@@ -198,10 +155,11 @@ struct HomeView: View {
     private var selectedMovieSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Tonight's pick")
+                Text("Tonight's Pick")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
+
                 Spacer()
             }
 
@@ -209,7 +167,6 @@ struct HomeView: View {
                 SelectedMovieCard(
                     movie: selectedMovie,
                     onTap: {
-                        // We're already on MainActor since this is a SwiftUI View
                         self.selectedMovie = selectedMovie
                         showingMovieDetail = true
                     },
@@ -219,35 +176,53 @@ struct HomeView: View {
                         }
                     }
                 )
-                .matchedGeometryEffect(
-                    id: "selected-movie-\(selectedMovie.title)",
-                    in: heroAnimation
-                )
             } else {
-                noMovieSelectedView
+                emptySelectedMovieState
             }
         }
     }
 
-    private var noMovieSelectedView: some View {
-        HStack {
-            Image(systemName: "questionmark.circle")
-                .font(.title3)
+    // MARK: - Empty States
+
+    private var emptyRecommendationsState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "popcorn")
+                .font(.system(size: 48))
                 .foregroundColor(.secondary)
 
-            Text("No film selected for tonight")
+            Text("No recommendations yet")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            Text("We're working on finding the perfect movies for you!")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+    }
+
+    private var emptySelectedMovieState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tv")
+                .font(.system(size: 32))
+                .foregroundColor(.secondary)
+
+            Text("No movie selected for tonight")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            Spacer()
+            Text("Choose one from your daily picks above!")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-                .stroke(.secondary.opacity(0.3), lineWidth: 1)
-        )
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
     }
 
     // MARK: - Floating Refresh Button
@@ -257,154 +232,67 @@ struct HomeView: View {
             showingRefreshConfirmation = true
         }) {
             Image(systemName: "arrow.clockwise")
-                .font(.title3)
+                .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .frame(width: 44, height: 44)
-                .background(Color.blue)
+                .frame(width: 56, height: 56)
+                .background(
+                    LinearGradient(
+                        colors: [.blue, .purple],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .clipShape(Circle())
-                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
-        .buttonStyle(PlainButtonStyle())
     }
 
-    // MARK: - Recommendations Section
+    // MARK: - Toast Overlay
 
-    private var recommendationsSection: some View {
-        VStack(spacing: 16) {
-            // Section header
-            HStack {
-                Text("Today's Picks")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-
-                Spacer()
-
-                if !viewModel.dailyRecommendations.isEmpty {
-                    Text("\(viewModel.dailyRecommendations.count) films")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+    private var toastOverlay: some View {
+        Group {
+            // Success Toast
+            if let message = viewModel.toastMessage, viewModel.showToast {
+                VStack {
+                    Spacer()
+                    ToastView(
+                        message: message,
+                        icon: "checkmark.seal.fill",
+                        onDismiss: { viewModel.toastMessage = nil },
+                        isShowing: $viewModel.showToast
+                    )
+                    .padding(.bottom, 100)
                 }
             }
 
-            // Content based on state
-            if viewModel.shouldShowAIThinking {
-                AIThinkingIndicator()
-                    .transition(.scale.combined(with: .opacity))
-            } else if viewModel.shouldShowEmptyState {
-                emptyStateView
-            } else if !viewModel.dailyRecommendations.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(viewModel.dailyRecommendations, id: \.title) { movie in
-                            RecommendationCard(
-                                movie: movie,
-                                onTap: {
-                                    selectedMovie = movie
-                                    showingMovieDetail = true
-                                },
-                                onMarkAsSeen: {
-                                    Task {
-                                        await viewModel.markMovieAsSeen(movie)
-                                    }
-                                }
-                            )
-                            .matchedGeometryEffect(
-                                id: "movie-\(movie.title)",
-                                in: heroAnimation
-                            )
+            // Error Messages
+            if let errorMessage = viewModel.errorMessage {
+                VStack {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Spacer()
+
+                        // Dismiss button
+                        Button("OK") {
+                            viewModel.errorMessage = nil
                         }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
                     }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(radius: 4)
                     .padding(.horizontal)
+
+                    Spacer()
                 }
-                .padding(.horizontal, -16)
-                .transition(.scale.combined(with: .opacity))
             }
         }
-    }
-
-    // MARK: - Loading Overlay (Deprecated - now using AI thinking indicator)
-
-    // This overlay is no longer used in the new UX flow
-
-    // MARK: - Empty State
-
-    private var emptyStateView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "movieclapper")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.secondary)
-
-            VStack(spacing: 8) {
-                Text("No recommendations yet")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-
-                Text("Pull to refresh or check your preferences in settings")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            Button(action: {
-                Task {
-                    await viewModel.refreshRecommendations()
-                }
-            }) {
-                Text("Try Again")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.blue)
-                    .clipShape(Capsule())
-            }
-        }
-        .padding(.vertical, 40)
-    }
-
-    // MARK: - Helper Methods
-
-    private func setupViewModels() {
-        if authViewModel.appStateManager == nil {
-            authViewModel.appStateManager = appStateManager
-        }
-        viewModel.setAuthViewModel(authViewModel)
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
-    }
-}
-
-// MARK: - Supporting Views
-
-struct ErrorBannerView: View {
-    let message: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.orange)
-
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.primary)
-
-            Spacer()
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.orange.opacity(0.1))
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-        )
     }
 }
 

@@ -22,21 +22,49 @@ struct MovieCardView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 posterView(geometry: geometry)
 
-                Text(movie.title)
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+                VStack(spacing: 6) {
+                    Text(movie.title)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+
+                    // Genres
+                    if !movie.genres.isEmpty {
+                        Text(movie.genres.prefix(2).joined(separator: " • "))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    // Rating
+                    if let ratingString = movie.imdbRating,
+                       let rating = Double(ratingString),
+                       rating > 0
+                    {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                                .font(.caption)
+                            Text(String(format: "%.1f", rating))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 4)
             }
         }
     }
 
     @ViewBuilder
     private func posterView(geometry: GeometryProxy) -> some View {
-        let posterHeight = min(geometry.size.height * 0.75, geometry.size.width * 1.5)
+        let posterHeight = geometry.size.height * 0.7 // Plus grand pourcentage pour l'affiche
         let posterWidth = posterHeight * 0.67 // Aspect ratio 2:3
 
         if let url = movie.posterURL {
@@ -53,8 +81,8 @@ struct MovieCardView: View {
                             .resizable()
                             .scaledToFill()
                             .frame(width: posterWidth, height: posterHeight)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: .primary.opacity(0.2), radius: 10)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: .primary.opacity(0.15), radius: 8, x: 0, y: 4)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .if(namespace != nil) { view in

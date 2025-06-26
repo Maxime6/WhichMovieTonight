@@ -14,13 +14,9 @@ class Appdelegate: UIResponder, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
 
-        // Configure Dependency Injection
-        DependencyManager.registerAllDependencies()
-
-        // Set up notification handling
         UNUserNotificationCenter.current().delegate = self
 
-        print("✅ App initialized with Firebase and DI container")
+        print("✅ App initialized with Firebase")
 
         return true
     }
@@ -29,7 +25,6 @@ class Appdelegate: UIResponder, UIApplicationDelegate {
 // MARK: - Notification Delegate
 
 extension Appdelegate: UNUserNotificationCenterDelegate {
-    // Called when app is in foreground and notification is received
     func userNotificationCenter(
         _: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -37,21 +32,17 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
     ) {
         print("📱 Notification reçue en foreground: \(notification.request.identifier)")
 
-        // Handle background recommendation generation
         if notification.request.identifier == "generate-recommendations" {
             print("🔄 Déclenchement de la génération de recommandations")
             Task { @MainActor in
                 await handleBackgroundRecommendationGeneration()
             }
-            // Don't show this notification to user
             completionHandler([])
         } else {
-            // Show other notifications normally with modern iOS 14+ options
             completionHandler([.banner, .list, .sound, .badge])
         }
     }
 
-    // Called when user taps on notification
     func userNotificationCenter(
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
@@ -59,9 +50,7 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
     ) {
         print("👤 Utilisateur a interagi avec la notification: \(response.notification.request.identifier)")
 
-        // Let the DailyNotificationService handle the response
-        let notificationService = DIContainer.shared.resolve(DailyNotificationServiceProtocol.self)
-        notificationService.handleNotificationResponse(response)
+        // TODO: Handle notification response with simplified notification system
 
         completionHandler()
     }
@@ -70,8 +59,7 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
     private func handleBackgroundRecommendationGeneration() async {
         print("🎬 Démarrage de la génération de recommandations en arrière-plan")
 
-        // Post notification to trigger recommendation generation
-        NotificationCenter.default.post(name: .shouldGenerateRecommendations, object: nil)
+        // Removed notification system in V1 simplification
     }
 }
 

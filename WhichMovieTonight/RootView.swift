@@ -10,6 +10,10 @@ struct RootView: View {
                 OnboardingView(appStateManager: appStateManager)
             case .authentication:
                 AuthenticationView(appStateManager: appStateManager)
+            case .loading:
+                // Show AI thinking indicator while generating recommendations
+                AIThinkingIndicator()
+                    .environmentObject(appStateManager)
             case .authenticated:
                 ContentView()
                     .environmentObject(appStateManager)

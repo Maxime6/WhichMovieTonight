@@ -53,7 +53,7 @@ struct ContentView: View {
 
     private func loadInitialData() async {
         // Load essential data during launch screen
-        await homeViewModel.loadInitialData()
+        homeViewModel.loadUserData()
 
         // Wait minimum time for good UX (but keep it short)
         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds minimum
