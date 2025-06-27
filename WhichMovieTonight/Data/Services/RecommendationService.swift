@@ -2,81 +2,80 @@
 //  RecommendationService.swift
 //  WhichMovieTonight
 //
-//  Created by AI Assistant on [Current Date]
+//  Created by Maxime Tanter on 28/03/2025.
 //
 
 import FirebaseAuth
 import Foundation
 
-// MARK: - Simple Recommendation Service Protocol
+// MARK: - Recommendation Service Protocol
 
 protocol RecommendationServiceProtocol {
     func loadCurrentRecommendations(for userId: String) async throws -> [Movie]
     func generateNewRecommendations(for userId: String) async throws -> [Movie]
 }
 
-// MARK: - Simple Recommendation Service Implementation
+// MARK: - Recommendation Service Implementation
 
 final class RecommendationService: RecommendationServiceProtocol {
     // MARK: - Dependencies
 
     private let openAIService: OpenAIService
     private let omdbService: OMDBService
-    private let firestoreService: FirestoreService
-    private let userPreferencesService: UserPreferencesService
+    private let userMovieService: UserMovieServiceProtocol
+    private let userProfileService: UserProfileService
 
     // MARK: - Initialization
 
     init(
         openAIService: OpenAIService = OpenAIService(),
         omdbService: OMDBService = OMDBService(),
-        firestoreService: FirestoreService = FirestoreService(),
-        userPreferencesService: UserPreferencesService = UserPreferencesService()
+        userMovieService: UserMovieServiceProtocol = UserMovieService(),
+        userProfileService: UserProfileService
     ) {
         self.openAIService = openAIService
         self.omdbService = omdbService
-        self.firestoreService = firestoreService
-        self.userPreferencesService = userPreferencesService
+        self.userMovieService = userMovieService
+        self.userProfileService = userProfileService
     }
 
     // MARK: - Public Methods
 
-    /// Load current recommendations from UserMovieData
+    /// Load current recommendations from UserMovieService
     func loadCurrentRecommendations(for userId: String) async throws -> [Movie] {
         print("📱 Loading current recommendations for user: \(userId)")
 
-        if let userData = try await firestoreService.getUserMovieData(for: userId) {
-            let movies = userData.currentPicks.map { $0.toMovie() }
-            print("📱 Loaded \(movies.count) current recommendations from cache")
-            return movies
-        } else {
-            print("📱 No cached recommendations found")
-            return []
-        }
+        let currentPicks = try await userMovieService.getCurrentPicks(userId: userId)
+        let movies = currentPicks.map { $0.movie }
+
+        print("📱 Loaded \(movies.count) current recommendations")
+        return movies
     }
 
-    /// Generate new recommendations (same for both initial and refresh)
+    /// Generate new recommendations with retry logic
     func generateNewRecommendations(for userId: String) async throws -> [Movie] {
         print("🎬 Generating new recommendations for user: \(userId)")
 
-        // 1. Get user preferences
-        let userPreferences = userPreferencesService.getUserPreferences()
+        // 1. Load user preferences from Firebase
+        await userProfileService.loadUserPreferences(userId: userId)
+        let userPreferences = await MainActor.run { userProfileService.getUserPreferences() }
         guard userPreferences.isValid else {
             throw RecommendationError.missingUserPreferences
         }
 
-        // 2. Get user interactions for AI context
-        let userInteractions = try await firestoreService.getUserMovieInteractions(for: userId)
+        // 2. Get user interactions for AI context (converted from UserMovies)
+        let userInteractions = try await getUserInteractionsForAI(userId: userId)
 
-        // 3. Get exclusion list from generation history
+        // 3. Get exclusion list from history and disliked movies
         let exclusionList = try await getExclusionList(for: userId)
 
-        // 4. Generate 5 movies using main AI prompt
+        // 4. Generate 5 movies with retry logic
         var generatedMovies: [Movie] = []
         var attempts = 0
-        let maxAttempts = 10
+        let maxRetries = 3
+        var lastError: Error?
 
-        while generatedMovies.count < 5 && attempts < maxAttempts {
+        while generatedMovies.count < 5 && attempts < maxRetries {
             attempts += 1
 
             do {
@@ -98,15 +97,28 @@ final class RecommendationService: RecommendationServiceProtocol {
                 }
 
             } catch {
+                lastError = error
                 print("⚠️ Failed to generate movie (attempt \(attempts)): \(error)")
+
+                if attempts == 2 {
+                    // Show progress message after 2nd attempt
+                    print("🔄 Generation taking longer than expected...")
+                }
+
+                // Wait before retry
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
             }
         }
 
         guard !generatedMovies.isEmpty else {
-            throw RecommendationError.noMoviesGenerated
+            if let lastError = lastError {
+                throw RecommendationError.generationFailedAfterRetries(lastError)
+            } else {
+                throw RecommendationError.noMoviesGenerated
+            }
         }
 
-        // 5. Save to UserMovieData with history
+        // 5. Save new generation using UserMovieService
         try await saveNewGeneration(generatedMovies, for: userId)
 
         print("🎉 Successfully generated \(generatedMovies.count) new recommendations")
@@ -115,33 +127,62 @@ final class RecommendationService: RecommendationServiceProtocol {
 
     // MARK: - Private Methods
 
-    /// Get exclusion list from generation history
-    private func getExclusionList(for userId: String) async throws -> [MovieFirestore] {
-        if let userData = try await firestoreService.getUserMovieData(for: userId) {
-            print("📝 Excluding \(userData.generationHistory.count) movies from generation history")
-            return userData.generationHistory
-        } else {
-            print("📝 No generation history found")
-            return []
+    /// Get user interactions converted to legacy format for OpenAI service
+    private func getUserInteractionsForAI(userId: String) async throws -> UserMovieInteractions? {
+        let userMovies = try await userMovieService.getUserMovies(userId: userId, filter: nil)
+
+        // Convert UserMovies to legacy UserMovieInteractions format
+        var interactions: [String: UserMovieInteraction] = [:]
+
+        for userMovie in userMovies {
+            if userMovie.isLiked || userMovie.isDisliked || userMovie.isFavorite {
+                let interaction = UserMovieInteraction(
+                    movieId: userMovie.movieId,
+                    movieTitle: userMovie.movie.title,
+                    posterURL: userMovie.movie.posterURL?.absoluteString,
+                    likeStatus: userMovie.isLiked ? .liked : userMovie.isDisliked ? .disliked : .none,
+                    isFavorite: userMovie.isFavorite
+                )
+                interactions[userMovie.movieId] = interaction
+            }
         }
+
+        if interactions.isEmpty {
+            return nil
+        }
+
+        var userInteractions = UserMovieInteractions(userId: userId)
+        userInteractions.interactions = interactions
+
+        print("📊 Converted \(interactions.count) UserMovies to AI context")
+        return userInteractions
     }
 
-    /// Save new generation and update history
-    private func saveNewGeneration(_ movies: [Movie], for userId: String) async throws {
-        let movieFirestore = movies.map { MovieFirestore(from: $0) }
+    /// Get exclusion list from history and disliked movies
+    private func getExclusionList(for userId: String) async throws -> [MovieFirestore] {
+        let userMovies = try await userMovieService.getUserMovies(userId: userId, filter: nil)
 
-        if let existingUserData = try await firestoreService.getUserMovieData(for: userId) {
-            // Update existing data with new generation
-            let updatedData = existingUserData.withNewGeneration(movieFirestore)
-            try await firestoreService.updateUserMovieData(updatedData, for: userId)
-        } else {
-            // Create new UserMovieData
-            let newUserData = UserMovieData(userId: userId, currentPicks: movieFirestore)
-                .withNewGeneration(movieFirestore)
-            try await firestoreService.saveUserMovieData(newUserData, for: userId)
+        // Exclude movies from history and disliked movies
+        let excludedMovies = userMovies.filter {
+            $0.isInHistory || $0.isCurrentPick || $0.isDisliked
         }
 
-        print("💾 Saved new generation to UserMovieData")
+        // Convert to legacy MovieFirestore format for OpenAI service
+        let exclusionList = excludedMovies.map { MovieFirestore(from: $0.movie) }
+
+        print("📝 Excluding \(exclusionList.count) movies from generation (history + disliked)")
+        return exclusionList
+    }
+
+    /// Save new generation using UserMovieService
+    private func saveNewGeneration(_ movies: [Movie], for userId: String) async throws {
+        // First cleanup old history to maintain 50 movie limit
+        try await userMovieService.cleanupOldHistory(userId: userId, keepCount: 50)
+
+        // Set new current picks (this will automatically clear old picks and mark as history)
+        try await userMovieService.setCurrentPicks(userId: userId, movies: movies)
+
+        print("💾 Saved \(movies.count) new current picks and updated history")
     }
 
     /// Enrich OpenAI movie suggestion with OMDB data
@@ -181,6 +222,7 @@ final class RecommendationService: RecommendationServiceProtocol {
 enum RecommendationError: LocalizedError {
     case missingUserPreferences
     case noMoviesGenerated
+    case generationFailedAfterRetries(Error)
 
     var errorDescription: String? {
         switch self {
@@ -188,6 +230,8 @@ enum RecommendationError: LocalizedError {
             return "User preferences not found. Please complete onboarding."
         case .noMoviesGenerated:
             return "Unable to generate movie recommendations. Please try again."
+        case let .generationFailedAfterRetries(underlyingError):
+            return "Failed to generate recommendations after multiple attempts: \(underlyingError.localizedDescription)"
         }
     }
 }

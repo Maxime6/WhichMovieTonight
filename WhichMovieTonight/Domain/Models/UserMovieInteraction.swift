@@ -87,6 +87,6 @@ struct UserMovieInteractions: Codable {
 
 extension Movie {
     var uniqueId: String {
-        return imdbID ?? title.replacingOccurrences(of: " ", with: "").lowercased()
+        return id // In the new unified Movie structure, id is the primary key (imdbID)
     }
 }

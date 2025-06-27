@@ -5,12 +5,13 @@
 //  Created by Maxime Tanter on 21/05/2025.
 //
 
+import FirebaseAuth
 import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var viewModel = OnboardingViewModel()
-    @StateObject private var preferencesService = UserPreferencesService()
+    @StateObject private var userProfileService = UserProfileService()
     @State private var showAuthentication = false
 
     var body: some View {
@@ -21,15 +22,15 @@ struct OnboardingView: View {
                         let slide = OnboardingSlide.slides[index]
                         if slide.isGenreSelection {
                             GenreSelectionView()
-                                .environmentObject(preferencesService)
+                                .environmentObject(userProfileService)
                                 .tag(index)
                         } else if slide.isActorSelection {
                             ActorSelectionView()
-                                .environmentObject(preferencesService)
+                                .environmentObject(userProfileService)
                                 .tag(index)
                         } else if slide.isStreamingPlatformSelection {
                             StreamingPlatformSelectionView()
-                                .environmentObject(preferencesService)
+                                .environmentObject(userProfileService)
                                 .tag(index)
                         } else {
                             OnboardingSlideView(slide: slide)
@@ -45,7 +46,9 @@ struct OnboardingView: View {
                         isDisabled: shouldDisableNextButton,
                         action: {
                             if viewModel.currentPage == OnboardingSlide.slides.count - 1 {
-                                appStateManager.completeOnboarding()
+                                Task {
+                                    await completeOnboarding()
+                                }
                             } else {
                                 viewModel.nextPage()
                             }
@@ -61,11 +64,32 @@ struct OnboardingView: View {
     private var shouldDisableNextButton: Bool {
         let currentSlide = OnboardingSlide.slides[viewModel.currentPage]
         if currentSlide.isGenreSelection {
-            return preferencesService.favoriteGenres.count < 3
+            return userProfileService.favoriteGenres.count < 3
         } else if currentSlide.isStreamingPlatformSelection {
-            return preferencesService.favoriteStreamingPlatforms.isEmpty
+            return userProfileService.favoriteStreamingPlatforms.isEmpty
         }
         return false
+    }
+
+    /// Complete onboarding by saving preferences to Firebase
+    private func completeOnboarding() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("⚠️ No authenticated user found during onboarding completion")
+            return
+        }
+
+        do {
+            // Save user preferences to Firebase
+            try await userProfileService.saveUserPreferences(userId: userId)
+            print("✅ Onboarding completed - preferences saved to Firebase")
+
+            // Update app state
+            appStateManager.completeOnboarding()
+        } catch {
+            print("⚠️ Failed to save preferences during onboarding: \(error)")
+            // Still complete onboarding - preferences are cached locally
+            appStateManager.completeOnboarding()
+        }
     }
 }
 

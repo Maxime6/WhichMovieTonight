@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject private var viewModel: HomeViewModel
     @EnvironmentObject private var appStateManager: AppStateManager
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
@@ -61,7 +61,6 @@ struct HomeView: View {
             }
         }
         .overlay(toastOverlay)
-        .overlay(fullScreenAIThinkingIndicator)
         .confirmationDialog("Refresh Recommendations", isPresented: $showingRefreshConfirmation) {
             Button("Generate New Movies") {
                 Task {
@@ -138,7 +137,22 @@ struct HomeView: View {
                 Spacer()
             }
 
-            if viewModel.currentRecommendations.isEmpty {
+            if viewModel.isGeneratingRecommendations {
+                // Generation progress view
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+
+                    Text("Generating your daily picks...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .background(.ultraThinMaterial)
+                .cornerRadius(16)
+            } else if viewModel.currentRecommendations.isEmpty {
                 // Empty state
                 emptyRecommendationsState
             } else {
@@ -309,21 +323,17 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Full Screen AI Thinking Indicator
-
-    private var fullScreenAIThinkingIndicator: some View {
-        ZStack {
-            if viewModel.isGeneratingRecommendations {
-                Color.black.opacity(0.5)
-                    .ignoresSafeArea(.all)
-
-                AIThinkingIndicator()
-            }
-        }
-    }
+    // Note: AIThinkingIndicator replaced with inline ProgressView in recommendationsSection
 }
 
 #Preview {
-    HomeView()
+    let userProfileService = UserProfileService()
+    let homeViewModel = HomeViewModel(
+        userMovieService: UserMovieService(),
+        userProfileService: userProfileService
+    )
+
+    return HomeView()
         .environmentObject(AppStateManager())
+        .environmentObject(homeViewModel)
 }

@@ -1,7 +1,8 @@
+import FirebaseAuth
 import SwiftUI
 
 struct ActorSelectionView: View {
-    @EnvironmentObject private var preferencesService: UserPreferencesService
+    @EnvironmentObject private var userProfileService: UserProfileService
     @Environment(\.dismiss) private var dismiss
 
     @State private var actorInput: String = ""
@@ -40,9 +41,12 @@ struct ActorSelectionView: View {
 
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 16)], spacing: 16) {
-                        ForEach(preferencesService.favoriteActors, id: \.self) { actor in
+                        ForEach(userProfileService.favoriteActors, id: \.self) { actor in
                             ActorChip(actor: actor) {
-                                preferencesService.removeActor(actor)
+                                Task {
+                                    guard let userId = Auth.auth().currentUser?.uid else { return }
+                                    await userProfileService.removeActor(actor, userId: userId)
+                                }
                             }
                         }
                     }
@@ -61,11 +65,14 @@ struct ActorSelectionView: View {
         let trimmedActor = actorInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedActor.isEmpty else { return }
 
-        if preferencesService.favoriteActors.contains(trimmedActor) {
+        if userProfileService.favoriteActors.contains(trimmedActor) {
             alertMessage = "Cet acteur est déjà dans vos favoris"
             showingAlert = true
         } else {
-            preferencesService.addActor(trimmedActor)
+            Task {
+                guard let userId = Auth.auth().currentUser?.uid else { return }
+                await userProfileService.addActor(trimmedActor, userId: userId)
+            }
             actorInput = ""
         }
     }
@@ -73,5 +80,5 @@ struct ActorSelectionView: View {
 
 #Preview {
     ActorSelectionView()
-        .environmentObject(UserPreferencesService())
+        .environmentObject(UserProfileService())
 }

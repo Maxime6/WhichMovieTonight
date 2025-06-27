@@ -2,174 +2,280 @@
 //  MovieInteractionButtons.swift
 //  WhichMovieTonight
 //
-//  Created by Maxime Tanter on 25/04/2025.
+//  Created by Maxime Tanter on 28/03/2025.
 //
 
+import FirebaseAuth
 import SwiftUI
 
 struct MovieInteractionButtons: View {
     let movie: Movie
+    let onInteractionUpdate: (() -> Void)?
 
-    // MARK: - Native SwiftUI State
-
-    @State private var likeStatus: MovieLikeStatus = .none
-    @State private var isFavorite: Bool = false
-    @State private var isLoading: Bool = false
+    @State private var isLiked = false
+    @State private var isDisliked = false
+    @State private var isFavorite = false
+    @State private var isSeen = false
+    @State private var isLoading = false
     @State private var errorMessage: String?
 
-    // MARK: - Services
+    private let userMovieService: UserMovieServiceProtocol
 
-    private let movieInteractionService = MovieInteractionService()
-
-    // MARK: - Initializer
-
-    init(movie: Movie) {
+    init(
+        movie: Movie,
+        onInteractionUpdate: (() -> Void)? = nil,
+        userMovieService: UserMovieServiceProtocol = UserMovieService()
+    ) {
         self.movie = movie
-    }
-
-    // MARK: - Computed Properties
-
-    private var likeIcon: String {
-        switch likeStatus {
-        case .liked: return "hand.thumbsup.fill"
-        case .disliked: return "hand.thumbsup"
-        case .none: return "hand.thumbsup"
-        }
-    }
-
-    private var dislikeIcon: String {
-        switch likeStatus {
-        case .liked: return "hand.thumbsdown"
-        case .disliked: return "hand.thumbsdown.fill"
-        case .none: return "hand.thumbsdown"
-        }
-    }
-
-    private var favoriteIcon: String {
-        isFavorite ? "heart.fill" : "heart"
+        self.onInteractionUpdate = onInteractionUpdate
+        self.userMovieService = userMovieService
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            // Like button
-            Button {
-                Task {
-                    await toggleLike()
+        VStack(spacing: 16) {
+            // Main Interaction Buttons
+            HStack(spacing: 24) {
+                // Like Button
+                InteractionButton(
+                    icon: isLiked ? "hand.thumbsup.fill" : "hand.thumbsup",
+                    label: "Like",
+                    color: isLiked ? .green : .primary,
+                    isLoading: isLoading
+                ) {
+                    Task {
+                        await toggleLike()
+                    }
                 }
-            } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: likeIcon)
-                        .font(.title3)
-                        .foregroundColor(likeStatus == .liked ? .blue : .gray)
 
-                    Text("J'aime")
-                        .font(.caption2)
-                        .foregroundColor(likeStatus == .liked ? .blue : .gray)
+                // Dislike Button
+                InteractionButton(
+                    icon: isDisliked ? "hand.thumbsdown.fill" : "hand.thumbsdown",
+                    label: "Dislike",
+                    color: isDisliked ? .red : .primary,
+                    isLoading: isLoading
+                ) {
+                    Task {
+                        await toggleDislike()
+                    }
+                }
+
+                // Favorite Button
+                InteractionButton(
+                    icon: isFavorite ? "heart.fill" : "heart",
+                    label: "Favorite",
+                    color: isFavorite ? .pink : .primary,
+                    isLoading: isLoading
+                ) {
+                    Task {
+                        await toggleFavorite()
+                    }
+                }
+
+                // Seen Button
+                InteractionButton(
+                    icon: isSeen ? "checkmark.circle.fill" : "checkmark.circle",
+                    label: "Seen",
+                    color: isSeen ? .purple : .primary,
+                    isLoading: isLoading
+                ) {
+                    Task {
+                        await markAsSeen()
+                    }
                 }
             }
-            .disabled(isLoading)
 
-            // Dislike button
-            Button {
-                Task {
-                    await toggleDislike()
-                }
-            } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: dislikeIcon)
-                        .font(.title3)
-                        .foregroundColor(likeStatus == .disliked ? .red : .gray)
-
-                    Text("Non")
-                        .font(.caption2)
-                        .foregroundColor(likeStatus == .disliked ? .red : .gray)
-                }
-            }
-            .disabled(isLoading)
-
-            // Favorite button
-            Button {
-                Task {
-                    await toggleFavorite()
-                }
-            } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: favoriteIcon)
-                        .font(.title3)
-                        .foregroundColor(isFavorite ? .red : .gray)
-
-                    Text("Favoris")
-                        .font(.caption2)
-                        .foregroundColor(isFavorite ? .red : .gray)
-                }
-            }
-            .disabled(isLoading)
-        }
-        .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(12)
-        .task {
-            await loadInteraction()
-        }
-        .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
-            Button("OK") {
-                errorMessage = nil
-            }
-        } message: {
+            // Error Message
             if let errorMessage = errorMessage {
                 Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
             }
         }
-        .opacity(isLoading ? 0.6 : 1.0)
+        .task {
+            await loadCurrentInteractionState()
+        }
     }
 
-    // MARK: - Methods
+    // MARK: - Private Methods
 
-    private func loadInteraction() async {
-        isLoading = true
-        defer { isLoading = false }
+    private func loadCurrentInteractionState() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
-            if let interaction = try await movieInteractionService.getMovieInteraction(for: movie) {
-                likeStatus = interaction.likeStatus
-                isFavorite = interaction.isFavorite
+            if let userMovie = try await userMovieService.getUserMovie(userId: userId, movieId: movie.id) {
+                await MainActor.run {
+                    isLiked = userMovie.isLiked
+                    isDisliked = userMovie.isDisliked
+                    isFavorite = userMovie.isFavorite
+                    isSeen = userMovie.isSeen
+                }
             }
         } catch {
-            errorMessage = "Erreur lors du chargement des interactions: \(error.localizedDescription)"
+            print("❌ Error loading interaction state: \(error)")
         }
     }
 
     private func toggleLike() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
         isLoading = true
-        defer { isLoading = false }
+        errorMessage = nil
 
         do {
-            likeStatus = try await movieInteractionService.toggleLike(for: movie)
+            try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.id) { userMovie in
+                if userMovie.isLiked {
+                    userMovie.isLiked = false
+                    userMovie.likedAt = nil
+                } else {
+                    userMovie.markAsLiked()
+                }
+            }
+
+            await MainActor.run {
+                isLiked.toggle()
+                if isLiked {
+                    isDisliked = false // Can't be both liked and disliked
+                }
+            }
+
+            onInteractionUpdate?()
+
         } catch {
-            errorMessage = "Erreur lors de la mise à jour du like: \(error.localizedDescription)"
+            print("❌ Error toggling like: \(error)")
+            await MainActor.run {
+                errorMessage = "Failed to update like status"
+            }
         }
+
+        isLoading = false
     }
 
     private func toggleDislike() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
         isLoading = true
-        defer { isLoading = false }
+        errorMessage = nil
 
         do {
-            likeStatus = try await movieInteractionService.toggleDislike(for: movie)
+            try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.id) { userMovie in
+                if userMovie.isDisliked {
+                    userMovie.isDisliked = false
+                    userMovie.dislikedAt = nil
+                } else {
+                    userMovie.markAsDisliked()
+                }
+            }
+
+            await MainActor.run {
+                isDisliked.toggle()
+                if isDisliked {
+                    isLiked = false // Can't be both liked and disliked
+                }
+            }
+
+            onInteractionUpdate?()
+
         } catch {
-            errorMessage = "Erreur lors de la mise à jour du dislike: \(error.localizedDescription)"
+            print("❌ Error toggling dislike: \(error)")
+            await MainActor.run {
+                errorMessage = "Failed to update dislike status"
+            }
         }
+
+        isLoading = false
     }
 
     private func toggleFavorite() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
         isLoading = true
-        defer { isLoading = false }
+        errorMessage = nil
 
         do {
-            isFavorite = try await movieInteractionService.toggleFavorite(for: movie)
+            try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.id) { userMovie in
+                userMovie.toggleFavorite()
+            }
+
+            await MainActor.run {
+                isFavorite.toggle()
+            }
+
+            onInteractionUpdate?()
+
         } catch {
-            errorMessage = "Erreur lors de la mise à jour des favoris: \(error.localizedDescription)"
+            print("❌ Error toggling favorite: \(error)")
+            await MainActor.run {
+                errorMessage = "Failed to update favorite status"
+            }
         }
+
+        isLoading = false
+    }
+
+    private func markAsSeen() async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.id) { userMovie in
+                userMovie.markAsSeen()
+            }
+
+            await MainActor.run {
+                isSeen = true
+            }
+
+            onInteractionUpdate?()
+
+        } catch {
+            print("❌ Error marking as seen: \(error)")
+            await MainActor.run {
+                errorMessage = "Failed to mark as seen"
+            }
+        }
+
+        isLoading = false
+    }
+}
+
+// MARK: - Interaction Button Component
+
+private struct InteractionButton: View {
+    let icon: String
+    let label: String
+    let color: Color
+    let isLoading: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                        .frame(width: 24, height: 24)
+                } else {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundColor(color)
+                }
+
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        .disabled(isLoading)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

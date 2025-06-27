@@ -11,7 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var authViewModel: AuthenticationViewModel
-    @StateObject private var preferencesService = UserPreferencesService()
+    @StateObject private var userProfileService = UserProfileService()
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
 
@@ -46,7 +46,7 @@ struct SettingsView: View {
                 Section("Preferences") {
                     NavigationLink {
                         StreamingPlatformSettingsView()
-                            .environmentObject(preferencesService)
+                            .environmentObject(userProfileService)
                     } label: {
                         HStack {
                             Image(systemName: "tv.fill")
@@ -54,12 +54,12 @@ struct SettingsView: View {
                                 .frame(width: 20)
                             VStack(alignment: .leading) {
                                 Text("Plateformes de streaming")
-                                if preferencesService.favoriteStreamingPlatforms.isEmpty {
+                                if userProfileService.favoriteStreamingPlatforms.isEmpty {
                                     Text("Aucune plateforme sélectionnée")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 } else {
-                                    Text(preferencesService.favoriteStreamingPlatforms.map { $0.rawValue }.joined(separator: ", "))
+                                    Text(userProfileService.favoriteStreamingPlatforms.map { $0.rawValue }.joined(separator: ", "))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -69,7 +69,7 @@ struct SettingsView: View {
 
                     NavigationLink {
                         GenreSettingsView()
-                            .environmentObject(preferencesService)
+                            .environmentObject(userProfileService)
                     } label: {
                         HStack {
                             Image(systemName: "heart.fill")
@@ -77,12 +77,12 @@ struct SettingsView: View {
                                 .frame(width: 20)
                             VStack(alignment: .leading) {
                                 Text("Genres favoris")
-                                if preferencesService.favoriteGenres.isEmpty {
+                                if userProfileService.favoriteGenres.isEmpty {
                                     Text("Aucun genre sélectionné")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 } else {
-                                    Text(preferencesService.favoriteGenres.map { $0.rawValue }.joined(separator: ", "))
+                                    Text(userProfileService.favoriteGenres.map { $0.rawValue }.joined(separator: ", "))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -92,7 +92,7 @@ struct SettingsView: View {
 
                     NavigationLink {
                         ActorSettingsView()
-                            .environmentObject(preferencesService)
+                            .environmentObject(userProfileService)
                     } label: {
                         HStack {
                             Image(systemName: "person.2.fill")
@@ -100,12 +100,12 @@ struct SettingsView: View {
                                 .frame(width: 20)
                             VStack(alignment: .leading) {
                                 Text("Acteurs favoris")
-                                if preferencesService.favoriteActors.isEmpty {
+                                if userProfileService.favoriteActors.isEmpty {
                                     Text("Aucun acteur ajouté")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 } else {
-                                    Text(preferencesService.favoriteActors.joined(separator: ", "))
+                                    Text(userProfileService.favoriteActors.joined(separator: ", "))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -191,6 +191,12 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .task {
+                // Load user preferences from Firebase when view appears
+                if let userId = Auth.auth().currentUser?.uid {
+                    await userProfileService.loadUserPreferences(userId: userId)
+                }
+            }
         }
         .alert("Delete Account", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {}

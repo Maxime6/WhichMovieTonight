@@ -131,7 +131,7 @@ struct MovieFirestore: Codable, Identifiable {
         actors = movie.actors
         runtime = movie.runtime
         imdbRating = movie.imdbRating
-        imdbID = movie.imdbID
+        imdbID = movie.id // Use movie.id (which is the imdbID in new structure)
         year = movie.year
         rated = movie.rated
         awards = movie.awards
@@ -140,6 +140,7 @@ struct MovieFirestore: Codable, Identifiable {
 
     func toMovie() -> Movie {
         return Movie(
+            id: imdbID ?? id, // Use imdbID if available, fallback to id
             title: title,
             overview: overview,
             posterURL: posterURL != nil ? URL(string: posterURL!) : nil,
@@ -150,7 +151,6 @@ struct MovieFirestore: Codable, Identifiable {
             actors: actors,
             runtime: runtime,
             imdbRating: imdbRating,
-            imdbID: imdbID,
             year: year,
             rated: rated,
             awards: awards

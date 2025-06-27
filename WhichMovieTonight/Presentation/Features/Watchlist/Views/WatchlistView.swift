@@ -2,351 +2,328 @@
 //  WatchlistView.swift
 //  WhichMovieTonight
 //
-//  Created by AI Assistant on 31/12/2024.
+//  Created by Maxime Tanter on 28/03/2025.
 //
 
-import FirebaseAuth
 import SwiftUI
 
 struct WatchlistView: View {
-    @State private var selectedTab = 0
     @StateObject private var viewModel = WatchlistViewModel()
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
-    @State private var showingSelectAlert = false
     @Namespace private var heroAnimation
 
     var body: some View {
         NavigationView {
-            VStack {
-                // Tab selector
-                Picker("Watchlist Options", selection: $selectedTab) {
-                    Text("J'aime").tag(0)
-                    Text("Favoris").tag(1)
-                    Text("Suggestions").tag(2)
-                    Text("Déjà vus").tag(3)
+            VStack(spacing: 0) {
+                // Filter Tags Row
+                if viewModel.hasMovies {
+                    FilterTagsRow(
+                        selectedTag: viewModel.selectedTag,
+                        onTagSelected: { tag in
+                            viewModel.selectTag(tag)
+                        }
+                    )
+                    .padding(.vertical, 8)
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
 
-                // Content based on selected tab
-                TabView(selection: $selectedTab) {
-                    likedMoviesView
-                        .tag(0)
-
-                    favoritesView
-                        .tag(1)
-
-                    suggestionsView
-                        .tag(2)
-
-                    seenMoviesView
-                        .tag(3)
+                // Main Content
+                if viewModel.isLoading {
+                    loadingView
+                } else if !viewModel.hasMovies {
+                    emptyStateView
+                } else if !viewModel.hasFilteredMovies {
+                    emptyFilterView
+                } else {
+                    moviesGridView
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             }
             .navigationTitle("Watchlist")
+            .navigationBarTitleDisplayMode(.large)
             .refreshable {
-                await viewModel.refreshData()
+                await viewModel.refreshMovies()
             }
-            .task {
-                await viewModel.loadUserInteractions()
-            }
-        }
-        .sheet(isPresented: $showingMovieDetail) {
-            if let movie = selectedMovie {
-                MovieDetailSheet(
-                    movie: movie,
-                    namespace: heroAnimation,
-                    isPresented: $showingMovieDetail,
-                    source: .suggestion,
-                    onSelectForTonight: {
-                        selectMovieForTonight(movie)
-                    }
-                )
-            }
-        }
-        .alert("Film sélectionné", isPresented: $showingSelectAlert) {
-            Button("OK") {}
-        } message: {
-            Text("Ce film a été sélectionné pour ce soir !")
-        }
-    }
-
-    private func selectMovieForTonight(_: Movie) {
-        // Cette fonction sera appelée quand l'utilisateur veut sélectionner un film pour ce soir
-        // Pour l'instant, on affiche juste une alerte
-        showingSelectAlert = true
-        showingMovieDetail = false
-    }
-
-    private var likedMoviesView: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack {
-                    ProgressView()
-                    Text("Chargement des films aimés...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+                Button("OK") {
+                    viewModel.errorMessage = nil
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.likedMovies.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "hand.thumbsup.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-
-                    Text("Films Aimés")
-                        .font(.title2.bold())
-
-                    Text("Les films que vous aimez apparaîtront ici")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
+            } message: {
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
                 }
-                .padding()
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.likedMovies) { interaction in
-                            FavoriteMovieCard(interaction: interaction)
+            }
+            .sheet(isPresented: $showingMovieDetail) {
+                if let movie = selectedMovie {
+                    MovieDetailSheet(
+                        movie: movie,
+                        namespace: heroAnimation,
+                        isPresented: $showingMovieDetail,
+                        source: .currentMovie,
+                        onSelectForTonight: {
+                            // Find UserMovie for this movie
+                            if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == movie.id }) {
+                                Task {
+                                    await viewModel.selectForTonight(userMovie)
+                                }
+                            }
+                            showingMovieDetail = false
                         }
-                    }
-                    .padding()
+                    )
                 }
             }
         }
     }
 
-    private var favoritesView: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack {
-                    ProgressView()
-                    Text("Chargement des favoris...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.favoriteMovies.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.red)
+    // MARK: - Loading View
 
-                    Text("Films Favoris")
-                        .font(.title2.bold())
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.2)
 
-                    Text("Les films que vous marquez comme favoris apparaîtront ici")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
-                }
-                .padding()
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.favoriteMovies) { interaction in
-                            FavoriteMovieCard(interaction: interaction)
-                        }
-                    }
-                    .padding()
-                }
-            }
+            Text("Loading your movies...")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
-        .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)) {
-            Button("OK") {
-                viewModel.errorMessage = nil
-            }
-        } message: {
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-            }
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var suggestionsView: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack {
-                    ProgressView()
-                    Text("Chargement des suggestions...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+    // MARK: - Empty State View
+
+    private var emptyStateView: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "film.stack")
+                .font(.system(size: 64))
+                .foregroundColor(.secondary)
+
+            VStack(spacing: 8) {
+                Text("No Movies Yet")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+
+                Text("Your movie collection will appear here as you interact with recommendations")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+
+            // Suggestion to go to Home
+            NavigationLink(destination: EmptyView()) {
+                HStack {
+                    Image(systemName: "star.fill")
+                    Text("Get Recommendations")
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.lastSuggestions.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "lightbulb.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.yellow)
-
-                    Text("Dernières Suggestions")
-                        .font(.title2.bold())
-
-                    Text("Les dernières suggestions de l'IA apparaîtront ici une fois que vous aurez fait des recherches")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
-                }
+                .font(.headline)
+                .foregroundColor(.white)
                 .padding()
-            } else {
-                ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible()),
-                        GridItem(.flexible()),
-                    ], spacing: 16) {
-                        ForEach(viewModel.lastSuggestions) { movie in
-                            SuggestionCard(movie: movie) {
-                                selectedMovie = movie
-                                showingMovieDetail = true
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: - Empty Filter View
+
+    private var emptyFilterView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 48))
+                .foregroundColor(.secondary)
+
+            Text("No \(viewModel.selectedTag.displayName) Movies")
+                .font(.headline)
+
+            Text("Try selecting a different filter or interact with more movies")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Movies Grid View
+
+    private var moviesGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: [
+                GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 16),
+            ], spacing: 16) {
+                ForEach(viewModel.getMoviesSortedByInteraction()) { userMovie in
+                    WatchlistMovieCard(
+                        userMovie: userMovie,
+                        namespace: heroAnimation,
+                        onTap: {
+                            selectedMovie = userMovie.movie
+                            showingMovieDetail = true
+                        },
+                        onLikeToggle: {
+                            Task {
+                                await viewModel.toggleLike(userMovie)
+                            }
+                        },
+                        onDislikeToggle: {
+                            Task {
+                                await viewModel.toggleDislike(userMovie)
+                            }
+                        },
+                        onFavoriteToggle: {
+                            Task {
+                                await viewModel.toggleFavorite(userMovie)
+                            }
+                        },
+                        onMarkSeen: {
+                            Task {
+                                await viewModel.markAsSeen(userMovie)
                             }
                         }
-                    }
-                    .padding()
+                    )
                 }
             }
+            .padding()
         }
     }
+}
 
-    private var seenMoviesView: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack {
-                    ProgressView()
-                    Text("Chargement des films vus...")
+// MARK: - Watchlist Movie Card
+
+struct WatchlistMovieCard: View {
+    let userMovie: UserMovie
+    let namespace: Namespace.ID
+    let onTap: () -> Void
+    let onLikeToggle: () -> Void
+    let onDislikeToggle: () -> Void
+    let onFavoriteToggle: () -> Void
+    let onMarkSeen: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Movie Poster
+            AsyncImage(url: userMovie.movie.posterURL) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        Image(systemName: "film")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+            }
+            .frame(height: 240)
+            .cornerRadius(12, corners: [.topLeft, .topRight])
+            .clipped()
+            .matchedGeometryEffect(id: userMovie.movie.id, in: namespace)
+            .onTapGesture {
+                onTap()
+            }
+
+            // Movie Info & Actions
+            VStack(spacing: 8) {
+                // Title & Year
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(userMovie.movie.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+
+                    Text(userMovie.movie.formattedReleaseYear)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.seenMovies.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "eye.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
 
-                    Text("Films Déjà Vus")
-                        .font(.title2.bold())
-
-                    Text("Les films que vous marquez comme déjà vus apparaîtront ici")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
+                // Primary Tag Badge
+                if userMovie.primaryTag != .all {
+                    HStack {
+                        Image(systemName: userMovie.primaryTag.icon)
+                            .font(.caption2)
+                        Text(userMovie.primaryTag.displayName)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(userMovie.primaryTag.color.opacity(0.2))
+                    )
+                    .foregroundColor(userMovie.primaryTag.color)
                 }
-                .padding()
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.seenMovies) { seenMovie in
-                            SeenMovieCard(seenMovie: seenMovie)
+
+                // Action Buttons
+                HStack(spacing: 12) {
+                    // Like/Dislike
+                    HStack(spacing: 8) {
+                        Button(action: onLikeToggle) {
+                            Image(systemName: userMovie.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
+                                .font(.caption)
+                                .foregroundColor(userMovie.isLiked ? .green : .secondary)
+                        }
+
+                        Button(action: onDislikeToggle) {
+                            Image(systemName: userMovie.isDisliked ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                                .font(.caption)
+                                .foregroundColor(userMovie.isDisliked ? .red : .secondary)
                         }
                     }
-                    .padding()
+
+                    Spacer()
+
+                    // Favorite
+                    Button(action: onFavoriteToggle) {
+                        Image(systemName: userMovie.isFavorite ? "heart.fill" : "heart")
+                            .font(.caption)
+                            .foregroundColor(userMovie.isFavorite ? .pink : .secondary)
+                    }
+
+                    // Seen
+                    Button(action: onMarkSeen) {
+                        Image(systemName: userMovie.isSeen ? "checkmark.circle.fill" : "checkmark.circle")
+                            .font(.caption)
+                            .foregroundColor(userMovie.isSeen ? .purple : .secondary)
+                    }
                 }
             }
+            .padding(12)
+            .background(.ultraThinMaterial)
+            .cornerRadius(12, corners: [.bottomLeft, .bottomRight])
         }
-    }
-}
-
-struct SeenMovieCard: View {
-    let seenMovie: SeenMovie
-
-    var body: some View {
-        HStack(spacing: 16) {
-            // Placeholder pour l'image du film
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 60, height: 90)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    Image(systemName: "film")
-                        .foregroundColor(.gray)
-                )
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(seenMovie.title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
-
-                Text("Vu le \(formatDate(seenMovie.seenAt))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                Spacer()
-            }
-
-            Spacer()
-
-            Image(systemName: "eye.fill")
-                .foregroundColor(.gray)
-                .font(.caption)
-        }
-        .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemGray6))
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         )
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: date)
     }
 }
 
-struct SuggestionCard: View {
-    let movie: Movie
-    let onTap: () -> Void
+// MARK: - Corner Radius Extension
 
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                // Poster du film
-                AsyncImage(url: movie.posterURL) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(2 / 3, contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .aspectRatio(2 / 3, contentMode: .fill)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.gray)
-                                .font(.title2)
-                        )
-                }
-                .frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
 
-                // Titre du film
-                Text(movie.title)
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 
 #Preview {
     WatchlistView()
+        .environmentObject(AppStateManager())
 }

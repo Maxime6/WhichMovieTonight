@@ -1,7 +1,8 @@
+import FirebaseAuth
 import SwiftUI
 
 struct StreamingPlatformSettingsView: View {
-    @EnvironmentObject private var preferencesService: UserPreferencesService
+    @EnvironmentObject private var userProfileService: UserProfileService
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
@@ -29,9 +30,12 @@ struct StreamingPlatformSettingsView: View {
                     ForEach(StreamingPlatform.allCases) { platform in
                         StreamingPlatformButton(
                             platform: platform,
-                            isSelected: preferencesService.isStreamingPlatformSelected(platform),
+                            isSelected: userProfileService.isStreamingPlatformSelected(platform),
                             action: {
-                                preferencesService.toggleStreamingPlatform(platform)
+                                Task {
+                                    guard let userId = Auth.auth().currentUser?.uid else { return }
+                                    await userProfileService.toggleStreamingPlatform(platform, userId: userId)
+                                }
                             }
                         )
                     }
@@ -57,6 +61,6 @@ struct StreamingPlatformSettingsView: View {
 #Preview {
     NavigationStack {
         StreamingPlatformSettingsView()
-            .environmentObject(UserPreferencesService())
+            .environmentObject(UserProfileService())
     }
 }

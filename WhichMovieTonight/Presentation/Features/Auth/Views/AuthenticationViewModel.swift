@@ -46,7 +46,9 @@ class AuthenticationViewModel: ObservableObject {
 
         // Notify AppStateManager of authentication success
         if user != nil {
-          self.appStateManager?.handleSuccessfulAuthentication()
+          Task {
+            await self.appStateManager?.handleSuccessfulAuthentication()
+          }
         }
       }
     }

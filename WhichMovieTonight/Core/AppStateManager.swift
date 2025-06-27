@@ -5,7 +5,7 @@ import Foundation
 class AppStateManager: ObservableObject {
     @Published var appState: AppState = .launch
 
-    private let userPreferencesService = UserPreferencesService()
+    private let userProfileService = UserProfileService()
 
     // MARK: - App States
 
@@ -20,9 +20,10 @@ class AppStateManager: ObservableObject {
 
     func initializeApp() async {
         // Check authentication
-        if Auth.auth().currentUser != nil {
-            // Check if user completed onboarding
-            let preferences = userPreferencesService.getUserPreferences()
+        if let currentUser = Auth.auth().currentUser {
+            // Load user preferences from Firebase to check if onboarding is completed
+            await userProfileService.loadUserPreferences(userId: currentUser.uid)
+            let preferences = userProfileService.getUserPreferences()
 
             if !preferences.favoriteGenres.isEmpty && !preferences.favoriteStreamingPlatforms.isEmpty {
                 appState = .authenticated
@@ -36,8 +37,15 @@ class AppStateManager: ObservableObject {
 
     // MARK: - Authentication Handling
 
-    func handleSuccessfulAuthentication() {
-        let preferences = userPreferencesService.getUserPreferences()
+    func handleSuccessfulAuthentication() async {
+        guard let currentUser = Auth.auth().currentUser else {
+            appState = .needsAuthentication
+            return
+        }
+
+        // Load user preferences from Firebase
+        await userProfileService.loadUserPreferences(userId: currentUser.uid)
+        let preferences = userProfileService.getUserPreferences()
 
         if !preferences.favoriteGenres.isEmpty && !preferences.favoriteStreamingPlatforms.isEmpty {
             appState = .authenticated

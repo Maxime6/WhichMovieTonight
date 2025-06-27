@@ -24,23 +24,22 @@ final class HomeViewModel: ObservableObject {
     @Published var toastMessage: String?
     @Published var errorMessage: String?
 
-    // MARK: - Dependencies (Simplified)
+    // MARK: - Dependencies (Unified)
 
     private let recommendationService: RecommendationServiceProtocol
-    private let firestoreService: FirestoreService
-    private let movieInteractionService: MovieInteractionServiceProtocol
+    private let userMovieService: UserMovieServiceProtocol
+    private let userProfileService: UserProfileService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
 
     init(
-        recommendationService: RecommendationServiceProtocol = RecommendationService(),
-        firestoreService: FirestoreService = FirestoreService(),
-        movieInteractionService: MovieInteractionServiceProtocol = MovieInteractionService()
+        userMovieService: UserMovieServiceProtocol,
+        userProfileService: UserProfileService
     ) {
-        self.recommendationService = recommendationService
-        self.firestoreService = firestoreService
-        self.movieInteractionService = movieInteractionService
+        self.userMovieService = userMovieService
+        self.userProfileService = userProfileService
+        recommendationService = RecommendationService(userProfileService: userProfileService)
 
         Task {
             await initializeData()
@@ -125,7 +124,7 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Selected Movie For Tonight Management
 
-    /// Select a movie for tonight and save to Firestore
+    /// Select a movie for tonight using UserMovieService
     func selectMovieForTonight(_ movie: Movie) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
@@ -133,8 +132,7 @@ final class HomeViewModel: ObservableObject {
         }
 
         do {
-            let movieFirestore = MovieFirestore(from: movie)
-            try await firestoreService.saveSelectedMovieForTonight(movieFirestore, for: userId)
+            try await userMovieService.setTonightSelection(userId: userId, movieId: movie.id)
             selectedMovieForTonight = movie
             showToastMessage("Selected for tonight: \(movie.title)")
         } catch {
@@ -151,7 +149,7 @@ final class HomeViewModel: ObservableObject {
         }
 
         do {
-            try await firestoreService.removeSelectedMovieForTonight(for: userId)
+            try await userMovieService.clearTonightSelection(userId: userId)
             selectedMovieForTonight = nil
             showToastMessage("Movie deselected")
         } catch {
@@ -172,9 +170,9 @@ final class HomeViewModel: ObservableObject {
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
-            if let movieFirestore = try await firestoreService.getSelectedMovieForTonight(for: userId) {
-                selectedMovieForTonight = movieFirestore.toMovie()
-                print("📱 Loaded selected movie for tonight: \(movieFirestore.title)")
+            if let userMovie = try await userMovieService.getTonightSelection(userId: userId) {
+                selectedMovieForTonight = userMovie.movie
+                print("📱 Loaded selected movie for tonight: \(userMovie.movie.title)")
             }
         } catch {
             print("❌ Error loading selected movie: \(error)")

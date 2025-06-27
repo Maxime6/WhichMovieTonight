@@ -1,7 +1,8 @@
+import FirebaseAuth
 import SwiftUI
 
 struct GenreSettingsView: View {
-    @EnvironmentObject private var preferencesService: UserPreferencesService
+    @EnvironmentObject private var userProfileService: UserProfileService
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
@@ -29,9 +30,12 @@ struct GenreSettingsView: View {
                     ForEach(MovieGenre.allCases) { genre in
                         GenreButton(
                             genre: genre,
-                            isSelected: preferencesService.isGenreSelected(genre),
+                            isSelected: userProfileService.isGenreSelected(genre),
                             action: {
-                                preferencesService.toggleGenre(genre)
+                                Task {
+                                    guard let userId = Auth.auth().currentUser?.uid else { return }
+                                    await userProfileService.toggleGenre(genre, userId: userId)
+                                }
                             }
                         )
                     }
@@ -57,6 +61,6 @@ struct GenreSettingsView: View {
 #Preview {
     NavigationStack {
         GenreSettingsView()
-            .environmentObject(UserPreferencesService())
+            .environmentObject(UserProfileService())
     }
 }

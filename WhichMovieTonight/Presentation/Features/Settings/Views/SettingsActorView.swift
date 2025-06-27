@@ -1,7 +1,8 @@
+import FirebaseAuth
 import SwiftUI
 
 struct ActorSettingsView: View {
-    @EnvironmentObject private var preferencesService: UserPreferencesService
+    @EnvironmentObject private var userProfileService: UserProfileService
     @Environment(\.dismiss) private var dismiss
 
     @State private var actorInput: String = ""
@@ -41,7 +42,7 @@ struct ActorSettingsView: View {
                 }
                 .padding(.horizontal)
 
-                if preferencesService.favoriteActors.isEmpty {
+                if userProfileService.favoriteActors.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "person.2")
                             .font(.system(size: 40))
@@ -60,9 +61,12 @@ struct ActorSettingsView: View {
                 } else {
                     ScrollView {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 16)], spacing: 16) {
-                            ForEach(preferencesService.favoriteActors, id: \.self) { actor in
+                            ForEach(userProfileService.favoriteActors, id: \.self) { actor in
                                 ActorSettingsChip(actor: actor) {
-                                    preferencesService.removeActor(actor)
+                                    Task {
+                                        guard let userId = Auth.auth().currentUser?.uid else { return }
+                                        await userProfileService.removeActor(actor, userId: userId)
+                                    }
                                 }
                             }
                         }
@@ -94,11 +98,14 @@ struct ActorSettingsView: View {
         let trimmedActor = actorInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedActor.isEmpty else { return }
 
-        if preferencesService.favoriteActors.contains(trimmedActor) {
+        if userProfileService.favoriteActors.contains(trimmedActor) {
             alertMessage = "Cet acteur est déjà dans vos favoris"
             showingAlert = true
         } else {
-            preferencesService.addActor(trimmedActor)
+            Task {
+                guard let userId = Auth.auth().currentUser?.uid else { return }
+                await userProfileService.addActor(trimmedActor, userId: userId)
+            }
             actorInput = ""
         }
     }
@@ -135,6 +142,6 @@ struct ActorSettingsChip: View {
 #Preview {
     NavigationStack {
         ActorSettingsView()
-            .environmentObject(UserPreferencesService())
+            .environmentObject(UserProfileService())
     }
 }
