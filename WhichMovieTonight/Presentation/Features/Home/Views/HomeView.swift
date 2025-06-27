@@ -18,55 +18,59 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             // Background
-            Color(.systemGray6)
+            Color(.systemBackground)
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Hero Section
+            VStack(spacing: 0) {
+                // Hero Section avec padding top
+                VStack {
                     heroSection
+                        .padding(.top, 20)
 
                     // Daily Recommendations Section
                     recommendationsSection
-
-                    // Selected Movie For Tonight Section
-                    selectedMovieSection
-
-                    // Bottom spacing for tab bar
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(height: 100)
+                        .padding(.top, 24)
                 }
                 .padding(.horizontal)
+
+                Spacer()
+
+                // Tonight's Pick fixé en bas
+                VStack(spacing: 0) {
+                    Divider()
+                        .background(.ultraThinMaterial)
+
+                    selectedMovieSection
+                        .padding(.horizontal)
+                        .padding(.vertical, 16)
+                        .background(.ultraThinMaterial)
+                }
             }
 
-            // Floating Refresh Button
+            // Floating Refresh Button (bas droite)
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
-                    if !appStateManager.dailyRecommendations.isEmpty && !appStateManager.isGeneratingRecommendations {
+                    if !viewModel.currentRecommendations.isEmpty && !viewModel.isGeneratingRecommendations {
                         floatingRefreshButton
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 140) // Au-dessus de Tonight's Pick
                     }
                 }
-                .padding(.trailing, 20)
-                .padding(.bottom, 100)
             }
         }
         .overlay(toastOverlay)
-        .confirmationDialog(
-            "Today's picks not hitting right?",
-            isPresented: $showingRefreshConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Get me new ones!", role: .destructive) {
+        .overlay(fullScreenAIThinkingIndicator)
+        .confirmationDialog("Refresh Recommendations", isPresented: $showingRefreshConfirmation) {
+            Button("Generate New Movies") {
                 Task {
-                    await appStateManager.refreshRecommendations()
+                    await viewModel.refreshRecommendations()
                 }
             }
-            Button("Never mind", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("You sure you want different recommendations?")
+            Text("Generate 5 new movie recommendations?")
         }
         .sheet(isPresented: $showingMovieDetail) {
             if let movie = selectedMovie {
@@ -82,6 +86,20 @@ struct HomeView: View {
                         showingMovieDetail = false
                     }
                 )
+            } else {
+                // Fallback view if selectedMovie is nil (shouldn't happen but safety first)
+                VStack {
+                    Text("Erreur")
+                        .font(.headline)
+                    Text("Film non trouvé")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Button("Fermer") {
+                        showingMovieDetail = false
+                    }
+                    .padding()
+                }
+                .padding()
             }
         }
     }
@@ -120,18 +138,14 @@ struct HomeView: View {
                 Spacer()
             }
 
-            if appStateManager.isGeneratingRecommendations {
-                // Show AI thinking indicator
-                AIThinkingIndicator()
-                    .frame(height: 200)
-            } else if appStateManager.dailyRecommendations.isEmpty {
+            if viewModel.currentRecommendations.isEmpty {
                 // Empty state
                 emptyRecommendationsState
             } else {
                 // Recommendations scroll view
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(appStateManager.dailyRecommendations, id: \.id) { movie in
+                        ForEach(viewModel.currentRecommendations, id: \.id) { movie in
                             MovieCardView(
                                 movie: movie,
                                 namespace: heroAnimation,
@@ -201,7 +215,7 @@ struct HomeView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground))
+        .background(.ultraThinMaterial)
         .cornerRadius(16)
     }
 
@@ -221,7 +235,7 @@ struct HomeView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground))
+        .background(.ultraThinMaterial)
         .cornerRadius(12)
     }
 
@@ -233,16 +247,16 @@ struct HomeView: View {
         }) {
             Image(systemName: "arrow.clockwise")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .frame(width: 56, height: 56)
                 .background(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    Circle()
+                        .fill(.ultraThickMaterial)
                 )
-                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(.primary.opacity(0.1), lineWidth: 1)
+                )
                 .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
     }
@@ -291,6 +305,19 @@ struct HomeView: View {
 
                     Spacer()
                 }
+            }
+        }
+    }
+
+    // MARK: - Full Screen AI Thinking Indicator
+
+    private var fullScreenAIThinkingIndicator: some View {
+        ZStack {
+            if viewModel.isGeneratingRecommendations {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea(.all)
+
+                AIThinkingIndicator()
             }
         }
     }

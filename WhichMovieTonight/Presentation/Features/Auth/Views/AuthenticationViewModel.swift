@@ -33,6 +33,10 @@ class AuthenticationViewModel: ObservableObject {
     verifySignInWithAppleAuthenticationState()
   }
 
+  func setAppStateManager(_ appStateManager: AppStateManager) {
+    self.appStateManager = appStateManager
+  }
+
   func registerAuthStateHandler() {
     if authStateHandler == nil {
       authStateHandler = Auth.auth().addStateDidChangeListener { _, user in

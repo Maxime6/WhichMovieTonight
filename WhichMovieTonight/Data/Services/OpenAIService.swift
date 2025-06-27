@@ -20,7 +20,8 @@ final class OpenAIService {
         userInteractions: UserMovieInteractions?,
         favoriteActors: [String],
         favoriteGenres: [MovieGenre],
-        recentSuggestions: [MovieFirestore] = []
+        recentSuggestions: [MovieFirestore] = [],
+        alreadyGeneratedMovies: [Movie] = []
     ) async throws -> OpenAIMovieDTO {
         guard let apiKey = apiKey else {
             print("OPENAI_API_KEY environment variable not set")
@@ -45,6 +46,9 @@ final class OpenAIService {
             recentSuggestions: recentSuggestions
         )
 
+        // Build context for already generated movies in this session
+        let sessionMoviesContext = buildSessionMoviesContext(alreadyGeneratedMovies)
+
         let prompt = """
         You are an AI movie recommender. Suggest a creative, lesser-known movie I can watch tonight based on the user's comprehensive preferences.
 
@@ -55,11 +59,15 @@ final class OpenAIService {
         USER PREFERENCE PROFILE:
         \(userPreferencesContext)
 
+        SESSION DIVERSITY REQUIREMENTS:
+        \(sessionMoviesContext)
+
         RECOMMENDATION STRATEGY:
         1. Prioritize movies that match the user's historical preferences (liked genres, favorite actors)
         2. Avoid recommending movies similar to those the user disliked
         3. Avoid recent suggestions to ensure variety
-        4. Suggest lesser-known gems that align with their taste profile
+        4. CRITICAL: Ensure diversity from already suggested movies in this session
+        5. Suggest lesser-known gems that align with their taste profile
 
         Respond ONLY with JSON in the following format:
 
@@ -163,6 +171,22 @@ final class OpenAIService {
         }
 
         return context.isEmpty ? "No specific user preferences available yet." : context
+    }
+
+    private func buildSessionMoviesContext(_ movies: [Movie]) -> String {
+        if movies.isEmpty {
+            return "- This is the first recommendation in the session."
+        }
+
+        var context = "- AVOID movies similar to these already suggested in this session:\n"
+        for (index, movie) in movies.enumerated() {
+            let actors = movie.actors?.components(separatedBy: ", ").prefix(2).joined(separator: ", ") ?? "Unknown actors"
+            let genres = movie.genres.prefix(2).joined(separator: ", ")
+            context += "  \(index + 1). \(movie.title) (Genres: \(genres), Actors: \(actors))\n"
+        }
+        context += "- Ensure significant diversity in cast, director, and themes from above movies."
+
+        return context
     }
 
     private func extractJSON(from content: String) -> String? {

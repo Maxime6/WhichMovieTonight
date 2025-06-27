@@ -70,8 +70,8 @@ struct LaunchScreen: View {
 
     /// Initialize app (recommendations) if user is authenticated
     private func initializeAppIfNeeded() async {
-        // Wait for animation to complete
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        // Wait for animation to complete and ensure LaunchScreen is visible
+        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
 
         guard !hasInitialized else { return }
         hasInitialized = true
@@ -83,4 +83,5 @@ struct LaunchScreen: View {
 
 #Preview {
     LaunchScreen()
+        .environmentObject(AppStateManager())
 }

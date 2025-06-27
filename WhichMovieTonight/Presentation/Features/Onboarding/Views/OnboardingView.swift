@@ -8,14 +8,10 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @ObservedObject var appStateManager: AppStateManager
+    @EnvironmentObject var appStateManager: AppStateManager
     @StateObject private var viewModel = OnboardingViewModel()
     @StateObject private var preferencesService = UserPreferencesService()
     @State private var showAuthentication = false
-
-    init(appStateManager: AppStateManager) {
-        self.appStateManager = appStateManager
-    }
 
     var body: some View {
         ZStack {
@@ -74,5 +70,6 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView(appStateManager: AppStateManager())
+    OnboardingView()
+        .environmentObject(AppStateManager())
 }

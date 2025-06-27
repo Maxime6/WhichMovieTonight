@@ -39,7 +39,6 @@
 		9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */; };
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
-		9C73ED352E01ED3A00AD4811 /* DailyRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED342E01ED3A00AD4811 /* DailyRecommendations.swift */; };
 		9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED522E01FCBA00AD4811 /* SettingsActorView.swift */; };
 		9C73ED672E01FCBA00AD4811 /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED452E01FCBA00AD4811 /* ProfileMenuView.swift */; };
 		9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED5A2E01FCBA00AD4811 /* WatchlistView.swift */; };
@@ -108,7 +107,6 @@
 		9C6EAED82DD3B10F00C2A6D2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhichMovieTonightApp.swift; sourceTree = "<group>"; };
-		9C73ED342E01ED3A00AD4811 /* DailyRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyRecommendations.swift; sourceTree = "<group>"; };
 		9C73ED3A2E01FCBA00AD4811 /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
 		9C73ED3B2E01FCBA00AD4811 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		9C73ED3E2E01FCBA00AD4811 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
@@ -240,7 +238,6 @@
 			isa = PBXGroup;
 			children = (
 				9C73ED8C2E01FD6900AD4811 /* UserPreferences.swift */,
-				9C73ED342E01ED3A00AD4811 /* DailyRecommendations.swift */,
 				9C467E102DF30F97002A78F6 /* UserMovieInteraction.swift */,
 				9C467DFE2DF1FEEB002A78F6 /* UserMovieData.swift */,
 				9C6EAEC52DD3B10F00C2A6D2 /* Movie.swift */,
@@ -634,7 +631,6 @@
 				9C0C472A2E0C69A7009D40D5 /* LaunchScreen.swift in Sources */,
 				9CF0B5EB2DE4B204002002B4 /* RootView.swift in Sources */,
 				9C6EAEE32DD3B10F00C2A6D2 /* AIActionButton.swift in Sources */,
-				9C73ED352E01ED3A00AD4811 /* DailyRecommendations.swift in Sources */,
 				9C6EAEE42DD3B10F00C2A6D2 /* MovieRepository.swift in Sources */,
 				9C6EAEE52DD3B10F00C2A6D2 /* OpenAIService.swift in Sources */,
 				9C6EAEE62DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift in Sources */,

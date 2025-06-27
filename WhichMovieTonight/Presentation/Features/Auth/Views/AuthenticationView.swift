@@ -9,13 +9,8 @@ import AuthenticationServices
 import SwiftUI
 
 struct AuthenticationView: View {
-    @ObservedObject var appStateManager: AppStateManager
-    @StateObject private var viewModel: AuthenticationViewModel
-
-    init(appStateManager: AppStateManager) {
-        self.appStateManager = appStateManager
-        _viewModel = StateObject(wrappedValue: AuthenticationViewModel(appStateManager: appStateManager))
-    }
+    @EnvironmentObject var appStateManager: AppStateManager
+    @StateObject private var viewModel: AuthenticationViewModel = .init()
 
     var body: some View {
         VStack {
@@ -33,9 +28,13 @@ struct AuthenticationView: View {
             .clipShape(Capsule())
             .padding(.horizontal)
         }
+        .onAppear {
+            viewModel.setAppStateManager(appStateManager)
+        }
     }
 }
 
 #Preview {
-    AuthenticationView(appStateManager: AppStateManager())
+    AuthenticationView()
+        .environmentObject(AppStateManager())
 }

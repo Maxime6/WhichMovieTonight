@@ -8,21 +8,96 @@
 import FirebaseFirestore
 import Foundation
 
+// MARK: - Simple User Data Model
+
 struct UserMovieData: Codable {
     let id: String
     let userId: String
-    let selectedMovie: MovieFirestore?
-    let lastSuggestions: [MovieFirestore]
+    let currentPicks: [MovieFirestore] // Les 5 films actuellement recommandés
+    let generationHistory: [MovieFirestore] // Les 10 dernières générations (pour éviter répétitions)
+    let selectedMovieForTonight: MovieFirestore?
     let createdAt: Date
     let updatedAt: Date
 
-    init(userId: String, selectedMovie: MovieFirestore? = nil, lastSuggestions: [MovieFirestore] = []) {
+    // MARK: - Migration Support for Old Data Structure
+
+    enum CodingKeys: String, CodingKey {
+        case id, userId, currentPicks, generationHistory, selectedMovieForTonight, createdAt, updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle required fields with fallbacks for migration
+        userId = try container.decode(String.self, forKey: .userId)
+
+        // If old data doesn't have an id, generate one
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+
+        // Handle new fields with fallbacks for old data
+        currentPicks = try container.decodeIfPresent([MovieFirestore].self, forKey: .currentPicks) ?? []
+        generationHistory = try container.decodeIfPresent([MovieFirestore].self, forKey: .generationHistory) ?? []
+        selectedMovieForTonight = try container.decodeIfPresent(MovieFirestore.self, forKey: .selectedMovieForTonight)
+
+        // Handle dates with fallbacks
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(userId, forKey: .userId)
+        try container.encode(currentPicks, forKey: .currentPicks)
+        try container.encode(generationHistory, forKey: .generationHistory)
+        try container.encodeIfPresent(selectedMovieForTonight, forKey: .selectedMovieForTonight)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+    }
+
+    init(userId: String, currentPicks: [MovieFirestore] = [], selectedMovieForTonight: MovieFirestore? = nil) {
         id = UUID().uuidString
         self.userId = userId
-        self.selectedMovie = selectedMovie
-        self.lastSuggestions = lastSuggestions
+        self.currentPicks = currentPicks
+        generationHistory = []
+        self.selectedMovieForTonight = selectedMovieForTonight
         createdAt = Date()
         updatedAt = Date()
+    }
+
+    // Helper to add new generation and maintain history limit
+    func withNewGeneration(_ newPicks: [MovieFirestore]) -> UserMovieData {
+        var newHistory = generationHistory
+        newHistory.append(contentsOf: newPicks)
+
+        // Keep only last 10 movies in history
+        if newHistory.count > 10 {
+            newHistory = Array(newHistory.suffix(10))
+        }
+
+        return UserMovieData(
+            id: id,
+            userId: userId,
+            currentPicks: newPicks,
+            generationHistory: newHistory,
+            selectedMovieForTonight: selectedMovieForTonight,
+            createdAt: createdAt,
+            updatedAt: Date()
+        )
+    }
+}
+
+// MARK: - Helper init for UserMovieData
+
+extension UserMovieData {
+    init(id: String, userId: String, currentPicks: [MovieFirestore], generationHistory: [MovieFirestore], selectedMovieForTonight: MovieFirestore?, createdAt: Date, updatedAt: Date) {
+        self.id = id
+        self.userId = userId
+        self.currentPicks = currentPicks
+        self.generationHistory = generationHistory
+        self.selectedMovieForTonight = selectedMovieForTonight
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 }
 

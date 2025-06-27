@@ -14,7 +14,9 @@ import SwiftUI
 final class HomeViewModel: ObservableObject {
     // MARK: - Published Properties
 
+    @Published var currentRecommendations: [Movie] = []
     @Published var selectedMovieForTonight: Movie?
+    @Published var isGeneratingRecommendations = false
     @Published var userName: String = "Movie Lover"
 
     // UI State
@@ -24,6 +26,7 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Dependencies (Simplified)
 
+    private let recommendationService: RecommendationServiceProtocol
     private let firestoreService: FirestoreService
     private let movieInteractionService: MovieInteractionServiceProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -31,28 +34,93 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Initialization
 
     init(
+        recommendationService: RecommendationServiceProtocol = RecommendationService(),
         firestoreService: FirestoreService = FirestoreService(),
         movieInteractionService: MovieInteractionServiceProtocol = MovieInteractionService()
     ) {
+        self.recommendationService = recommendationService
         self.firestoreService = firestoreService
         self.movieInteractionService = movieInteractionService
-        loadUserData()
+
+        Task {
+            await initializeData()
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    var welcomeMessage: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
+        return "\(greeting) \(userName), ready for new discoveries?"
     }
 
     // MARK: - Public Methods
 
-    /// Load user display name and selected movie for tonight
-    func loadUserData() {
-        Task {
-            await loadUserDisplayName()
-            await loadSelectedMovieForTonight()
+    /// Initialize all data for HomeView
+    func initializeData() async {
+        await loadUserDisplayName()
+        await loadSelectedMovieForTonight()
+        await loadOrGenerateRecommendations()
+    }
+
+    /// Load or generate recommendations
+    private func loadOrGenerateRecommendations() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("⚠️ No user ID available")
+            return
+        }
+
+        do {
+            // Try to load existing recommendations
+            let existingRecommendations = try await recommendationService.loadCurrentRecommendations(for: userId)
+
+            if !existingRecommendations.isEmpty {
+                currentRecommendations = existingRecommendations
+                print("📱 Loaded \(existingRecommendations.count) existing recommendations")
+            } else {
+                // Generate new recommendations
+                await generateRecommendations()
+            }
+        } catch {
+            print("❌ Error loading recommendations: \(error)")
+            if error.localizedDescription.contains("offline") {
+                showOfflineMessage()
+            } else {
+                errorMessage = "Failed to load recommendations. Please try again."
+            }
         }
     }
 
-    /// Manual refresh recommendations via AppStateManager
+    /// Generate new recommendations (initial or refresh)
+    func generateRecommendations() async {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("⚠️ No user ID available for generation")
+            return
+        }
+
+        isGeneratingRecommendations = true
+
+        do {
+            let newRecommendations = try await recommendationService.generateNewRecommendations(for: userId)
+            currentRecommendations = newRecommendations
+            print("🎉 Generated \(newRecommendations.count) new recommendations")
+        } catch {
+            print("❌ Failed to generate recommendations: \(error)")
+            if error.localizedDescription.contains("offline") {
+                showOfflineMessage()
+            } else {
+                errorMessage = "Unable to generate recommendations. Please try again."
+            }
+        }
+
+        isGeneratingRecommendations = false
+    }
+
+    /// Manual refresh recommendations
     func refreshRecommendations() async {
-        // This will be called from the view with appStateManager.refreshRecommendations()
-        // No longer handled in HomeViewModel
+        print("🔄 Manual refresh triggered")
+        await generateRecommendations()
     }
 
     // MARK: - Selected Movie For Tonight Management
@@ -60,150 +128,74 @@ final class HomeViewModel: ObservableObject {
     /// Select a movie for tonight and save to Firestore
     func selectMovieForTonight(_ movie: Movie) async {
         guard let userId = Auth.auth().currentUser?.uid else {
-            showErrorMessage("User not authenticated")
+            errorMessage = "Authentication required"
             return
         }
 
         do {
-            try await firestoreService.saveSelectedMovieForTonight(movie, for: userId)
+            let movieFirestore = MovieFirestore(from: movie)
+            try await firestoreService.saveSelectedMovieForTonight(movieFirestore, for: userId)
             selectedMovieForTonight = movie
-            showToastMessage("Selected for tonight! 🎬")
-
+            showToastMessage("Selected for tonight: \(movie.title)")
         } catch {
-            showErrorMessage("Failed to select movie")
-            print("❌ Error selecting movie: \(error)")
+            print("❌ Error selecting movie for tonight: \(error)")
+            errorMessage = "Failed to select movie. Please try again."
         }
     }
 
-    /// Remove selected movie for tonight
+    /// Deselect current movie for tonight
     func deselectMovieForTonight() async {
         guard let userId = Auth.auth().currentUser?.uid else {
-            showErrorMessage("User not authenticated")
+            errorMessage = "Authentication required"
             return
         }
 
         do {
-            try await firestoreService.clearSelectedMovieForTonight(for: userId)
+            try await firestoreService.removeSelectedMovieForTonight(for: userId)
             selectedMovieForTonight = nil
             showToastMessage("Movie deselected")
-
         } catch {
-            showErrorMessage("Failed to deselect movie")
             print("❌ Error deselecting movie: \(error)")
-        }
-    }
-
-    // MARK: - Movie Interactions (Delegated to Service)
-
-    /// Mark movie as seen and remove from recommendations
-    func markMovieAsSeen(_ movie: Movie) async {
-        do {
-            try await movieInteractionService.markAsSeen(for: movie)
-            showToastMessage("Marked as watched ✓")
-
-        } catch {
-            showErrorMessage("Failed to mark movie as seen")
-            print("❌ Error marking movie as seen: \(error)")
+            errorMessage = "Failed to deselect movie. Please try again."
         }
     }
 
     // MARK: - Private Methods
 
-    /// Load user display name from Auth
     private func loadUserDisplayName() async {
-        guard let user = Auth.auth().currentUser else {
-            userName = "Movie Lover"
-            return
-        }
-
-        let displayName = user.displayName ?? ""
-        if displayName.isEmpty {
-            userName = "Movie Lover"
-        } else {
-            let components = displayName.components(separatedBy: " ")
-            userName = components.first ?? displayName
+        if let user = Auth.auth().currentUser {
+            userName = user.displayName ?? "Movie Lover"
         }
     }
 
-    /// Load selected movie for tonight from Firestore
     private func loadSelectedMovieForTonight() async {
-        guard let userId = Auth.auth().currentUser?.uid else {
-            return
-        }
+        guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
-            let movieData = try await firestoreService.getSelectedMovieForTonight(for: userId)
-
-            // Check if movie is still valid (selected today)
-            if let movieData = movieData, isSelectedMovieStillValid(movieData.createdAt) {
-                selectedMovieForTonight = movieData.selectedMovie?.toMovie()
-            } else if movieData != nil {
-                // Clear invalid selection
-                try await firestoreService.clearSelectedMovieForTonight(for: userId)
-                selectedMovieForTonight = nil
+            if let movieFirestore = try await firestoreService.getSelectedMovieForTonight(for: userId) {
+                selectedMovieForTonight = movieFirestore.toMovie()
+                print("📱 Loaded selected movie for tonight: \(movieFirestore.title)")
             }
         } catch {
-            // Handle offline gracefully - don't show error for offline mode
-            if error.localizedDescription.contains("offline") || error.localizedDescription.contains("network") {
+            print("❌ Error loading selected movie: \(error)")
+            if error.localizedDescription.contains("offline") {
                 print("📱 App is offline - selected movie will load when connection is restored")
-                // Don't set error message for offline state
-            } else {
-                errorMessage = "Erreur lors du chargement du film sélectionné"
-                print("❌ Error loading selected movie: \(error)")
             }
         }
     }
 
-    /// Check if selected movie is still valid (before 6am next day)
-    private func isSelectedMovieStillValid(_ selectionDate: Date) -> Bool {
-        let calendar = Calendar.current
-        let now = Date()
-
-        // Calculate 6am of the next day after selection
-        guard let nextDay = calendar.date(byAdding: .day, value: 1, to: selectionDate),
-              let expirationTime = calendar.date(bySettingHour: 6, minute: 0, second: 0, of: nextDay)
-        else {
-            return false
-        }
-
-        return now < expirationTime
-    }
-
-    // MARK: - UI Helpers
-
-    /// Show success toast message
     private func showToastMessage(_ message: String) {
         toastMessage = message
         showToast = true
 
-        // Auto-hide after 3 seconds
-        Task {
-            try await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
-            showToast = false
-            toastMessage = nil
+        // Auto-dismiss after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.showToast = false
+            self.toastMessage = nil
         }
     }
 
-    /// Show error message
-    private func showErrorMessage(_ message: String) {
-        errorMessage = message
-
-        // Auto-hide after 5 seconds
-        Task {
-            try await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
-            errorMessage = nil
-        }
-    }
-
-    // MARK: - Computed Properties
-
-    /// Welcome message for the user
-    var welcomeMessage: String {
-        "Hello \(userName), ready for new discoveries?"
-    }
-
-    /// Check if there's a selected movie for tonight
-    var hasSelectedMovie: Bool {
-        selectedMovieForTonight != nil
+    private func showOfflineMessage() {
+        errorMessage = "No internet connection. Please check your connection and try again."
     }
 }

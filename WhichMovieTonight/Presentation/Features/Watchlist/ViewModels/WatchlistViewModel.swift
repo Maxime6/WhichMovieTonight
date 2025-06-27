@@ -15,6 +15,7 @@ class WatchlistViewModel: ObservableObject {
     @Published var seenMovies: [SeenMovie] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var selectedMovie: Movie?
 
     private let firestoreService: FirestoreServiceProtocol
 
@@ -35,7 +36,8 @@ class WatchlistViewModel: ObservableObject {
             // Charger également les dernières suggestions
             let userData = try await firestoreService.getUserMovieData(for: userId)
             if let userData = userData {
-                lastSuggestions = userData.lastSuggestions.map { $0.toMovie() }
+                lastSuggestions = userData.currentPicks.map { $0.toMovie() }
+                selectedMovie = userData.selectedMovieForTonight?.toMovie()
             }
 
             // Charger les films déjà vus
