@@ -22,7 +22,7 @@ final class OpenAIService {
         favoriteGenres: [MovieGenre],
         recentSuggestions: [MovieFirestore] = [],
         alreadyGeneratedMovies: [Movie] = []
-    ) async throws -> OpenAIMovieDTO {
+    ) async throws -> [OpenAIMovieDTO] {
         guard let apiKey = apiKey else {
             print("OPENAI_API_KEY environment variable not set")
             throw URLError(.userAuthenticationRequired)
@@ -50,11 +50,12 @@ final class OpenAIService {
         let sessionMoviesContext = buildSessionMoviesContext(alreadyGeneratedMovies)
 
         let prompt = """
-        You are an AI movie recommender. Suggest a creative, lesser-known movie I can watch tonight based on the user's comprehensive preferences.
+        You are an AI movie recommender. Generate exactly 5 diverse, creative, lesser-known movies for the user's daily recommendations based on their comprehensive preferences.
 
-        CURRENT SESSION REQUIREMENTS:
+        REQUIREMENTS FOR ALL 5 MOVIES:
         - Must be available on: \(platforms.joined(separator: ", "))
-        - Matching one or more of these genres: \(genresString)
+        - Each movie should match one or more of these genres: \(genresString)
+        - Ensure diversity between the 5 movies (different themes, eras, directors when possible)
 
         USER PREFERENCE PROFILE:
         \(userPreferencesContext)
@@ -68,21 +69,53 @@ final class OpenAIService {
         3. Avoid recent suggestions to ensure variety
         4. CRITICAL: Ensure diversity from already suggested movies in this session
         5. Suggest lesser-known gems that align with their taste profile
+        6. Generate exactly 5 different movies with good variety between them
 
-        Respond ONLY with JSON in the following format:
+        Respond ONLY with a JSON array of exactly 5 movies in the following format:
 
-        {
-          "title": "...",
-          "genres": ["...", "..."],
-          "poster_url": "https://valid.image.url/of/poster.jpg",
-          "platforms": ["..."],
-          "recommendation_reason": "Brief explanation why this matches the user's preferences"
-        }
+        [
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's preferences"
+          },
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's preferences"
+          },
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's preferences"
+          },
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's preferences"
+          },
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's preferences"
+          }
+        ]
 
-        The "poster_url" must be a valid public link to an actual image of the movie poster.
-        Use a reliable source like Wikipedia, IMDb, or an official image hosting site.
-        Do not write placeholder values. Always include a real image URL.
-        The "recommendation_reason" should reference specific user preferences that make this a good match.
+        Each "poster_url" must be a valid public link to an actual image of the movie poster.
+        Use reliable sources like Wikipedia, IMDb, or official image hosting sites.
+        Do not write placeholder values. Always include real image URLs.
+        Each "recommendation_reason" should reference specific user preferences that make this a good match.
+        CRITICAL: Return exactly 5 movies, no more, no less.
         """
 
         let body: [String: Any] = [
@@ -117,8 +150,9 @@ final class OpenAIService {
         }
 
         do {
-            let suggestion = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
-            return suggestion
+            let suggestions = try JSONDecoder().decode([OpenAIMovieDTO].self, from: jsonData)
+            print("✅ OpenAI generated \(suggestions.count) movies")
+            return suggestions
         } catch {
             print("Failed to decode OpenAI response: \(error)")
             throw URLError(.cannotParseResponse)
@@ -190,8 +224,20 @@ final class OpenAIService {
     }
 
     private func extractJSON(from content: String) -> String? {
-        guard let start = content.firstIndex(of: "{"),
-              let end = content.lastIndex(of: "}") else { return nil }
-        return String(content[start ... end])
+        // Try to extract JSON array first (starts with [)
+        if let arrayStart = content.firstIndex(of: "["),
+           let arrayEnd = content.lastIndex(of: "]")
+        {
+            return String(content[arrayStart ... arrayEnd])
+        }
+
+        // Fallback to object extraction (starts with {) for compatibility
+        if let objectStart = content.firstIndex(of: "{"),
+           let objectEnd = content.lastIndex(of: "}")
+        {
+            return String(content[objectStart ... objectEnd])
+        }
+
+        return nil
     }
 }

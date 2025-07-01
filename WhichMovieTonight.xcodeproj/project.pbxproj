@@ -235,7 +235,6 @@
 				9C9C41A42E0F13B400E5DFA3 /* UserMovieCache.swift */,
 				9C9C41A52E0F13B400E5DFA3 /* UserMovieService.swift */,
 				9C9C417F2E0D93FA00E5DFA3 /* RecommendationService.swift */,
-				9C73ED872E01FD4A00AD4811 /* Protocols */,
 				9CF0B5F32DE4BCB0002002B4 /* OMDBService.swift */,
 				9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */,
 			);
@@ -497,13 +496,6 @@
 			children = (
 			);
 			path = Dependency;
-			sourceTree = "<group>";
-		};
-		9C73ED872E01FD4A00AD4811 /* Protocols */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Protocols;
 			sourceTree = "<group>";
 		};
 		9C8C93F32D96F4B300B1DC00 = {

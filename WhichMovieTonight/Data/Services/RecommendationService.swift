@@ -69,17 +69,19 @@ final class RecommendationService: RecommendationServiceProtocol {
         // 3. Get exclusion list from history and disliked movies
         let exclusionList = try await getExclusionList(for: userId)
 
-        // 4. Generate 5 movies with retry logic
+        // 4. Generate 5 movies in a single OpenAI call with retry logic
         var generatedMovies: [Movie] = []
         var attempts = 0
         let maxRetries = 3
         var lastError: Error?
 
-        while generatedMovies.count < 5 && attempts < maxRetries {
+        while generatedMovies.isEmpty && attempts < maxRetries {
             attempts += 1
 
             do {
-                let movieDTO = try await openAIService.getMovieSuggestion(
+                print("🔄 Generating movies (attempt \(attempts)/\(maxRetries))...")
+
+                let movieDTOs = try await openAIService.getMovieSuggestion(
                     for: userPreferences.favoriteStreamingPlatforms.map { $0.rawValue },
                     movieGenre: userPreferences.favoriteGenres,
                     userInteractions: userInteractions,
@@ -88,20 +90,39 @@ final class RecommendationService: RecommendationServiceProtocol {
                     recentSuggestions: exclusionList
                 )
 
-                let movie = try await enrichMovieWithOMDB(movieDTO)
+                print("✅ OpenAI returned \(movieDTOs.count) movie suggestions")
 
-                // Simple duplicate check by title
-                if !generatedMovies.contains(where: { $0.title.lowercased() == movie.title.lowercased() }) {
-                    generatedMovies.append(movie)
-                    print("✅ Generated movie \(generatedMovies.count)/5: \(movie.title)")
+                // Process each movie DTO and enrich with OMDB data
+                var processedMovies: [Movie] = []
+
+                for (index, movieDTO) in movieDTOs.enumerated() {
+                    do {
+                        let movie = try await enrichMovieWithOMDB(movieDTO)
+
+                        // Check for duplicates by title (case insensitive)
+                        if !processedMovies.contains(where: { $0.title.lowercased() == movie.title.lowercased() }) {
+                            processedMovies.append(movie)
+                            print("✅ Processed movie \(processedMovies.count): \(movie.title)")
+                        } else {
+                            print("⚠️ Skipped duplicate movie: \(movie.title)")
+                        }
+                    } catch {
+                        print("⚠️ Failed to process movie \(index + 1) (\(movieDTO.title)): \(error)")
+                        // Continue with other movies instead of failing completely
+                    }
+                }
+
+                generatedMovies = processedMovies
+
+                if generatedMovies.isEmpty {
+                    throw URLError(.badServerResponse) // This will trigger a retry
                 }
 
             } catch {
                 lastError = error
-                print("⚠️ Failed to generate movie (attempt \(attempts)): \(error)")
+                print("⚠️ Failed to generate movies (attempt \(attempts)): \(error)")
 
                 if attempts == 2 {
-                    // Show progress message after 2nd attempt
                     print("🔄 Generation taking longer than expected...")
                 }
 

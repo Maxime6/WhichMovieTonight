@@ -28,10 +28,10 @@ final class MovieRepositoryImpl: MovieRepository {
             throw URLError(.badURL)
         }
 
-        // 1. Obtenir la suggestion d'OpenAI
+        // 1. Obtenir les suggestions d'OpenAI
         do {
             let platformNames = streamingPlatforms.map { $0.rawValue }
-            let movieDTO = try await openAIService.getMovieSuggestion(
+            let movieDTOs = try await openAIService.getMovieSuggestion(
                 for: platformNames,
                 movieGenre: movieGenre,
                 userInteractions: userInteractions,
@@ -39,9 +39,14 @@ final class MovieRepositoryImpl: MovieRepository {
                 favoriteGenres: favoriteGenres,
                 recentSuggestions: recentSuggestions
             )
-            print("OpenAI suggested movie: \(movieDTO.title)")
 
-            return try await processMovieSuggestion(movieDTO)
+            guard let firstMovieDTO = movieDTOs.first else {
+                throw URLError(.badServerResponse)
+            }
+
+            print("OpenAI suggested movie: \(firstMovieDTO.title)")
+
+            return try await processMovieSuggestion(firstMovieDTO)
         } catch {
             print("Failed to get OpenAI suggestion: \(error)")
             throw error
