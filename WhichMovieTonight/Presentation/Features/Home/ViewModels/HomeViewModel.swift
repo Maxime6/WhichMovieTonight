@@ -63,7 +63,7 @@ final class HomeViewModel: ObservableObject {
         await loadOrGenerateRecommendations()
     }
 
-    /// Load or generate recommendations
+    /// Load or generate recommendations with daily reset logic
     private func loadOrGenerateRecommendations() async {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("⚠️ No user ID available")
@@ -75,10 +75,17 @@ final class HomeViewModel: ObservableObject {
             let existingRecommendations = try await recommendationService.loadCurrentRecommendations(for: userId)
 
             if !existingRecommendations.isEmpty {
-                currentRecommendations = existingRecommendations
-                print("📱 Loaded \(existingRecommendations.count) existing recommendations")
+                // Check if we need to generate new daily picks
+                if await shouldGenerateNewDailyPicks(for: userId) {
+                    print("🌅 New day detected - generating fresh daily picks")
+                    await generateRecommendations()
+                } else {
+                    // Use existing recommendations from today
+                    currentRecommendations = existingRecommendations
+                    print("📱 Loaded \(existingRecommendations.count) existing recommendations from today")
+                }
             } else {
-                // Generate new recommendations
+                // No existing recommendations - generate new ones
                 await generateRecommendations()
             }
         } catch {
@@ -89,6 +96,52 @@ final class HomeViewModel: ObservableObject {
                 errorMessage = "Failed to load recommendations. Please try again."
             }
         }
+    }
+
+    /// Check if we should generate new daily picks based on date and time
+    private func shouldGenerateNewDailyPicks(for userId: String) async -> Bool {
+        do {
+            // Get current picks with their generation dates
+            let currentPicks = try await userMovieService.getCurrentPicks(userId: userId)
+
+            guard !currentPicks.isEmpty else {
+                return true // No current picks - should generate
+            }
+
+            // Find the most recent generation date
+            let mostRecentDate = currentPicks.compactMap { $0.currentPicksSince }.max()
+
+            guard let lastGenerationDate = mostRecentDate else {
+                return true // No valid date found - should generate
+            }
+
+            return isDifferentDay(from: lastGenerationDate, threshold: 5)
+
+        } catch {
+            print("⚠️ Error checking daily picks date: \(error)")
+            return false // Don't generate on error - use existing picks
+        }
+    }
+
+    /// Check if current time is in a different day from given date, considering 5am threshold
+    private func isDifferentDay(from date: Date, threshold: Int = 5) -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Get current hour
+        let currentHour = calendar.component(.hour, from: now)
+
+        // If it's before 5am, consider it as still "yesterday" for recommendation purposes
+        let effectiveNow: Date
+        if currentHour < threshold {
+            // Subtract one day to keep yesterday's recommendations
+            effectiveNow = calendar.date(byAdding: .day, value: -1, to: now) ?? now
+        } else {
+            effectiveNow = now
+        }
+
+        // Check if the dates are in different days
+        return !calendar.isDate(effectiveNow, inSameDayAs: date)
     }
 
     /// Generate new recommendations (initial or refresh)
