@@ -13,6 +13,7 @@ struct HomeView: View {
     @State private var showingMovieDetail = false
     @State private var selectedMovie: Movie?
     @State private var showingRefreshConfirmation = false
+    @State private var showingDeleteConfirmation = false
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -38,12 +39,12 @@ struct HomeView: View {
                 // Tonight's Pick fixé en bas
                 VStack(spacing: 0) {
                     Divider()
-                        .background(.ultraThinMaterial)
+                        .background(.quaternary)
 
                     selectedMovieSection
+                        .frame(height: 134)
                         .padding(.horizontal)
                         .padding(.vertical, 16)
-                        .background(.ultraThinMaterial)
                 }
             }
 
@@ -70,6 +71,16 @@ struct HomeView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Generate 5 new movie recommendations?")
+        }
+        .confirmationDialog("Remove from Tonight's Pick", isPresented: $showingDeleteConfirmation) {
+            Button("Remove", role: .destructive) {
+                Task {
+                    await viewModel.deselectMovieForTonight()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Remove this movie from tonight's selection?")
         }
         .sheet(isPresented: $showingMovieDetail) {
             if let movie = selectedMovie {
@@ -191,22 +202,24 @@ struct HomeView: View {
                 Spacer()
             }
 
-            if let selectedMovie = viewModel.selectedMovieForTonight {
-                SelectedMovieCard(
-                    movie: selectedMovie,
-                    onTap: {
-                        self.selectedMovie = selectedMovie
-                        showingMovieDetail = true
-                    },
-                    onDeselect: {
-                        Task {
-                            await viewModel.deselectMovieForTonight()
+            // CONTENEUR AVEC HAUTEUR FIXE pour l'alignement
+            VStack {
+                if let selectedMovie = viewModel.selectedMovieForTonight {
+                    SelectedMovieCard(
+                        movie: selectedMovie,
+                        onTap: {
+                            self.selectedMovie = selectedMovie
+                            showingMovieDetail = true
+                        },
+                        onDeselect: {
+                            showingDeleteConfirmation = true
                         }
-                    }
-                )
-            } else {
-                emptySelectedMovieState
+                    )
+                } else {
+                    emptySelectedMovieState
+                }
             }
+            .frame(height: 115)
         }
     }
 
@@ -234,9 +247,9 @@ struct HomeView: View {
     }
 
     private var emptySelectedMovieState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Image(systemName: "tv")
-                .font(.system(size: 32))
+                .font(.system(size: 24))
                 .foregroundColor(.secondary)
 
             Text("No movie selected for tonight")
@@ -247,7 +260,7 @@ struct HomeView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
-        .padding()
+        .frame(height: 102)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
         .cornerRadius(12)

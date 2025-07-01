@@ -6,39 +6,35 @@ struct SelectedMovieCard: View {
     let onDeselect: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Movie Poster (small, on the left)
+        HStack(alignment: .center, spacing: 12) {
             posterView
 
-            // Movie Info
             VStack(alignment: .leading, spacing: 4) {
+                Spacer()
                 Text(movie.title)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
                     .lineLimit(2)
 
-                // Genres
                 if !movie.genres.isEmpty {
                     Text(movie.genres.prefix(3).joined(separator: " • "))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
 
-                // Year
                 if let year = movie.year {
                     Text(year)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-
                 Spacer()
             }
+            .frame(maxHeight: .infinity, alignment: .top)
 
             Spacer()
 
-            // Deselect button
             Button(action: onDeselect) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title3)
@@ -46,11 +42,11 @@ struct SelectedMovieCard: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .frame(height: 102)
+        .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThickMaterial)
+                .fill(.ultraThinMaterial)
                 .shadow(color: .primary.opacity(0.1), radius: 4, x: 0, y: 2)
         )
         .onTapGesture {
