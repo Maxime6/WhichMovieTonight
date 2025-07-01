@@ -45,16 +45,8 @@ struct GenreSettingsView: View {
 
             Spacer()
         }
-//        .navigationTitle("Genres favoris")
-//        .navigationBarTitleDisplayMode(.inline)
-//        .toolbar {
-//            ToolbarItem(placement: .navigationBarTrailing) {
-//                Button("Terminé") {
-//                    dismiss()
-//                }
-//                .fontWeight(.semibold)
-//            }
-//        }
+        .navigationTitle("Genres favoris")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

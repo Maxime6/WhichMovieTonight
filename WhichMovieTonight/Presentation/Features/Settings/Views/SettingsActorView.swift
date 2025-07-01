@@ -79,14 +79,6 @@ struct ActorSettingsView: View {
         }
         .navigationTitle("Acteurs favoris")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Terminé") {
-                    dismiss()
-                }
-                .fontWeight(.semibold)
-            }
-        }
         .alert("Acteur déjà ajouté", isPresented: $showingAlert) {
             Button("OK", role: .cancel) {}
         } message: {

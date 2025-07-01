@@ -47,14 +47,6 @@ struct StreamingPlatformSettingsView: View {
         }
         .navigationTitle("Plateformes de streaming")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Terminé") {
-                    dismiss()
-                }
-                .fontWeight(.semibold)
-            }
-        }
     }
 }
 
