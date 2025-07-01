@@ -46,13 +46,21 @@ struct ContentView: View {
                 }
                 .tag(1)
 
+            FavoritesView()
+                .environmentObject(appStateManager)
+                .tabItem {
+                    Image(systemName: "heart.fill")
+                    Text("Favorites")
+                }
+                .tag(2)
+
             SettingsView()
                 .environmentObject(appStateManager)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
                 }
-                .tag(2)
+                .tag(3)
         }
         .accentColor(.cyan)
     }
