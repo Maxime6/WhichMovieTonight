@@ -153,7 +153,7 @@ struct FavoritesView: View {
 
     private var sortMenu: some View {
         Menu {
-            ForEach(FavoritesViewModel.SortOption.allCases, id: \.self) { option in
+            ForEach(SortOption.allCases, id: \.self) { option in
                 Button(action: {
                     viewModel.sortBy(option)
                 }) {

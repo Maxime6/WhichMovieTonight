@@ -40,8 +40,14 @@ struct WatchlistView: View {
             }
             .navigationTitle("Watchlist")
             .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $viewModel.searchText, prompt: "Search movies...")
             .refreshable {
                 await viewModel.refreshMovies()
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    sortMenu
+                }
             }
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
@@ -129,17 +135,27 @@ struct WatchlistView: View {
 
     private var emptyFilterView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "line.3.horizontal.decrease.circle")
+            Image(systemName: viewModel.searchText.isEmpty ? "line.3.horizontal.decrease.circle" : "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
 
-            Text("No \(viewModel.selectedTag.displayName) Movies")
-                .font(.headline)
+            if viewModel.searchText.isEmpty {
+                Text("No \(viewModel.selectedTag.displayName) Movies")
+                    .font(.headline)
 
-            Text("Try selecting a different filter or interact with more movies")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+                Text("Try selecting a different filter or interact with more movies")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("No search results within '\(viewModel.selectedTag.displayName)'")
+                    .font(.headline)
+
+                Text("Try adjusting your search terms")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -151,7 +167,7 @@ struct WatchlistView: View {
             LazyVGrid(columns: [
                 GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 16),
             ], spacing: 16) {
-                ForEach(viewModel.getMoviesSortedByInteraction()) { userMovie in
+                ForEach(viewModel.filteredMovies) { userMovie in
                     WatchlistMovieCard(
                         userMovie: userMovie,
                         namespace: heroAnimation,
@@ -183,6 +199,32 @@ struct WatchlistView: View {
                 }
             }
             .padding()
+        }
+    }
+
+    // MARK: - Sort Menu
+
+    private var sortMenu: some View {
+        Menu {
+            ForEach(SortOption.allCases, id: \.self) { option in
+                Button(action: {
+                    viewModel.sortBy(option)
+                }) {
+                    HStack {
+                        Image(systemName: option.icon)
+                        Text(option.displayName)
+                        if viewModel.currentSortOption == option {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "line.3.horizontal.decrease.circle")
+                Text(viewModel.currentSortOption.displayName)
+                    .font(.caption)
+            }
         }
     }
 }

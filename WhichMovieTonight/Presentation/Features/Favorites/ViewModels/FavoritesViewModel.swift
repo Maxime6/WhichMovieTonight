@@ -26,48 +26,12 @@ final class FavoritesViewModel: ObservableObject {
     private let userMovieService: UserMovieServiceProtocol
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Sort Options
-
-    enum SortOption: String, CaseIterable {
-        case recentlyAdded
-        case titleAscending
-        case titleDescending
-        case yearDescending
-        case yearAscending
-        case ratingDescending
-
-        var displayName: String {
-            switch self {
-            case .recentlyAdded: return "Recently Added"
-            case .titleAscending: return "Title A-Z"
-            case .titleDescending: return "Title Z-A"
-            case .yearDescending: return "Year (Newest)"
-            case .yearAscending: return "Year (Oldest)"
-            case .ratingDescending: return "Rating (High to Low)"
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .recentlyAdded: return "clock.fill"
-            case .titleAscending: return "textformat.abc"
-            case .titleDescending: return "textformat.abc.dottedunderline"
-            case .yearDescending: return "calendar.badge.plus"
-            case .yearAscending: return "calendar.badge.minus"
-            case .ratingDescending: return "star.fill"
-            }
-        }
-    }
-
     // MARK: - Initialization
 
     init(userMovieService: UserMovieServiceProtocol = UserMovieService()) {
         self.userMovieService = userMovieService
 
-        // Load saved sort preference
-        loadSortPreference()
-
-        // Setup search and filtering
+        // Setup reactive search and filtering
         setupSearchAndFiltering()
 
         Task {
@@ -77,7 +41,7 @@ final class FavoritesViewModel: ObservableObject {
 
     // MARK: - Public Methods
 
-    /// Load user's favorite movies
+    /// Load user favorites
     func loadFavorites() async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
@@ -88,9 +52,8 @@ final class FavoritesViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let allMovies = try await userMovieService.getUserMovies(userId: userId, filter: nil)
-            favorites = allMovies.filter { $0.isFavorite }
-            print("📱 Loaded \(favorites.count) favorite movies")
+            favorites = try await userMovieService.getUserMovies(userId: userId, filter: .favorites)
+            print("📱 Loaded \(favorites.count) favorites for user")
         } catch {
             print("❌ Error loading favorites: \(error)")
             if error.localizedDescription.contains("offline") {
@@ -108,16 +71,9 @@ final class FavoritesViewModel: ObservableObject {
         await loadFavorites()
     }
 
-    /// Perform search with debouncing
-    func performSearch(_ query: String) {
-        searchText = query
-    }
-
-    /// Change sort option
+    /// Sort by specified option
     func sortBy(_ option: SortOption) {
         currentSortOption = option
-        saveSortPreference()
-        applySortingAndFiltering()
     }
 
     // MARK: - Computed Properties
@@ -172,14 +128,14 @@ final class FavoritesViewModel: ObservableObject {
     }
 
     /// Sort favorites by specified option
-    private func sortFavorites(_ favorites: [UserMovie], by option: SortOption) -> [UserMovie] {
-        switch option {
+    private func sortFavorites(_ favorites: [UserMovie], by sortOption: SortOption) -> [UserMovie] {
+        switch sortOption {
         case .recentlyAdded:
             return favorites.sorted { ($0.favoriteAt ?? Date.distantPast) > ($1.favoriteAt ?? Date.distantPast) }
         case .titleAscending:
-            return favorites.sorted { $0.movie.title.localizedCaseInsensitiveCompare($1.movie.title) == .orderedAscending }
+            return favorites.sorted { $0.movie.title.lowercased() < $1.movie.title.lowercased() }
         case .titleDescending:
-            return favorites.sorted { $0.movie.title.localizedCaseInsensitiveCompare($1.movie.title) == .orderedDescending }
+            return favorites.sorted { $0.movie.title.lowercased() > $1.movie.title.lowercased() }
         case .yearDescending:
             return favorites.sorted { ($0.movie.year ?? "0") > ($1.movie.year ?? "0") }
         case .yearAscending:
@@ -191,24 +147,5 @@ final class FavoritesViewModel: ObservableObject {
                 return rating1 > rating2
             }
         }
-    }
-
-    /// Apply current sorting and filtering
-    private func applySortingAndFiltering() {
-        filteredFavorites = filterAndSortFavorites(favorites, searchText: searchText, sortOption: currentSortOption)
-    }
-
-    /// Load saved sort preference
-    private func loadSortPreference() {
-        if let savedSort = UserDefaults.standard.string(forKey: "favorites_sort_preference"),
-           let sortOption = SortOption(rawValue: savedSort)
-        {
-            currentSortOption = sortOption
-        }
-    }
-
-    /// Save sort preference
-    private func saveSortPreference() {
-        UserDefaults.standard.set(currentSortOption.rawValue, forKey: "favorites_sort_preference")
     }
 }
