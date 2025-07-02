@@ -15,7 +15,9 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Published Properties
 
     @Published var currentRecommendations: [Movie] = []
+    @Published var currentRecommendationsUserMovies: [UserMovie]? = nil
     @Published var selectedMovieForTonight: Movie?
+    @Published var selectedMovieForTonightUserMovie: UserMovie? = nil
     @Published var isGeneratingRecommendations = false
     @Published var userName: String = "Movie Lover"
 
@@ -82,6 +84,13 @@ final class HomeViewModel: ObservableObject {
                 } else {
                     // Use existing recommendations from today
                     currentRecommendations = existingRecommendations
+
+                    // Load the corresponding UserMovie objects
+                    let userMovies = try await userMovieService.getCurrentPicks(userId: userId)
+                    await MainActor.run {
+                        currentRecommendationsUserMovies = userMovies
+                    }
+
                     print("📱 Loaded \(existingRecommendations.count) existing recommendations from today")
                 }
             } else {
@@ -156,6 +165,13 @@ final class HomeViewModel: ObservableObject {
         do {
             let newRecommendations = try await recommendationService.generateNewRecommendations(for: userId)
             currentRecommendations = newRecommendations
+
+            // Load the corresponding UserMovie objects
+            let userMovies = try await userMovieService.getCurrentPicks(userId: userId)
+            await MainActor.run {
+                currentRecommendationsUserMovies = userMovies
+            }
+
             print("🎉 Generated \(newRecommendations.count) new recommendations")
         } catch {
             print("❌ Failed to generate recommendations: \(error)")
@@ -187,6 +203,12 @@ final class HomeViewModel: ObservableObject {
         do {
             try await userMovieService.setTonightSelection(userId: userId, movieId: movie.id)
             selectedMovieForTonight = movie
+
+            // Load the UserMovie object for the selected movie
+            if let userMovie = try await userMovieService.getUserMovie(userId: userId, movieId: movie.id) {
+                selectedMovieForTonightUserMovie = userMovie
+            }
+
             showToastMessage("Selected for tonight: \(movie.title)")
         } catch {
             print("❌ Error selecting movie for tonight: \(error)")
@@ -204,6 +226,7 @@ final class HomeViewModel: ObservableObject {
         do {
             try await userMovieService.clearTonightSelection(userId: userId)
             selectedMovieForTonight = nil
+            selectedMovieForTonightUserMovie = nil
             showToastMessage("Movie deselected")
         } catch {
             print("❌ Error deselecting movie: \(error)")
@@ -225,6 +248,7 @@ final class HomeViewModel: ObservableObject {
         do {
             if let userMovie = try await userMovieService.getTonightSelection(userId: userId) {
                 selectedMovieForTonight = userMovie.movie
+                selectedMovieForTonightUserMovie = userMovie
                 print("📱 Loaded selected movie for tonight: \(userMovie.movie.title)")
             }
         } catch {

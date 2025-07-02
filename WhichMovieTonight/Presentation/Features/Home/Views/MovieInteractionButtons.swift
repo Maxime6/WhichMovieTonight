@@ -10,6 +10,7 @@ import SwiftUI
 
 struct MovieInteractionButtons: View {
     let movie: Movie
+    let userMovie: UserMovie? // Optional UserMovie data when available
     let onInteractionUpdate: (() -> Void)?
 
     @State private var isLiked = false
@@ -23,10 +24,12 @@ struct MovieInteractionButtons: View {
 
     init(
         movie: Movie,
+        userMovie: UserMovie? = nil,
         onInteractionUpdate: (() -> Void)? = nil,
         userMovieService: UserMovieServiceProtocol = UserMovieService()
     ) {
         self.movie = movie
+        self.userMovie = userMovie
         self.onInteractionUpdate = onInteractionUpdate
         self.userMovieService = userMovieService
     }
@@ -100,6 +103,18 @@ struct MovieInteractionButtons: View {
     // MARK: - Private Methods
 
     private func loadCurrentInteractionState() async {
+        // If we already have UserMovie data, use it directly
+        if let userMovie = userMovie {
+            await MainActor.run {
+                isLiked = userMovie.isLiked
+                isDisliked = userMovie.isDisliked
+                isFavorite = userMovie.isFavorite
+                isSeen = userMovie.isSeen
+            }
+            return
+        }
+
+        // Fallback: fetch from service only when UserMovie is not provided
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
@@ -243,7 +258,7 @@ struct MovieInteractionButtons: View {
 
 // MARK: - Interaction Button Component
 
-private struct InteractionButton: View {
+struct InteractionButton: View {
     let icon: String
     let label: String
     let color: Color
@@ -252,11 +267,11 @@ private struct InteractionButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: 4) {
                 if isLoading {
                     ProgressView()
                         .scaleEffect(0.8)
-                        .frame(width: 24, height: 24)
+                        .progressViewStyle(CircularProgressViewStyle(tint: color))
                 } else {
                     Image(systemName: icon)
                         .font(.title2)
@@ -265,21 +280,34 @@ private struct InteractionButton: View {
 
                 Text(label)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(color)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(.ultraThinMaterial)
+                    .fill(color.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(color.opacity(0.3), lineWidth: 1)
+                    )
             )
         }
-        .disabled(isLoading)
         .buttonStyle(PlainButtonStyle())
+        .disabled(isLoading)
     }
 }
 
 #Preview {
-    MovieInteractionButtons(movie: Movie.preview)
-        .padding()
+    VStack(spacing: 20) {
+        MovieInteractionButtons(
+            movie: Movie.preview,
+            userMovie: UserMovie(userId: "preview", movie: Movie.preview, isLiked: true, isFavorite: true)
+        )
+
+        MovieInteractionButtons(
+            movie: Movie.preview
+        )
+    }
+    .padding()
 }

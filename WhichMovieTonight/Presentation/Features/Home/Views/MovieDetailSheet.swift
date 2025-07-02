@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MovieDetailSheet: View {
     let movie: Movie
+    let userMovie: UserMovie? // Optional UserMovie data when available
     let namespace: Namespace.ID
     @Binding var isPresented: Bool
     let source: MovieDetailSource
@@ -74,10 +75,10 @@ struct MovieDetailSheet: View {
 
     private var movieDetailsSection: some View {
         VStack(spacing: 24) {
-            MovieInteractionButtons(movie: movie)
+            MovieInteractionButtons(movie: movie, userMovie: userMovie)
 
             genresSection
-            
+
             synopsisSection
 
             castCrewSection
@@ -263,6 +264,7 @@ struct MovieDetailSheet: View {
     @Previewable @Namespace var namespace
     return MovieDetailSheet(
         movie: Movie.preview,
+        userMovie: UserMovie(userId: "preview", movie: Movie.preview, isLiked: true, isFavorite: true),
         namespace: namespace,
         isPresented: .constant(true),
         source: .suggestion,

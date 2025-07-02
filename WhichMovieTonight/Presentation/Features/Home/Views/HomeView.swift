@@ -84,8 +84,19 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingMovieDetail) {
             if let movie = selectedMovie {
+                // Try to find the UserMovie for this movie
+                let userMovie: UserMovie?
+                if movie.id == viewModel.selectedMovieForTonight?.id {
+                    // This is the selected movie for tonight
+                    userMovie = viewModel.selectedMovieForTonightUserMovie
+                } else {
+                    // This is a recommendation movie
+                    userMovie = viewModel.currentRecommendationsUserMovies?.first(where: { $0.movie.id == movie.id })
+                }
+
                 MovieDetailSheet(
                     movie: movie,
+                    userMovie: userMovie,
                     namespace: heroAnimation,
                     isPresented: $showingMovieDetail,
                     source: .suggestion,

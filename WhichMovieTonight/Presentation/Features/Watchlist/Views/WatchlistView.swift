@@ -60,8 +60,12 @@ struct WatchlistView: View {
             }
             .sheet(isPresented: $showingMovieDetail) {
                 if let movie = selectedMovie {
+                    // Find the UserMovie for this movie from the viewModel
+                    let userMovie = viewModel.userMovies.first(where: { $0.movie.id == movie.id })
+
                     MovieDetailSheet(
                         movie: movie,
+                        userMovie: userMovie,
                         namespace: heroAnimation,
                         isPresented: $showingMovieDetail,
                         source: .currentMovie,
