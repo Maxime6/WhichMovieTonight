@@ -105,6 +105,13 @@ struct MovieInteractionButtons: View {
     private func loadCurrentInteractionState() async {
         // If we already have UserMovie data, use it directly
         if let userMovie = userMovie {
+            print("🎯 Using provided UserMovie data for: \(userMovie.movie.title)")
+            print("   - userId: \(userMovie.userId)")
+            print("   - isLiked: \(userMovie.isLiked)")
+            print("   - isDisliked: \(userMovie.isDisliked)")
+            print("   - isFavorite: \(userMovie.isFavorite)")
+            print("   - isSeen: \(userMovie.isSeen)")
+
             await MainActor.run {
                 isLiked = userMovie.isLiked
                 isDisliked = userMovie.isDisliked
@@ -114,17 +121,25 @@ struct MovieInteractionButtons: View {
             return
         }
 
+        print("🔄 No UserMovie provided, fetching from service for: \(movie.title)")
+
         // Fallback: fetch from service only when UserMovie is not provided
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("❌ No user ID available")
+            return
+        }
 
         do {
             if let userMovie = try await userMovieService.getUserMovie(userId: userId, movieId: movie.id) {
+                print("✅ Fetched UserMovie from service: \(userMovie.movie.title)")
                 await MainActor.run {
                     isLiked = userMovie.isLiked
                     isDisliked = userMovie.isDisliked
                     isFavorite = userMovie.isFavorite
                     isSeen = userMovie.isSeen
                 }
+            } else {
+                print("⚠️ No UserMovie found in service for: \(movie.title)")
             }
         } catch {
             print("❌ Error loading interaction state: \(error)")

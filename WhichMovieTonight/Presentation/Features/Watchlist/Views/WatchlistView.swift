@@ -10,7 +10,7 @@ import SwiftUI
 struct WatchlistView: View {
     @StateObject private var viewModel = WatchlistViewModel()
     @State private var showingMovieDetail = false
-    @State private var selectedMovie: Movie?
+    @State private var selectedUserMovie: UserMovie?
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -58,28 +58,23 @@ struct WatchlistView: View {
                     Text(errorMessage)
                 }
             }
-            .sheet(isPresented: $showingMovieDetail) {
-                if let movie = selectedMovie {
-                    // Find the UserMovie for this movie from the viewModel
-                    let userMovie = viewModel.userMovies.first(where: { $0.movie.id == movie.id })
-
-                    MovieDetailSheet(
-                        movie: movie,
-                        userMovie: userMovie,
-                        namespace: heroAnimation,
-                        isPresented: $showingMovieDetail,
-                        source: .currentMovie,
-                        onSelectForTonight: {
-                            // Find UserMovie for this movie
-                            if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == movie.id }) {
-                                Task {
-                                    await viewModel.selectForTonight(userMovie)
-                                }
+            .sheet(item: $selectedUserMovie) { userMovie in
+                MovieDetailSheet(
+                    movie: userMovie.movie,
+                    userMovie: userMovie,
+                    namespace: heroAnimation,
+                    isPresented: .constant(true),
+                    source: .currentMovie,
+                    onSelectForTonight: {
+                        // Find UserMovie for this movie
+                        if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == userMovie.movie.id }) {
+                            Task {
+                                await viewModel.selectForTonight(userMovie)
                             }
-                            showingMovieDetail = false
                         }
-                    )
-                }
+                        selectedUserMovie = nil
+                    }
+                )
             }
         }
     }
@@ -176,8 +171,7 @@ struct WatchlistView: View {
                         userMovie: userMovie,
                         namespace: heroAnimation,
                         onTap: {
-                            selectedMovie = userMovie.movie
-                            showingMovieDetail = true
+                            selectedUserMovie = userMovie
                         },
                         onLikeToggle: {
                             Task {

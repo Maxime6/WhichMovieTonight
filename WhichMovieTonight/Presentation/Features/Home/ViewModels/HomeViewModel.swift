@@ -14,8 +14,7 @@ import SwiftUI
 final class HomeViewModel: ObservableObject {
     // MARK: - Published Properties
 
-    @Published var currentRecommendations: [Movie] = []
-    @Published var currentRecommendationsUserMovies: [UserMovie]? = nil
+    @Published var currentRecommendations: [UserMovie] = []
     @Published var selectedMovieForTonight: Movie?
     @Published var selectedMovieForTonightUserMovie: UserMovie? = nil
     @Published var isGeneratingRecommendations = false
@@ -83,14 +82,9 @@ final class HomeViewModel: ObservableObject {
                     await generateRecommendations()
                 } else {
                     // Use existing recommendations from today
-                    currentRecommendations = existingRecommendations
-
-                    // Load the corresponding UserMovie objects
-                    let userMovies = try await userMovieService.getCurrentPicks(userId: userId)
                     await MainActor.run {
-                        currentRecommendationsUserMovies = userMovies
+                        currentRecommendations = existingRecommendations
                     }
-
                     print("📱 Loaded \(existingRecommendations.count) existing recommendations from today")
                 }
             } else {
@@ -164,14 +158,9 @@ final class HomeViewModel: ObservableObject {
 
         do {
             let newRecommendations = try await recommendationService.generateNewRecommendations(for: userId)
-            currentRecommendations = newRecommendations
-
-            // Load the corresponding UserMovie objects
-            let userMovies = try await userMovieService.getCurrentPicks(userId: userId)
             await MainActor.run {
-                currentRecommendationsUserMovies = userMovies
+                currentRecommendations = newRecommendations
             }
-
             print("🎉 Generated \(newRecommendations.count) new recommendations")
         } catch {
             print("❌ Failed to generate recommendations: \(error)")

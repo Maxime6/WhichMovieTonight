@@ -27,6 +27,7 @@ protocol UserMovieServiceProtocol {
     // Current Picks Management
     func getCurrentPicks(userId: String) async throws -> [UserMovie]
     func setCurrentPicks(userId: String, movies: [Movie]) async throws
+    func setCurrentPicks(userId: String, userMovies: [UserMovie]) async throws
     func clearCurrentPicks(userId: String) async throws
 
     // Tonight Selection
@@ -224,6 +225,18 @@ final class UserMovieService: UserMovieServiceProtocol {
         // Save all new picks
         try await saveUserMovies(newUserMovies)
         print("✅ Set \(movies.count) new current picks for user \(userId)")
+
+        // Invalidate cache for this user
+        await cache.invalidateCache(userId: userId)
+    }
+
+    func setCurrentPicks(userId: String, userMovies: [UserMovie]) async throws {
+        // First, clear existing current picks
+        try await clearCurrentPicks(userId: userId)
+
+        // Save all new picks
+        try await saveUserMovies(userMovies)
+        print("✅ Set \(userMovies.count) new current picks for user \(userId)")
 
         // Invalidate cache for this user
         await cache.invalidateCache(userId: userId)

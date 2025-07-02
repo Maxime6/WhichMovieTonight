@@ -11,8 +11,8 @@ import Foundation
 // MARK: - Recommendation Service Protocol
 
 protocol RecommendationServiceProtocol {
-    func loadCurrentRecommendations(for userId: String) async throws -> [Movie]
-    func generateNewRecommendations(for userId: String) async throws -> [Movie]
+    func loadCurrentRecommendations(for userId: String) async throws -> [UserMovie]
+    func generateNewRecommendations(for userId: String) async throws -> [UserMovie]
 }
 
 // MARK: - Recommendation Service Implementation
@@ -42,18 +42,17 @@ final class RecommendationService: RecommendationServiceProtocol {
     // MARK: - Public Methods
 
     /// Load current recommendations from UserMovieService
-    func loadCurrentRecommendations(for userId: String) async throws -> [Movie] {
+    func loadCurrentRecommendations(for userId: String) async throws -> [UserMovie] {
         print("📱 Loading current recommendations for user: \(userId)")
 
         let currentPicks = try await userMovieService.getCurrentPicks(userId: userId)
-        let movies = currentPicks.map { $0.movie }
 
-        print("📱 Loaded \(movies.count) current recommendations")
-        return movies
+        print("📱 Loaded \(currentPicks.count) current recommendations")
+        return currentPicks
     }
 
     /// Generate new recommendations with retry logic
-    func generateNewRecommendations(for userId: String) async throws -> [Movie] {
+    func generateNewRecommendations(for userId: String) async throws -> [UserMovie] {
         print("🎬 Generating new recommendations for user: \(userId)")
 
         // 1. Load user preferences from Firebase
@@ -70,7 +69,7 @@ final class RecommendationService: RecommendationServiceProtocol {
         let exclusionList = try await getExclusionList(for: userId)
 
         // 4. Generate 5 movies in a single OpenAI call with retry logic
-        var generatedMovies: [Movie] = []
+        var generatedMovies: [UserMovie] = []
         var attempts = 0
         let maxRetries = 3
         var lastError: Error?
@@ -93,18 +92,18 @@ final class RecommendationService: RecommendationServiceProtocol {
                 print("✅ OpenAI returned \(movieDTOs.count) movie suggestions")
 
                 // Process each movie DTO and enrich with OMDB data
-                var processedMovies: [Movie] = []
+                var processedMovies: [UserMovie] = []
 
                 for (index, movieDTO) in movieDTOs.enumerated() {
                     do {
-                        let movie = try await enrichMovieWithOMDB(movieDTO)
+                        let movie = try await enrichMovieWithOMDB(movieDTO, userId: userId)
 
                         // Check for duplicates by title (case insensitive)
-                        if !processedMovies.contains(where: { $0.title.lowercased() == movie.title.lowercased() }) {
+                        if !processedMovies.contains(where: { $0.movie.title.lowercased() == movie.movie.title.lowercased() }) {
                             processedMovies.append(movie)
-                            print("✅ Processed movie \(processedMovies.count): \(movie.title)")
+                            print("✅ Processed movie \(processedMovies.count): \(movie.movie.title)")
                         } else {
-                            print("⚠️ Skipped duplicate movie: \(movie.title)")
+                            print("⚠️ Skipped duplicate movie: \(movie.movie.title)")
                         }
                     } catch {
                         print("⚠️ Failed to process movie \(index + 1) (\(movieDTO.title)): \(error)")
@@ -196,29 +195,34 @@ final class RecommendationService: RecommendationServiceProtocol {
     }
 
     /// Save new generation using UserMovieService
-    private func saveNewGeneration(_ movies: [Movie], for userId: String) async throws {
+    private func saveNewGeneration(_ userMovies: [UserMovie], for userId: String) async throws {
         // First cleanup old history to maintain 50 movie limit
         try await userMovieService.cleanupOldHistory(userId: userId, keepCount: 50)
 
-        // Set new current picks (this will automatically clear old picks and mark as history)
-        try await userMovieService.setCurrentPicks(userId: userId, movies: movies)
-
-        print("💾 Saved \(movies.count) new current picks and updated history")
+        // Set new current picks using the new method
+        try await userMovieService.setCurrentPicks(userId: userId, userMovies: userMovies)
+        print("💾 Saved \(userMovies.count) new current picks and updated history")
     }
 
     /// Enrich OpenAI movie suggestion with OMDB data
-    private func enrichMovieWithOMDB(_ movieDTO: OpenAIMovieDTO) async throws -> Movie {
+    private func enrichMovieWithOMDB(_ movieDTO: OpenAIMovieDTO, userId: String) async throws -> UserMovie {
         do {
             let omdbMovie = try await omdbService.getMovieDetailsByTitle(title: movieDTO.title)
-            return Movie(
+            let movie = Movie(
                 from: omdbMovie,
                 originalGenres: movieDTO.genres,
                 originalPlatforms: movieDTO.platforms
             )
+            return UserMovie(
+                userId: userId,
+                movie: movie,
+                isCurrentPick: true,
+                isInHistory: true
+            )
         } catch {
             print("⚠️ OMDB enrichment failed for \(movieDTO.title), using OpenAI data only")
             // Fallback to OpenAI data only
-            return Movie(
+            let movie = Movie(
                 title: movieDTO.title,
                 overview: nil,
                 posterURL: URL(string: movieDTO.posterUrl),
@@ -233,6 +237,12 @@ final class RecommendationService: RecommendationServiceProtocol {
                 year: nil,
                 rated: nil,
                 awards: nil
+            )
+            return UserMovie(
+                userId: userId,
+                movie: movie,
+                isCurrentPick: true,
+                isInHistory: true
             )
         }
     }

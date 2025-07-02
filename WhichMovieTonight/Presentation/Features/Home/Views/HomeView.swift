@@ -11,9 +11,10 @@ struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @EnvironmentObject private var appStateManager: AppStateManager
     @State private var showingMovieDetail = false
-    @State private var selectedMovie: Movie?
+    @State private var selectedUserMovie: UserMovie?
     @State private var showingRefreshConfirmation = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingProfileMenu = false
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -82,46 +83,22 @@ struct HomeView: View {
         } message: {
             Text("Remove this movie from tonight's selection?")
         }
-        .sheet(isPresented: $showingMovieDetail) {
-            if let movie = selectedMovie {
-                // Try to find the UserMovie for this movie
-                let userMovie: UserMovie?
-                if movie.id == viewModel.selectedMovieForTonight?.id {
-                    // This is the selected movie for tonight
-                    userMovie = viewModel.selectedMovieForTonightUserMovie
-                } else {
-                    // This is a recommendation movie
-                    userMovie = viewModel.currentRecommendationsUserMovies?.first(where: { $0.movie.id == movie.id })
-                }
-
-                MovieDetailSheet(
-                    movie: movie,
-                    userMovie: userMovie,
-                    namespace: heroAnimation,
-                    isPresented: $showingMovieDetail,
-                    source: .suggestion,
-                    onSelectForTonight: {
-                        Task {
-                            await viewModel.selectMovieForTonight(movie)
-                        }
-                        showingMovieDetail = false
+        .sheet(item: $selectedUserMovie, onDismiss: {
+            selectedUserMovie = nil
+        }) { userMovie in
+            MovieDetailSheet(
+                movie: userMovie.movie,
+                userMovie: userMovie,
+                namespace: heroAnimation,
+                isPresented: .constant(true),
+                source: .suggestion,
+                onSelectForTonight: {
+                    Task {
+                        await viewModel.selectMovieForTonight(userMovie.movie)
                     }
-                )
-            } else {
-                // Fallback view if selectedMovie is nil (shouldn't happen but safety first)
-                VStack {
-                    Text("Erreur")
-                        .font(.headline)
-                    Text("Film non trouvé")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Button("Fermer") {
-                        showingMovieDetail = false
-                    }
-                    .padding()
+                    selectedUserMovie = nil
                 }
-                .padding()
-            }
+            )
         }
     }
 
@@ -181,13 +158,16 @@ struct HomeView: View {
                 // Recommendations scroll view
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(viewModel.currentRecommendations, id: \.id) { movie in
+                        ForEach(viewModel.currentRecommendations, id: \.id) { userMovie in
                             MovieCardView(
-                                movie: movie,
+                                movie: userMovie.movie,
                                 namespace: heroAnimation,
                                 onPosterTap: {
-                                    selectedMovie = movie
-                                    showingMovieDetail = true
+                                    print("🎬 Tapping on recommendation movie: \(userMovie.movie.title)")
+                                    print("   - userId: \(userMovie.userId)")
+                                    print("   - isCurrentPick: \(userMovie.isCurrentPick)")
+                                    print("   - isInHistory: \(userMovie.isInHistory)")
+                                    selectedUserMovie = userMovie
                                 }
                             )
                             .frame(width: 160, height: 280)
@@ -215,12 +195,14 @@ struct HomeView: View {
 
             // CONTENEUR AVEC HAUTEUR FIXE pour l'alignement
             VStack {
-                if let selectedMovie = viewModel.selectedMovieForTonight {
+                if let movieForTonight = viewModel.selectedMovieForTonight {
                     SelectedMovieCard(
-                        movie: selectedMovie,
+                        movie: movieForTonight,
                         onTap: {
-                            self.selectedMovie = selectedMovie
-                            showingMovieDetail = true
+                            print("🎬 Tapping on selected movie for tonight: \(movieForTonight.title)")
+                            print("   - selectedMovieForTonightUserMovie: \(viewModel.selectedMovieForTonightUserMovie?.movie.title ?? "nil")")
+                            print("   - userId: \(viewModel.selectedMovieForTonightUserMovie?.userId ?? "nil")")
+                            selectedUserMovie = viewModel.selectedMovieForTonightUserMovie
                         },
                         onDeselect: {
                             showingDeleteConfirmation = true

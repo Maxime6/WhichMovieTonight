@@ -10,7 +10,7 @@ import SwiftUI
 struct FavoritesView: View {
     @StateObject private var viewModel = FavoritesViewModel()
     @State private var showingMovieDetail = false
-    @State private var selectedMovie: Movie?
+    @State private var selectedUserMovie: UserMovie?
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -47,29 +47,17 @@ struct FavoritesView: View {
                     Text(errorMessage)
                 }
             }
-            .sheet(isPresented: $showingMovieDetail) {
-                if let movie = selectedMovie {
-                    // Find the UserMovie for this movie from the viewModel
-                    let userMovie = viewModel.favorites.first(where: { $0.movie.id == movie.id })
-
-                    MovieDetailSheet(
-                        movie: movie,
-                        userMovie: userMovie,
-                        namespace: heroAnimation,
-                        isPresented: $showingMovieDetail,
-                        source: .currentMovie,
-                        onSelectForTonight: {
-                            // Find UserMovie for this movie
-                            if let userMovie = viewModel.favorites.first(where: { $0.movie.id == movie.id }) {
-                                Task {
-                                    // This would need to be implemented in the view model
-                                    // For now, just close the detail sheet
-                                }
-                            }
-                            showingMovieDetail = false
-                        }
-                    )
-                }
+            .sheet(item: $selectedUserMovie) { userMovie in
+                MovieDetailSheet(
+                    movie: userMovie.movie,
+                    userMovie: userMovie,
+                    namespace: heroAnimation,
+                    isPresented: .constant(true),
+                    source: .currentMovie,
+                    onSelectForTonight: {
+                        selectedUserMovie = nil
+                    }
+                )
             }
         }
     }
@@ -143,8 +131,7 @@ struct FavoritesView: View {
                         userMovie: userMovie,
                         namespace: heroAnimation,
                         onTap: {
-                            selectedMovie = userMovie.movie
-                            showingMovieDetail = true
+                            selectedUserMovie = userMovie
                         }
                     )
                 }
