@@ -90,7 +90,7 @@ struct FilterTag: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: tag.icon)
-                    .font(.caption)
+                    .font(.callout)
 
                 Text(tag.displayName)
                     .font(.caption)
