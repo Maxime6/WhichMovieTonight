@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var notificationService: NotificationService
     @StateObject private var authViewModel: AuthenticationViewModel
     @StateObject private var userProfileService = UserProfileService()
     @State private var showingProfileMenu = false
@@ -113,13 +114,27 @@ struct SettingsView: View {
                         }
                     }
 
-                    HStack {
-                        Image(systemName: "bell.fill")
-                            .foregroundColor(.orange)
-                            .frame(width: 20)
-                        Text("Notifications")
-                        Spacer()
-                        Toggle("", isOn: .constant(true))
+                    // Notification Settings
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "bell.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 20)
+                            Text("Notifications")
+                            Spacer()
+                            Toggle("", isOn: $notificationService.isNotificationsEnabled)
+                                .onChange(of: notificationService.isNotificationsEnabled) { newValue in
+                                    handleNotificationToggle(newValue)
+                                }
+                        }
+
+                        // Permission status description
+                        if notificationService.shouldShowPermissionReminder {
+                            Text(notificationService.notificationStatusDescription)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 28)
+                        }
                     }
                 }
 
@@ -210,6 +225,28 @@ struct SettingsView: View {
             }
         } message: {
             Text("This action cannot be undone. All your data will be permanently deleted.")
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private func handleNotificationToggle(_ isEnabled: Bool) {
+        if isEnabled {
+            // User wants to enable notifications - request permission
+            Task {
+                let granted = await notificationService.requestNotificationPermissions()
+                if !granted {
+                    // If permission denied, update the toggle state
+                    await MainActor.run {
+                        notificationService.isNotificationsEnabled = false
+                    }
+                }
+            }
+        } else {
+            // User wants to disable notifications - remove scheduled notifications
+            Task {
+                await notificationService.removeDailyNotification()
+            }
         }
     }
 }

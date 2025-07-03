@@ -14,6 +14,7 @@ class Appdelegate: UIResponder, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
 
+        // Set up notification delegate
         UNUserNotificationCenter.current().delegate = self
 
         print("✅ App initialized with Firebase")
@@ -30,17 +31,10 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        print("📱 Notification reçue en foreground: \(notification.request.identifier)")
+        print("📱 Notification received in foreground: \(notification.request.identifier)")
 
-        if notification.request.identifier == "generate-recommendations" {
-            print("🔄 Déclenchement de la génération de recommandations")
-            Task { @MainActor in
-                await handleBackgroundRecommendationGeneration()
-            }
-            completionHandler([])
-        } else {
-            completionHandler([.banner, .list, .sound, .badge])
-        }
+        // Show notification even when app is in foreground
+        completionHandler([.banner, .list, .sound, .badge])
     }
 
     func userNotificationCenter(
@@ -48,18 +42,15 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        print("👤 Utilisateur a interagi avec la notification: \(response.notification.request.identifier)")
+        print("👤 User tapped notification: \(response.notification.request.identifier)")
 
-        // TODO: Handle notification response with simplified notification system
+        // Handle notification tap
+        if response.notification.request.identifier == "daily-movie-recommendations" {
+            // Clear badge and track analytics
+            NotificationService().handleNotificationTap()
+        }
 
         completionHandler()
-    }
-
-    @MainActor
-    private func handleBackgroundRecommendationGeneration() async {
-        print("🎬 Démarrage de la génération de recommandations en arrière-plan")
-
-        // Removed notification system in V1 simplification
     }
 }
 

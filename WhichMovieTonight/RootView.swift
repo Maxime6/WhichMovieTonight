@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var appStateManager = AppStateManager()
+    @StateObject private var notificationService = NotificationService()
 
     var body: some View {
         ZStack {
@@ -13,6 +14,7 @@ struct RootView: View {
             case .needsOnboarding:
                 OnboardingView()
                     .environmentObject(appStateManager)
+                    .environmentObject(notificationService)
 
             case .needsAuthentication:
                 AuthenticationView()
@@ -21,7 +23,23 @@ struct RootView: View {
             case .authenticated:
                 ContentView()
                     .environmentObject(appStateManager)
+                    .environmentObject(notificationService)
             }
+        }
+        .onAppear {
+            // Clear app badge when app opens
+            notificationService.clearAppBadge()
+
+            // Check if app was opened from notification
+            checkIfOpenedFromNotification()
+        }
+    }
+
+    private func checkIfOpenedFromNotification() {
+        // This will be called when app opens
+        // We'll track this in analytics to see if user opened from notification
+        Task {
+            await notificationService.trackAppOpenedFromNotification()
         }
     }
 }

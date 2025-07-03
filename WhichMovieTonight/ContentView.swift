@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var notificationService: NotificationService
     @StateObject private var userProfileService = UserProfileService()
     @StateObject private var homeViewModel: HomeViewModel
 
@@ -56,6 +57,7 @@ struct ContentView: View {
 
             SettingsView()
                 .environmentObject(appStateManager)
+                .environmentObject(notificationService)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")

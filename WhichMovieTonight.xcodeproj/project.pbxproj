@@ -69,6 +69,8 @@
 		9C792AE62E141DF100709CB2 /* FavoriteMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AE12E141DF100709CB2 /* FavoriteMovieCard.swift */; };
 		9C792AE72E141DF100709CB2 /* FavoritesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792ADF2E141DF100709CB2 /* FavoritesViewModel.swift */; };
 		9C792AE92E155FC800709CB2 /* SortOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AE82E155FC800709CB2 /* SortOption.swift */; };
+		9C792AEB2E16C78F00709CB2 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AEA2E16C78F00709CB2 /* NotificationService.swift */; };
+		9C792AED2E16C7D100709CB2 /* NotificationPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AEC2E16C7D100709CB2 /* NotificationPermissionView.swift */; };
 		9C9C41802E0D93FA00E5DFA3 /* RecommendationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9C417F2E0D93FA00E5DFA3 /* RecommendationService.swift */; };
 		9C9C41A62E0F13B400E5DFA3 /* UserMovieCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9C41A42E0F13B400E5DFA3 /* UserMovieCache.swift */; };
 		9C9C41A72E0F13B400E5DFA3 /* UserMovieService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9C41A52E0F13B400E5DFA3 /* UserMovieService.swift */; };
@@ -141,6 +143,8 @@
 		9C792AE12E141DF100709CB2 /* FavoriteMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteMovieCard.swift; sourceTree = "<group>"; };
 		9C792AE22E141DF100709CB2 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		9C792AE82E155FC800709CB2 /* SortOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortOption.swift; sourceTree = "<group>"; };
+		9C792AEA2E16C78F00709CB2 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		9C792AEC2E16C7D100709CB2 /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C9C417F2E0D93FA00E5DFA3 /* RecommendationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationService.swift; sourceTree = "<group>"; };
 		9C9C419D2E0F0BD900E5DFA3 /* WhichMovieTonightTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WhichMovieTonightTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -238,6 +242,7 @@
 		9C6EAEC32DD3B10F00C2A6D2 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				9C792AEA2E16C78F00709CB2 /* NotificationService.swift */,
 				9C9C41AC2E0F1EE300E5DFA3 /* UserProfileService.swift */,
 				9C9C41A42E0F13B400E5DFA3 /* UserMovieCache.swift */,
 				9C9C41A52E0F13B400E5DFA3 /* UserMovieService.swift */,
@@ -393,6 +398,7 @@
 		9C73ED502E01FCBA00AD4811 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				9C792AEC2E16C7D100709CB2 /* NotificationPermissionView.swift */,
 				9C73ED492E01FCBA00AD4811 /* ActorSelectionView.swift */,
 				9C73ED4A2E01FCBA00AD4811 /* GenreSelectionView.swift */,
 				9C73ED4B2E01FCBA00AD4811 /* OnboardingSlide.swift */,
@@ -700,12 +706,14 @@
 				9C73ED752E01FCBA00AD4811 /* HomeView.swift in Sources */,
 				9C73ED762E01FCBA00AD4811 /* StreamingPlatformButton.swift in Sources */,
 				9C9C41A62E0F13B400E5DFA3 /* UserMovieCache.swift in Sources */,
+				9C792AED2E16C7D100709CB2 /* NotificationPermissionView.swift in Sources */,
 				9C9C41A72E0F13B400E5DFA3 /* UserMovieService.swift in Sources */,
 				9C73ED772E01FCBA00AD4811 /* GenreButton.swift in Sources */,
 				9C73ED782E01FCBA00AD4811 /* HomeViewModel.swift in Sources */,
 				9C73ED792E01FCBA00AD4811 /* MovieDetailSheet.swift in Sources */,
 				9C73ED7A2E01FCBA00AD4811 /* OnboardingSlideView.swift in Sources */,
 				9C73ED7B2E01FCBA00AD4811 /* SettingsView.swift in Sources */,
+				9C792AEB2E16C78F00709CB2 /* NotificationService.swift in Sources */,
 				9C73ED7C2E01FCBA00AD4811 /* SettingsStreamingPlatformView.swift in Sources */,
 				9C9C41AD2E0F1EE300E5DFA3 /* UserProfileService.swift in Sources */,
 				9C73ED7D2E01FCBA00AD4811 /* MovieCardView.swift in Sources */,

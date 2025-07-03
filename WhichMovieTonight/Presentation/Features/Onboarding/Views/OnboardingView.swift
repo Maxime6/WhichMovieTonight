@@ -10,6 +10,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var notificationService: NotificationService
     @StateObject private var viewModel = OnboardingViewModel()
     @StateObject private var userProfileService = UserProfileService()
     @State private var showAuthentication = false
@@ -31,6 +32,10 @@ struct OnboardingView: View {
                         } else if slide.isStreamingPlatformSelection {
                             StreamingPlatformSelectionView()
                                 .environmentObject(userProfileService)
+                                .tag(index)
+                        } else if slide.isNotificationPermission {
+                            NotificationPermissionView()
+                                .environmentObject(notificationService)
                                 .tag(index)
                         } else {
                             OnboardingSlideView(slide: slide)
