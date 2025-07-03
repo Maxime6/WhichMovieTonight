@@ -28,6 +28,7 @@ class NotificationService: ObservableObject {
     private let lastNotificationDateKey = "lastNotificationDate"
     private let lastNotificationMessageKey = "lastNotificationMessage"
     private let lastNotificationTimeKey = "lastNotificationTime"
+    private let userNotificationPreferenceKey = "userNotificationPreference"
 
     // MARK: - Notification Messages
 
@@ -40,7 +41,11 @@ class NotificationService: ObservableObject {
     // MARK: - Initialization
 
     init() {
-        checkNotificationPermissionStatus()
+        // Initialize with default values, will be updated when checkNotificationPermissionStatus is called
+        // Set default user preference if not already set
+        if userDefaults.object(forKey: userNotificationPreferenceKey) == nil {
+            userDefaults.set(false, forKey: userNotificationPreferenceKey)
+        }
     }
 
     // MARK: - Permission Management
@@ -57,24 +62,42 @@ class NotificationService: ObservableObject {
 
             if granted {
                 print("✅ Notification permissions granted")
+                // Save user preference
+                userDefaults.set(true, forKey: userNotificationPreferenceKey)
                 await scheduleDailyNotification()
             } else {
                 print("❌ Notification permissions denied")
+                // Save user preference
+                userDefaults.set(false, forKey: userNotificationPreferenceKey)
+                // Remove any existing notifications when permission is denied
+                await removeDailyNotification()
             }
 
             return granted
         } catch {
             print("❌ Error requesting notification permissions: \(error)")
+            await MainActor.run {
+                isNotificationsEnabled = false
+                permissionStatus = .denied
+            }
             return false
         }
     }
 
     /// Check current notification permission status
-    func checkNotificationPermissionStatus() {
-        notificationCenter.getNotificationSettings { [weak self] settings in
-            Task { @MainActor in
-                self?.permissionStatus = settings.authorizationStatus
-                self?.isNotificationsEnabled = settings.authorizationStatus == .authorized
+    func checkNotificationPermissionStatus() async {
+        let settings = await notificationCenter.notificationSettings()
+        let userPreference = userDefaults.bool(forKey: userNotificationPreferenceKey)
+
+        await MainActor.run {
+            self.permissionStatus = settings.authorizationStatus
+
+            // Respect user preference: if they disabled notifications in the app,
+            // don't enable them even if system permission is granted
+            if settings.authorizationStatus == .authorized && userPreference {
+                self.isNotificationsEnabled = true
+            } else {
+                self.isNotificationsEnabled = false
             }
         }
     }
@@ -110,7 +133,8 @@ class NotificationService: ObservableObject {
         let randomMessage = notificationMessages.randomElement() ?? notificationMessages[0]
 
         // Store the scheduled time and message for tracking
-        userDefaults.set(randomTime, forKey: lastNotificationTimeKey)
+        let timeString = "\(randomTime.hour ?? 0):\(String(format: "%02d", randomTime.minute ?? 0))"
+        userDefaults.set(timeString, forKey: lastNotificationTimeKey)
         userDefaults.set(randomMessage, forKey: lastNotificationMessageKey)
 
         // Create notification content
@@ -150,6 +174,18 @@ class NotificationService: ObservableObject {
     func removeDailyNotification() async {
         await notificationCenter.removePendingNotificationRequests(withIdentifiers: [dailyNotificationIdentifier])
         print("🗑️ Daily notification removed")
+    }
+
+    /// Disable notifications (remove scheduled notifications and update state)
+    func disableNotifications() async {
+        await removeDailyNotification()
+        // Save user preference
+        userDefaults.set(false, forKey: userNotificationPreferenceKey)
+        await MainActor.run {
+            isNotificationsEnabled = false
+            // Don't change permissionStatus here - keep the real system status
+        }
+        print("🔕 Notifications disabled")
     }
 
     /// Generate a random time between 10:00 AM and 11:30 AM
@@ -255,6 +291,14 @@ class NotificationService: ObservableObject {
 
     /// Get a user-friendly description of notification status
     var notificationStatusDescription: String {
+        let userPreference = userDefaults.bool(forKey: userNotificationPreferenceKey)
+
+        // If user has disabled notifications in the app, show that message regardless of system permission
+        if !userPreference {
+            return "Enable notifications to never miss your daily movie recommendations"
+        }
+
+        // Otherwise, show message based on system permission status
         switch permissionStatus {
         case .authorized:
             return "Notifications are enabled"
@@ -273,6 +317,8 @@ class NotificationService: ObservableObject {
 
     /// Check if we should show permission reminder in settings
     var shouldShowPermissionReminder: Bool {
-        return permissionStatus == .denied
+        // Show reminder if system permission is denied OR if user has disabled notifications in the app
+        let userPreference = userDefaults.bool(forKey: userNotificationPreferenceKey)
+        return permissionStatus == .denied || !userPreference
     }
 }

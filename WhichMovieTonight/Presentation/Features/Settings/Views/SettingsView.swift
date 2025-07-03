@@ -214,7 +214,9 @@ struct SettingsView: View {
             }
             .onAppear {
                 // Sync notification toggle with real system permission status
-                notificationService.checkNotificationPermissionStatus()
+                Task {
+                    await notificationService.checkNotificationPermissionStatus()
+                }
             }
         }
         .alert("Delete Account", isPresented: $showingDeleteAlert) {
@@ -247,9 +249,9 @@ struct SettingsView: View {
                 }
             }
         } else {
-            // User wants to disable notifications - remove scheduled notifications
+            // User wants to disable notifications - remove scheduled notifications and update state
             Task {
-                await notificationService.removeDailyNotification()
+                await notificationService.disableNotifications()
             }
         }
     }

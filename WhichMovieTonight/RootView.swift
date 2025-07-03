@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var appStateManager = AppStateManager()
-    @StateObject private var notificationService = NotificationService()
+    @EnvironmentObject var notificationService: NotificationService
 
     var body: some View {
         ZStack {

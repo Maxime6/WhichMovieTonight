@@ -47,7 +47,8 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
         // Handle notification tap
         if response.notification.request.identifier == "daily-movie-recommendations" {
             // Clear badge and track analytics
-            NotificationService().handleNotificationTap()
+            // Note: We can't access the shared NotificationService here, so we'll handle this in RootView
+            print("📱 Daily notification tapped - will be handled in RootView")
         }
 
         completionHandler()
@@ -57,10 +58,16 @@ extension Appdelegate: UNUserNotificationCenterDelegate {
 @main
 struct WhichMovieTonightApp: App {
     @UIApplicationDelegateAdaptor(Appdelegate.self) var appDelegate
+    @StateObject private var notificationService = NotificationService()
 
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environmentObject(notificationService)
+                .task {
+                    // Check notification permission status on app launch
+                    await notificationService.checkNotificationPermissionStatus()
+                }
         }
     }
 }
