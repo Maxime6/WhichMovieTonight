@@ -78,14 +78,12 @@ final class HomeViewModel: ObservableObject {
             if !existingRecommendations.isEmpty {
                 // Check if we need to generate new daily picks
                 if await shouldGenerateNewDailyPicks(for: userId) {
-                    print("🌅 New day detected - generating fresh daily picks")
                     await generateRecommendations()
                 } else {
                     // Use existing recommendations from today
                     await MainActor.run {
                         currentRecommendations = existingRecommendations
                     }
-                    print("📱 Loaded \(existingRecommendations.count) existing recommendations from today")
                 }
             } else {
                 // No existing recommendations - generate new ones
@@ -161,7 +159,6 @@ final class HomeViewModel: ObservableObject {
             await MainActor.run {
                 currentRecommendations = newRecommendations
             }
-            print("🎉 Generated \(newRecommendations.count) new recommendations")
         } catch {
             print("❌ Failed to generate recommendations: \(error)")
             if error.localizedDescription.contains("offline") {

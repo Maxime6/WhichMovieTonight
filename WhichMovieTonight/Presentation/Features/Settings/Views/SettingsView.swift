@@ -123,7 +123,7 @@ struct SettingsView: View {
                             Text("Notifications")
                             Spacer()
                             Toggle("", isOn: $notificationService.isNotificationsEnabled)
-                                .onChange(of: notificationService.isNotificationsEnabled) { newValue in
+                                .onChange(of: notificationService.isNotificationsEnabled) { _, newValue in
                                     handleNotificationToggle(newValue)
                                 }
                         }
@@ -211,6 +211,10 @@ struct SettingsView: View {
                 if let userId = Auth.auth().currentUser?.uid {
                     await userProfileService.loadUserPreferences(userId: userId)
                 }
+            }
+            .onAppear {
+                // Sync notification toggle with real system permission status
+                notificationService.checkNotificationPermissionStatus()
             }
         }
         .alert("Delete Account", isPresented: $showingDeleteAlert) {

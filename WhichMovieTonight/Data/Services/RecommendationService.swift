@@ -199,9 +199,16 @@ final class RecommendationService: RecommendationServiceProtocol {
         // First cleanup old history to maintain 50 movie limit
         try await userMovieService.cleanupOldHistory(userId: userId, keepCount: 50)
 
-        // Set new current picks using the new method
-        try await userMovieService.setCurrentPicks(userId: userId, userMovies: userMovies)
-        print("💾 Saved \(userMovies.count) new current picks and updated history")
+        // Mark all movies as current picks with proper dates
+        var updatedUserMovies: [UserMovie] = []
+        for var userMovie in userMovies {
+            userMovie.markAsCurrentPick() // This sets currentPicksSince = Date()
+            updatedUserMovies.append(userMovie)
+        }
+
+        // Set new current picks using the updated movies
+        try await userMovieService.setCurrentPicks(userId: userId, userMovies: updatedUserMovies)
+        print("💾 Saved \(updatedUserMovies.count) new current picks and updated history")
     }
 
     /// Enrich OpenAI movie suggestion with OMDB data
