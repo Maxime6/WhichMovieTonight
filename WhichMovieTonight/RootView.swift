@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var appStateManager = AppStateManager()
+    @StateObject private var userProfileService = UserProfileService()
     @EnvironmentObject var notificationService: NotificationService
 
     var body: some View {
@@ -14,6 +15,7 @@ struct RootView: View {
             case .needsOnboarding:
                 OnboardingView()
                     .environmentObject(appStateManager)
+                    .environmentObject(userProfileService)
                     .environmentObject(notificationService)
 
             case .needsAuthentication:
@@ -23,6 +25,7 @@ struct RootView: View {
             case .authenticated:
                 ContentView()
                     .environmentObject(appStateManager)
+                    .environmentObject(userProfileService)
                     .environmentObject(notificationService)
             }
         }

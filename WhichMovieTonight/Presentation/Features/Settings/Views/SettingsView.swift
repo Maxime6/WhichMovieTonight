@@ -10,9 +10,9 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
     @StateObject private var authViewModel: AuthenticationViewModel
-    @StateObject private var userProfileService = UserProfileService()
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
 

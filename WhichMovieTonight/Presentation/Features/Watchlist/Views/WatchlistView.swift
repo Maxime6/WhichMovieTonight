@@ -255,7 +255,14 @@ struct WatchlistMovieCard: View {
                     }
             }
             .frame(height: 240)
-            .cornerRadius(12, corners: [.topLeft, .topRight])
+            .clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 12,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 12
+                )
+            )
             .clipped()
             .matchedGeometryEffect(id: userMovie.movie.id, in: namespace)
             .onTapGesture {
@@ -331,35 +338,20 @@ struct WatchlistMovieCard: View {
             }
             .padding(12)
             .background(.ultraThinMaterial)
-            .cornerRadius(12, corners: [.bottomLeft, .bottomRight])
+            .clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 12,
+                    bottomTrailingRadius: 12,
+                    topTrailingRadius: 0
+                )
+            )
         }
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         )
-    }
-}
-
-// MARK: - Corner Radius Extension
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
     }
 }
 

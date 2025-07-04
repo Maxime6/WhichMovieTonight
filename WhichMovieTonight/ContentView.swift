@@ -9,22 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
-    @StateObject private var userProfileService = UserProfileService()
     @StateObject private var homeViewModel: HomeViewModel
 
     init() {
         // Create services
         let userMovieService = UserMovieService()
 
-        // We'll set userProfileService in the initializer using a temporary var
-        // to share the same instance between StateObject and HomeViewModel
-        let tempUserProfileService = UserProfileService()
-        _userProfileService = StateObject(wrappedValue: tempUserProfileService)
-
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(
-            userMovieService: userMovieService,
-            userProfileService: tempUserProfileService
+            userMovieService: userMovieService
         ))
     }
 
@@ -33,6 +27,7 @@ struct ContentView: View {
             HomeView()
                 .environmentObject(appStateManager)
                 .environmentObject(homeViewModel)
+                .environmentObject(userProfileService)
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
@@ -57,6 +52,7 @@ struct ContentView: View {
 
             SettingsView()
                 .environmentObject(appStateManager)
+                .environmentObject(userProfileService)
                 .environmentObject(notificationService)
                 .tabItem {
                     Image(systemName: "gearshape.fill")

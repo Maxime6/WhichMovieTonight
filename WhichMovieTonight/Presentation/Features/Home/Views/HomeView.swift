@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @EnvironmentObject private var appStateManager: AppStateManager
-    @StateObject private var userProfileService = UserProfileService()
+    @EnvironmentObject private var userProfileService: UserProfileService
     @State private var showingMovieDetail = false
     @State private var selectedUserMovie: UserMovie?
     @State private var showingRefreshConfirmation = false
@@ -29,8 +30,8 @@ struct HomeView: View {
             VStack {
                 AnimatedMeshGradient()
                     .opacity(0.1)
-                    .frame(height: 200)
-                    .ignoresSafeArea(.top)
+                    .frame(height: 170)
+                    .ignoresSafeArea(edges: .top)
 
                 Spacer()
             }
@@ -84,10 +85,16 @@ struct HomeView: View {
                 await userProfileService.loadUserPreferences(userId: userId)
             }
         }
+        .onAppear {
+            // Initialize ViewModel with UserProfileService
+            Task {
+                await viewModel.initializeData(userProfileService: userProfileService)
+            }
+        }
         .confirmationDialog("Refresh Recommendations", isPresented: $showingRefreshConfirmation) {
             Button("Generate New Movies") {
                 Task {
-                    await viewModel.refreshRecommendations()
+                    await viewModel.refreshRecommendations(userProfileService: userProfileService)
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -129,7 +136,7 @@ struct HomeView: View {
         VStack(spacing: 16) {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(viewModel.welcomeMessage)
+                    Text(viewModel.welcomeMessage(userProfileService: userProfileService))
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -159,8 +166,14 @@ struct HomeView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(.ultraThinMaterial)
-        .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 20,
+                bottomTrailingRadius: 20,
+                topTrailingRadius: 0
+            )
+        )
         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 
@@ -376,11 +389,11 @@ struct HomeView: View {
 #Preview {
     let userProfileService = UserProfileService()
     let homeViewModel = HomeViewModel(
-        userMovieService: UserMovieService(),
-        userProfileService: userProfileService
+        userMovieService: UserMovieService()
     )
 
     return HomeView()
         .environmentObject(AppStateManager())
         .environmentObject(homeViewModel)
+        .environmentObject(userProfileService)
 }

@@ -10,9 +10,9 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
     @StateObject private var viewModel = OnboardingViewModel()
-    @StateObject private var userProfileService = UserProfileService()
     @State private var showAuthentication = false
 
     var body: some View {

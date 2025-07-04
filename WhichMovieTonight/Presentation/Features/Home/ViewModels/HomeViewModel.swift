@@ -27,29 +27,18 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Dependencies (Unified)
 
-    private let recommendationService: RecommendationServiceProtocol
     private let userMovieService: UserMovieServiceProtocol
-    private let userProfileService: UserProfileService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
 
-    init(
-        userMovieService: UserMovieServiceProtocol,
-        userProfileService: UserProfileService
-    ) {
+    init(userMovieService: UserMovieServiceProtocol) {
         self.userMovieService = userMovieService
-        self.userProfileService = userProfileService
-        recommendationService = RecommendationService(userProfileService: userProfileService)
-
-        Task {
-            await initializeData()
-        }
     }
 
     // MARK: - Computed Properties
 
-    var welcomeMessage: String {
+    func welcomeMessage(userProfileService: UserProfileService) -> String {
         let firstName = userProfileService.displayName.isEmpty ? userName : userProfileService.displayName
         return "Hi \(firstName)"
     }
@@ -61,27 +50,30 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Public Methods
 
     /// Initialize all data for HomeView
-    func initializeData() async {
-        await loadUserDisplayName()
+    func initializeData(userProfileService: UserProfileService) async {
+        await loadUserDisplayName(userProfileService: userProfileService)
         await loadSelectedMovieForTonight()
-        await loadOrGenerateRecommendations()
+        await loadOrGenerateRecommendations(userProfileService: userProfileService)
     }
 
     /// Load or generate recommendations with daily reset logic
-    private func loadOrGenerateRecommendations() async {
+    private func loadOrGenerateRecommendations(userProfileService: UserProfileService) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("⚠️ No user ID available")
             return
         }
 
         do {
+            // Create recommendation service with userProfileService
+            let recommendationService = RecommendationService(userProfileService: userProfileService)
+
             // Try to load existing recommendations
             let existingRecommendations = try await recommendationService.loadCurrentRecommendations(for: userId)
 
             if !existingRecommendations.isEmpty {
                 // Check if we need to generate new daily picks
                 if await shouldGenerateNewDailyPicks(for: userId) {
-                    await generateRecommendations()
+                    await generateRecommendations(userProfileService: userProfileService)
                 } else {
                     // Use existing recommendations from today
                     await MainActor.run {
@@ -90,7 +82,7 @@ final class HomeViewModel: ObservableObject {
                 }
             } else {
                 // No existing recommendations - generate new ones
-                await generateRecommendations()
+                await generateRecommendations(userProfileService: userProfileService)
             }
         } catch {
             print("❌ Error loading recommendations: \(error)")
@@ -149,7 +141,7 @@ final class HomeViewModel: ObservableObject {
     }
 
     /// Generate new recommendations (initial or refresh)
-    func generateRecommendations() async {
+    func generateRecommendations(userProfileService: UserProfileService) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("⚠️ No user ID available for generation")
             return
@@ -158,6 +150,7 @@ final class HomeViewModel: ObservableObject {
         isGeneratingRecommendations = true
 
         do {
+            let recommendationService = RecommendationService(userProfileService: userProfileService)
             let newRecommendations = try await recommendationService.generateNewRecommendations(for: userId)
             await MainActor.run {
                 currentRecommendations = newRecommendations
@@ -175,9 +168,9 @@ final class HomeViewModel: ObservableObject {
     }
 
     /// Manual refresh recommendations
-    func refreshRecommendations() async {
+    func refreshRecommendations(userProfileService: UserProfileService) async {
         print("🔄 Manual refresh triggered")
-        await generateRecommendations()
+        await generateRecommendations(userProfileService: userProfileService)
     }
 
     // MARK: - Selected Movie For Tonight Management
@@ -225,7 +218,7 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
-    private func loadUserDisplayName() async {
+    private func loadUserDisplayName(userProfileService: UserProfileService) async {
         if let currentUser = Auth.auth().currentUser {
             // Load user profile data
             await userProfileService.loadUserPreferences(userId: currentUser.uid)
