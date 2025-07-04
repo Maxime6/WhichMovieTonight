@@ -1,5 +1,6 @@
 import Combine
 import FirebaseFirestore
+import FirebaseStorage
 import Foundation
 
 /// Service for managing user profile data including preferences on Firebase
@@ -19,6 +20,11 @@ class UserProfileService: ObservableObject {
     @Published var favoriteGenres: [MovieGenre] = []
     @Published var favoriteActors: [String] = []
     @Published var favoriteStreamingPlatforms: [StreamingPlatform] = []
+    @Published var displayName: String = ""
+    @Published var profilePictureURL: String?
+    @Published var memojiData: String?
+    @Published var movieWatchingFrequency: MovieWatchingFrequency = .weekly
+    @Published var movieMoodPreference: MovieMoodPreference = .discover
     @Published var isLoading = false
 
     // Cache management
@@ -226,6 +232,83 @@ class UserProfileService: ObservableObject {
 
         print("💾 Cached user preferences locally")
     }
+
+    // MARK: - Profile Picture Management
+
+    /// Upload profile picture to Firebase Storage
+    func uploadProfilePicture(userId: String, image: UIImage) async throws -> String {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            throw NSError(domain: "ProfilePictureError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to compress image"])
+        }
+
+        // Resize image to max 500x500
+        let resizedImage = image.resized(to: CGSize(width: 500, height: 500))
+        guard let resizedData = resizedImage.jpegData(compressionQuality: 0.8) else {
+            throw NSError(domain: "ProfilePictureError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to resize image"])
+        }
+
+        let storage = Storage.storage()
+        let storageRef = storage.reference()
+        let profilePictureRef = storageRef.child("users/\(userId)/profile-pictures/\(UUID().uuidString).jpg")
+
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+
+        _ = try await profilePictureRef.putDataAsync(resizedData, metadata: metadata)
+        let downloadURL = try await profilePictureRef.downloadURL()
+
+        // Update local state
+        profilePictureURL = downloadURL.absoluteString
+
+        // Save to Firebase
+        try await saveUserPreferences(userId: userId)
+
+        return downloadURL.absoluteString
+    }
+
+    /// Delete profile picture from Firebase Storage
+    func deleteProfilePicture(userId: String) async throws {
+        guard let urlString = profilePictureURL,
+              let url = URL(string: urlString)
+        else {
+            return
+        }
+
+        let storage = Storage.storage()
+        let storageRef = storage.reference(forURL: urlString)
+
+        try await storageRef.delete()
+
+        // Update local state
+        profilePictureURL = nil
+
+        // Save to Firebase
+        try await saveUserPreferences(userId: userId)
+    }
+
+    /// Update display name
+    func updateDisplayName(_ name: String, userId: String) async throws {
+        displayName = name
+        try await saveUserPreferences(userId: userId)
+    }
+
+    /// Update movie watching frequency
+    func updateMovieWatchingFrequency(_ frequency: MovieWatchingFrequency, userId: String) async throws {
+        movieWatchingFrequency = frequency
+        try await saveUserPreferences(userId: userId)
+    }
+
+    /// Update movie mood preference
+    func updateMovieMoodPreference(_ mood: MovieMoodPreference, userId: String) async throws {
+        movieMoodPreference = mood
+        try await saveUserPreferences(userId: userId)
+    }
+
+    /// Update memoji data
+    func updateMemojiData(_ memojiData: String, userId: String) async throws {
+        self.memojiData = memojiData
+        try await saveUserPreferences(userId: userId)
+    }
 }
 
 // MARK: - UserProfile Model
@@ -234,6 +317,11 @@ struct UserProfile {
     var favoriteGenres: [MovieGenre] = []
     var favoriteActors: [String] = []
     var favoriteStreamingPlatforms: [StreamingPlatform] = []
+    var displayName: String = ""
+    var profilePictureURL: String?
+    var memojiData: String?
+    var movieWatchingFrequency: MovieWatchingFrequency = .weekly
+    var movieMoodPreference: MovieMoodPreference = .discover
     var createdAt: Date = .init()
     var updatedAt: Date = .init()
 
@@ -260,6 +348,30 @@ struct UserProfile {
             favoriteStreamingPlatforms = platformStrings.compactMap { StreamingPlatform(rawValue: $0) }
         }
 
+        if let displayName = data["displayName"] as? String {
+            self.displayName = displayName
+        }
+
+        if let profilePictureURL = data["profilePictureURL"] as? String {
+            self.profilePictureURL = profilePictureURL
+        }
+
+        if let memojiData = data["memojiData"] as? String {
+            self.memojiData = memojiData
+        }
+
+        if let frequencyString = data["movieWatchingFrequency"] as? String,
+           let frequency = MovieWatchingFrequency(rawValue: frequencyString)
+        {
+            movieWatchingFrequency = frequency
+        }
+
+        if let moodString = data["movieMoodPreference"] as? String,
+           let mood = MovieMoodPreference(rawValue: moodString)
+        {
+            movieMoodPreference = mood
+        }
+
         if let timestamp = data["createdAt"] as? Timestamp {
             createdAt = timestamp.dateValue()
         }
@@ -277,6 +389,11 @@ struct UserProfile {
             "favoriteGenres": favoriteGenres.map { $0.rawValue },
             "favoriteActors": favoriteActors,
             "favoriteStreamingPlatforms": favoriteStreamingPlatforms.map { $0.rawValue },
+            "displayName": displayName,
+            "profilePictureURL": profilePictureURL,
+            "memojiData": memojiData,
+            "movieWatchingFrequency": movieWatchingFrequency.rawValue,
+            "movieMoodPreference": movieMoodPreference.rawValue,
             "createdAt": createdAt,
             "updatedAt": Date(),
         ]
@@ -285,5 +402,37 @@ struct UserProfile {
     /// Check if profile has valid preferences for recommendations
     var isValid: Bool {
         return !favoriteGenres.isEmpty && !favoriteStreamingPlatforms.isEmpty
+    }
+}
+
+// MARK: - User Profile Enums
+
+enum MovieWatchingFrequency: String, CaseIterable, Codable {
+    case daily
+    case twoThreeTimesWeek = "2-3_times_week"
+    case weekly
+    case occasionally
+
+    var displayText: String {
+        switch self {
+        case .daily: return "Watches daily"
+        case .twoThreeTimesWeek: return "Watches 2-3 times/week"
+        case .weekly: return "Watches weekly"
+        case .occasionally: return "Watches occasionally"
+        }
+    }
+}
+
+enum MovieMoodPreference: String, CaseIterable, Codable {
+    case discover
+    case familiar
+    case both
+
+    var displayText: String {
+        switch self {
+        case .discover: return "Likes to discover"
+        case .familiar: return "Prefers familiar"
+        case .both: return "Enjoys both"
+        }
     }
 }

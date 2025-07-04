@@ -10,11 +10,13 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @EnvironmentObject private var appStateManager: AppStateManager
+    @StateObject private var userProfileService = UserProfileService()
     @State private var showingMovieDetail = false
     @State private var selectedUserMovie: UserMovie?
     @State private var showingRefreshConfirmation = false
     @State private var showingDeleteConfirmation = false
     @State private var showingProfileMenu = false
+    @State private var showingProfileSheet = false
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -22,6 +24,16 @@ struct HomeView: View {
             // Background
             Color(.systemBackground)
                 .ignoresSafeArea()
+
+            // AnimatedMeshGradient in safe area
+            VStack {
+                AnimatedMeshGradient()
+                    .opacity(0.1)
+                    .frame(height: 200)
+                    .ignoresSafeArea(.top)
+
+                Spacer()
+            }
 
             VStack(spacing: 0) {
                 // Hero Section avec padding top
@@ -63,6 +75,15 @@ struct HomeView: View {
             }
         }
         .overlay(toastOverlay)
+        .sheet(isPresented: $showingProfileSheet) {
+            ProfileSheet(userProfileService: userProfileService)
+        }
+        .task {
+            // Load user profile data when view appears
+            if let userId = Auth.auth().currentUser?.uid {
+                await userProfileService.loadUserPreferences(userId: userId)
+            }
+        }
         .confirmationDialog("Refresh Recommendations", isPresented: $showingRefreshConfirmation) {
             Button("Generate New Movies") {
                 Task {
@@ -106,21 +127,41 @@ struct HomeView: View {
 
     private var heroSection: some View {
         VStack(spacing: 16) {
-            HStack {
+            HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(viewModel.welcomeMessage)
-                        .font(.title2)
+                        .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
+                        .opacity(1)
+                        .animation(.easeInOut(duration: 0.6).delay(0.2), value: true)
 
-                    Text("Don't miss your daily recommendations")
+                    Text(viewModel.welcomeSubtitle)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .opacity(1)
+                        .animation(.easeInOut(duration: 0.6).delay(0.4), value: true)
                 }
 
                 Spacer()
+
+                ProfilePictureView(
+                    size: 50,
+                    profilePictureURL: userProfileService.profilePictureURL,
+                    memojiData: userProfileService.memojiData,
+                    displayName: userProfileService.displayName.isEmpty ? viewModel.userName : userProfileService.displayName
+                ) {
+                    showingProfileSheet = true
+                }
+                .scaleEffect(1)
+                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.6), value: true)
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial)
+        .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
+        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 
     // MARK: - Recommendations Section

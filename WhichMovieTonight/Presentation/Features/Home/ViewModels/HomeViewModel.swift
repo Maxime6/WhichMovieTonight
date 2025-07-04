@@ -50,9 +50,12 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Computed Properties
 
     var welcomeMessage: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        let greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
-        return "\(greeting) \(userName), ready for new discoveries?"
+        let firstName = userProfileService.displayName.isEmpty ? userName : userProfileService.displayName
+        return "Hi \(firstName)"
+    }
+
+    var welcomeSubtitle: String {
+        return "Ready for new discoveries?"
     }
 
     // MARK: - Public Methods
@@ -223,8 +226,18 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Private Methods
 
     private func loadUserDisplayName() async {
-        if let user = Auth.auth().currentUser {
-            userName = user.displayName ?? "Movie Lover"
+        if let currentUser = Auth.auth().currentUser {
+            // Load user profile data
+            await userProfileService.loadUserPreferences(userId: currentUser.uid)
+
+            // Use profile display name if available, otherwise fallback to Firebase Auth
+            let displayName = userProfileService.displayName.isEmpty ?
+                (currentUser.displayName ?? currentUser.email?.components(separatedBy: "@").first ?? "Movie Lover") :
+                userProfileService.displayName
+
+            await MainActor.run {
+                userName = displayName
+            }
         }
     }
 
