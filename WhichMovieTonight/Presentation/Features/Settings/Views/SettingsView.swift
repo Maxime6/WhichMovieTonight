@@ -206,12 +206,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .task {
-                // Load user preferences from Firebase when view appears
-                if let userId = Auth.auth().currentUser?.uid {
-                    await userProfileService.loadUserPreferences(userId: userId)
-                }
-            }
             .onAppear {
                 // Sync notification toggle with real system permission status
                 Task {
@@ -259,5 +253,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }

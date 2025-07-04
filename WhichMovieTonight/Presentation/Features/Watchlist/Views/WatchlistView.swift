@@ -357,5 +357,5 @@ struct WatchlistMovieCard: View {
 
 #Preview {
     WatchlistView()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }

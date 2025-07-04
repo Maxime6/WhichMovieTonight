@@ -5,7 +5,7 @@ import Foundation
 class AppStateManager: ObservableObject {
     @Published var appState: AppState = .launch
 
-    private let userProfileService = UserProfileService()
+    private let userProfileService: UserProfileService
 
     // MARK: - App States
 
@@ -17,6 +17,12 @@ class AppStateManager: ObservableObject {
     }
 
     // MARK: - Initialization
+
+    init(userProfileService: UserProfileService) {
+        self.userProfileService = userProfileService
+    }
+
+    // MARK: - App Initialization
 
     func initializeApp() async {
         // Check authentication

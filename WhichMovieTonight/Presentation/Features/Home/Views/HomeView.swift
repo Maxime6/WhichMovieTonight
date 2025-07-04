@@ -5,8 +5,8 @@
 //  Created by Maxime Tanter on 25/04/2025.
 //
 
-import SwiftUI
 import FirebaseAuth
+import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
@@ -28,10 +28,30 @@ struct HomeView: View {
 
             // AnimatedMeshGradient in safe area
             VStack {
-                AnimatedMeshGradient()
-                    .opacity(0.1)
-                    .frame(height: 170)
-                    .ignoresSafeArea(edges: .top)
+                ZStack {
+                    AnimatedMeshGradient()
+                        .opacity(0.1)
+                        .frame(height: 170)
+
+                    // Subtle shadow overlay at bottom for smooth integration
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        .clear,
+                                        .black.opacity(0.1),
+                                        .black.opacity(0.2),
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(height: 40)
+                    }
+                }
+                .ignoresSafeArea(edges: .top)
 
                 Spacer()
             }
@@ -78,12 +98,6 @@ struct HomeView: View {
         .overlay(toastOverlay)
         .sheet(isPresented: $showingProfileSheet) {
             ProfileSheet(userProfileService: userProfileService)
-        }
-        .task {
-            // Load user profile data when view appears
-            if let userId = Auth.auth().currentUser?.uid {
-                await userProfileService.loadUserPreferences(userId: userId)
-            }
         }
         .onAppear {
             // Initialize ViewModel with UserProfileService
@@ -155,7 +169,6 @@ struct HomeView: View {
                 ProfilePictureView(
                     size: 50,
                     profilePictureURL: userProfileService.profilePictureURL,
-                    memojiData: userProfileService.memojiData,
                     displayName: userProfileService.displayName.isEmpty ? viewModel.userName : userProfileService.displayName
                 ) {
                     showingProfileSheet = true
@@ -393,7 +406,7 @@ struct HomeView: View {
     )
 
     return HomeView()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: userProfileService))
         .environmentObject(homeViewModel)
         .environmentObject(userProfileService)
 }

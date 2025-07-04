@@ -36,5 +36,5 @@ struct AuthenticationView: View {
 
 #Preview {
     AuthenticationView()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }

@@ -1,9 +1,16 @@
+import FirebaseAuth
 import SwiftUI
 
 struct RootView: View {
-    @StateObject private var appStateManager = AppStateManager()
     @StateObject private var userProfileService = UserProfileService()
+    @StateObject private var appStateManager: AppStateManager
     @EnvironmentObject var notificationService: NotificationService
+
+    init() {
+        let userProfileService = UserProfileService()
+        _userProfileService = StateObject(wrappedValue: userProfileService)
+        _appStateManager = StateObject(wrappedValue: AppStateManager(userProfileService: userProfileService))
+    }
 
     var body: some View {
         ZStack {

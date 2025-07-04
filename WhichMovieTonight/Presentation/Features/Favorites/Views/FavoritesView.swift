@@ -169,5 +169,5 @@ struct FavoritesView: View {
 
 #Preview {
     FavoritesView()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }

@@ -14,6 +14,10 @@ class UserProfileService: ObservableObject {
     private let favoriteGenresKey = "cached_favoriteGenres"
     private let favoriteActorsKey = "cached_favoriteActors"
     private let favoriteStreamingPlatformsKey = "cached_favoriteStreamingPlatforms"
+    private let displayNameKey = "cached_displayName"
+    private let profilePictureURLKey = "cached_profilePictureURL"
+    private let movieWatchingFrequencyKey = "cached_movieWatchingFrequency"
+    private let movieMoodPreferenceKey = "cached_movieMoodPreference"
     private let lastSyncKey = "userProfile_lastSync"
 
     // Published properties for SwiftUI reactivity
@@ -22,7 +26,6 @@ class UserProfileService: ObservableObject {
     @Published var favoriteStreamingPlatforms: [StreamingPlatform] = []
     @Published var displayName: String = ""
     @Published var profilePictureURL: String?
-    @Published var memojiData: String?
     @Published var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     @Published var movieMoodPreference: MovieMoodPreference = .discover
     @Published var isLoading = false
@@ -61,6 +64,10 @@ class UserProfileService: ObservableObject {
             favoriteGenres = userProfile.favoriteGenres
             favoriteActors = userProfile.favoriteActors
             favoriteStreamingPlatforms = userProfile.favoriteStreamingPlatforms
+            displayName = userProfile.displayName
+            profilePictureURL = userProfile.profilePictureURL
+            movieWatchingFrequency = userProfile.movieWatchingFrequency
+            movieMoodPreference = userProfile.movieMoodPreference
 
             // Cache locally
             cachePreferences()
@@ -83,7 +90,11 @@ class UserProfileService: ObservableObject {
         let userProfile = UserProfile(
             favoriteGenres: favoriteGenres,
             favoriteActors: favoriteActors,
-            favoriteStreamingPlatforms: favoriteStreamingPlatforms
+            favoriteStreamingPlatforms: favoriteStreamingPlatforms,
+            displayName: displayName,
+            profilePictureURL: profilePictureURL,
+            movieWatchingFrequency: movieWatchingFrequency,
+            movieMoodPreference: movieMoodPreference
         )
 
         try await saveUserProfile(userId: userId, userProfile: userProfile)
@@ -210,6 +221,27 @@ class UserProfileService: ObservableObject {
             favoriteStreamingPlatforms = platformStrings.compactMap { StreamingPlatform(rawValue: $0) }
         }
 
+        // Load profile fields
+        if let displayName = userDefaults.string(forKey: displayNameKey) {
+            self.displayName = displayName
+        }
+
+        if let profilePictureURL = userDefaults.string(forKey: profilePictureURLKey) {
+            self.profilePictureURL = profilePictureURL
+        }
+
+        if let frequencyString = userDefaults.string(forKey: movieWatchingFrequencyKey),
+           let frequency = MovieWatchingFrequency(rawValue: frequencyString)
+        {
+            movieWatchingFrequency = frequency
+        }
+
+        if let moodString = userDefaults.string(forKey: movieMoodPreferenceKey),
+           let mood = MovieMoodPreference(rawValue: moodString)
+        {
+            movieMoodPreference = mood
+        }
+
         print("📱 Loaded cached user preferences")
     }
 
@@ -229,6 +261,12 @@ class UserProfileService: ObservableObject {
         if let data = try? JSONEncoder().encode(platformStrings) {
             userDefaults.set(data, forKey: favoriteStreamingPlatformsKey)
         }
+
+        // Cache profile fields
+        userDefaults.set(displayName, forKey: displayNameKey)
+        userDefaults.set(profilePictureURL, forKey: profilePictureURLKey)
+        userDefaults.set(movieWatchingFrequency.rawValue, forKey: movieWatchingFrequencyKey)
+        userDefaults.set(movieMoodPreference.rawValue, forKey: movieMoodPreferenceKey)
 
         print("💾 Cached user preferences locally")
     }
@@ -303,12 +341,6 @@ class UserProfileService: ObservableObject {
         movieMoodPreference = mood
         try await saveUserPreferences(userId: userId)
     }
-
-    /// Update memoji data
-    func updateMemojiData(_ memojiData: String, userId: String) async throws {
-        self.memojiData = memojiData
-        try await saveUserPreferences(userId: userId)
-    }
 }
 
 // MARK: - UserProfile Model
@@ -319,7 +351,6 @@ struct UserProfile {
     var favoriteStreamingPlatforms: [StreamingPlatform] = []
     var displayName: String = ""
     var profilePictureURL: String?
-    var memojiData: String?
     var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     var movieMoodPreference: MovieMoodPreference = .discover
     var createdAt: Date = .init()
@@ -331,6 +362,17 @@ struct UserProfile {
         self.favoriteGenres = favoriteGenres
         self.favoriteActors = favoriteActors
         self.favoriteStreamingPlatforms = favoriteStreamingPlatforms
+        updatedAt = Date()
+    }
+
+    init(favoriteGenres: [MovieGenre], favoriteActors: [String], favoriteStreamingPlatforms: [StreamingPlatform], displayName: String, profilePictureURL: String?, movieWatchingFrequency: MovieWatchingFrequency, movieMoodPreference: MovieMoodPreference) {
+        self.favoriteGenres = favoriteGenres
+        self.favoriteActors = favoriteActors
+        self.favoriteStreamingPlatforms = favoriteStreamingPlatforms
+        self.displayName = displayName
+        self.profilePictureURL = profilePictureURL
+        self.movieWatchingFrequency = movieWatchingFrequency
+        self.movieMoodPreference = movieMoodPreference
         updatedAt = Date()
     }
 
@@ -354,10 +396,6 @@ struct UserProfile {
 
         if let profilePictureURL = data["profilePictureURL"] as? String {
             self.profilePictureURL = profilePictureURL
-        }
-
-        if let memojiData = data["memojiData"] as? String {
-            self.memojiData = memojiData
         }
 
         if let frequencyString = data["movieWatchingFrequency"] as? String,
@@ -391,7 +429,6 @@ struct UserProfile {
             "favoriteStreamingPlatforms": favoriteStreamingPlatforms.map { $0.rawValue },
             "displayName": displayName,
             "profilePictureURL": profilePictureURL,
-            "memojiData": memojiData,
             "movieWatchingFrequency": movieWatchingFrequency.rawValue,
             "movieMoodPreference": movieMoodPreference.rawValue,
             "createdAt": createdAt,

@@ -83,5 +83,5 @@ struct LaunchScreen: View {
 
 #Preview {
     LaunchScreen()
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }

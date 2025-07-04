@@ -11,12 +11,26 @@ import SwiftUI
 struct ProfilePictureView: View {
     let size: CGFloat
     let profilePictureURL: String?
-    let memojiData: String?
     let displayName: String
+    let showEditIcon: Bool
     let onTap: () -> Void
 
     @State private var image: UIImage?
     @State private var isLoading = false
+
+    init(
+        size: CGFloat,
+        profilePictureURL: String?,
+        displayName: String,
+        showEditIcon: Bool = false,
+        onTap: @escaping () -> Void
+    ) {
+        self.size = size
+        self.profilePictureURL = profilePictureURL
+        self.displayName = displayName
+        self.showEditIcon = showEditIcon
+        self.onTap = onTap
+    }
 
     var body: some View {
         Button(action: onTap) {
@@ -36,16 +50,7 @@ struct ProfilePictureView: View {
                 } else if let image = image {
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: size - 4, height: size - 4)
-                        .clipShape(Circle())
-                } else if let memojiData = memojiData,
-                          let data = Data(base64Encoded: memojiData),
-                          let uiImage = UIImage(data: data)
-                {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .scaledToFit()
                         .frame(width: size - 4, height: size - 4)
                         .clipShape(Circle())
                 } else {
@@ -58,6 +63,25 @@ struct ProfilePictureView: View {
                         Image(systemName: "person.circle.fill")
                             .font(.system(size: size * 0.6))
                             .foregroundColor(.secondary)
+                    }
+                }
+
+                // Edit Icon Overlay
+                if showEditIcon {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.system(size: size * 0.3))
+                                .foregroundColor(.cyan)
+                                .background(
+                                    Circle()
+                                        .fill(.white)
+                                        .frame(width: size * 0.3, height: size * 0.3)
+                                )
+                                .offset(x: size * 0.1, y: size * 0.1)
+                        }
                     }
                 }
             }
@@ -100,8 +124,8 @@ struct ProfilePictureView: View {
         ProfilePictureView(
             size: 60,
             profilePictureURL: nil,
-            memojiData: nil,
-            displayName: "John"
+            displayName: "John",
+            showEditIcon: true
         ) {
             print("Tapped profile picture")
         }
@@ -109,8 +133,8 @@ struct ProfilePictureView: View {
         ProfilePictureView(
             size: 60,
             profilePictureURL: nil,
-            memojiData: nil,
-            displayName: ""
+            displayName: "",
+            showEditIcon: true
         ) {
             print("Tapped profile picture")
         }

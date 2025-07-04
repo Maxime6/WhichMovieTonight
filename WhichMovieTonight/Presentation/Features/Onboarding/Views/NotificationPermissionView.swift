@@ -163,5 +163,5 @@ struct NotificationPermissionView: View {
 #Preview {
     NotificationPermissionView()
         .environmentObject(NotificationService())
-        .environmentObject(AppStateManager())
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
 }
