@@ -166,15 +166,15 @@ struct HomeView: View {
 
                 Spacer()
 
-                ProfilePictureView(
-                    size: 50,
-                    profilePictureURL: userProfileService.profilePictureURL,
-                    displayName: userProfileService.displayName.isEmpty ? viewModel.userName : userProfileService.displayName
-                ) {
-                    showingProfileSheet = true
+                Button(action: { showingProfileSheet = true }) {
+                    ProfilePictureView(
+                        size: 50,
+                        profilePictureURL: userProfileService.profilePictureURL,
+                        displayName: userProfileService.displayName.isEmpty ? viewModel.userName : userProfileService.displayName,
+                        showEditIcon: false
+                    )
                 }
-                .scaleEffect(1)
-                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.6), value: true)
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.horizontal, 20)

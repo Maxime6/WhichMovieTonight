@@ -15,7 +15,6 @@ struct ProfileSheet: View {
     @ObservedObject var userProfileService: UserProfileService
     @State private var displayName: String
     @State private var selectedItem: PhotosPickerItem?
-    @State private var showingPhotoOptions = false
     @State private var isUploading = false
     @State private var showingError = false
     @State private var errorMessage = ""
@@ -37,9 +36,16 @@ struct ProfileSheet: View {
                             size: 100,
                             profilePictureURL: userProfileService.profilePictureURL,
                             displayName: userProfileService.displayName,
-                            showEditIcon: true
-                        ) {
-                            showingPhotoOptions = true
+                            showEditIcon: true,
+                            selectedItem: $selectedItem
+                        )
+                        // Remove photo button (only show if photo exists)
+                        if userProfileService.profilePictureURL != nil {
+                            Button("Remove Photo") {
+                                removeProfilePicture()
+                            }
+                            .font(.caption)
+                            .foregroundColor(.red)
                         }
                     }
 
@@ -145,19 +151,6 @@ struct ProfileSheet: View {
             } message: {
                 Text(errorMessage)
             }
-            .confirmationDialog("Choose Photo Option", isPresented: $showingPhotoOptions) {
-                PhotosPicker(selection: $selectedItem, matching: .images) {
-                    Label("Choose Photo", systemImage: "photo")
-                }
-
-                if userProfileService.profilePictureURL != nil {
-                    Button("Remove", role: .destructive) {
-                        removeProfilePicture()
-                    }
-                }
-
-                Button("Cancel", role: .cancel) {}
-            }
         }
         .presentationDetents([.medium])
         .overlay(
@@ -262,25 +255,6 @@ struct ProfileSheet: View {
         }
     }
 
-    private func removeProfilePicture() {
-        Task {
-            do {
-                if let userId = Auth.auth().currentUser?.uid {
-                    userProfileService.profilePictureURL = nil
-                    try await userProfileService.saveUserPreferences(userId: userId)
-                    showSuccessToast("Profile picture removed")
-
-                    // Haptic feedback for success
-                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                    impactFeedback.impactOccurred()
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-                showingError = true
-            }
-        }
-    }
-
     private func showSuccessToast(_ message: String) {
         successMessage = message
         showingSuccessToast = true
@@ -288,6 +262,20 @@ struct ProfileSheet: View {
         // Auto-dismiss after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showingSuccessToast = false
+        }
+    }
+
+    private func removeProfilePicture() {
+        Task {
+            do {
+                if let userId = Auth.auth().currentUser?.uid {
+                    try await userProfileService.deleteProfilePicture(userId: userId)
+                    showSuccessToast("Profile picture removed")
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+            }
         }
     }
 }

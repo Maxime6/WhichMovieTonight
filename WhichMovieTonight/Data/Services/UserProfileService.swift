@@ -279,12 +279,6 @@ class UserProfileService: ObservableObject {
             throw NSError(domain: "ProfilePictureError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to compress image"])
         }
 
-        // Resize image to max 500x500
-        let resizedImage = image.resized(to: CGSize(width: 500, height: 500))
-        guard let resizedData = resizedImage.jpegData(compressionQuality: 0.8) else {
-            throw NSError(domain: "ProfilePictureError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to resize image"])
-        }
-
         let storage = Storage.storage()
         let storageRef = storage.reference()
         let profilePictureRef = storageRef.child("users/\(userId)/profile-pictures/\(UUID().uuidString).jpg")
@@ -292,7 +286,7 @@ class UserProfileService: ObservableObject {
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
 
-        _ = try await profilePictureRef.putDataAsync(resizedData, metadata: metadata)
+        _ = try await profilePictureRef.putDataAsync(imageData, metadata: metadata)
         let downloadURL = try await profilePictureRef.downloadURL()
 
         // Update local state

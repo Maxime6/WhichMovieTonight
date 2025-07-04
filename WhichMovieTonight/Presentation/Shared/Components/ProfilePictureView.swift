@@ -6,6 +6,7 @@
 //
 
 import FirebaseStorage
+import PhotosUI
 import SwiftUI
 
 struct ProfilePictureView: View {
@@ -13,65 +14,56 @@ struct ProfilePictureView: View {
     let profilePictureURL: String?
     let displayName: String
     let showEditIcon: Bool
-    let onTap: () -> Void
+    var selectedItem: Binding<PhotosPickerItem?>? = nil
 
     @State private var image: UIImage?
     @State private var isLoading = false
 
-    init(
-        size: CGFloat,
-        profilePictureURL: String?,
-        displayName: String,
-        showEditIcon: Bool = false,
-        onTap: @escaping () -> Void
-    ) {
-        self.size = size
-        self.profilePictureURL = profilePictureURL
-        self.displayName = displayName
-        self.showEditIcon = showEditIcon
-        self.onTap = onTap
-    }
-
     var body: some View {
-        Button(action: onTap) {
-            ZStack {
-                // Background circle
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        Circle()
-                            .stroke(.primary.opacity(0.1), lineWidth: 1)
-                    )
+        ZStack {
+            // Background circle
+            Circle()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Circle()
+                        .stroke(.primary.opacity(0.1), lineWidth: 1)
+                )
+                .frame(width: size, height: size)
 
-                // Content
-                if isLoading {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                } else if let image = image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: size - 4, height: size - 4)
-                        .clipShape(Circle())
+            // Content
+            if isLoading {
+                ProgressView()
+                    .scaleEffect(0.8)
+            } else if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+            } else {
+                // Fallback to initials or SF Symbol
+                if !displayName.isEmpty {
+                    Text(displayName.prefix(1).uppercased())
+                        .font(.system(size: size * 0.4, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .frame(width: size, height: size)
+                        .background(Circle().fill(.ultraThinMaterial))
                 } else {
-                    // Fallback to initials or SF Symbol
-                    if !displayName.isEmpty {
-                        Text(displayName.prefix(1).uppercased())
-                            .font(.system(size: size * 0.4, weight: .semibold))
-                            .foregroundColor(.primary)
-                    } else {
-                        Image(systemName: "person.circle.fill")
-                            .font(.system(size: size * 0.6))
-                            .foregroundColor(.secondary)
-                    }
+                    Image(systemName: "person.circle.fill")
+                        .font(.system(size: size * 0.6))
+                        .foregroundColor(.secondary)
+                        .frame(width: size, height: size)
+                        .background(Circle().fill(.ultraThinMaterial))
                 }
+            }
 
-                // Edit Icon Overlay
-                if showEditIcon {
-                    VStack {
+            // Edit icon overlay (only if selectedItem is provided)
+            if showEditIcon, let selectedItem = selectedItem {
+                VStack {
+                    Spacer()
+                    HStack {
                         Spacer()
-                        HStack {
-                            Spacer()
+                        PhotosPicker(selection: selectedItem, matching: .images) {
                             Image(systemName: "pencil.circle.fill")
                                 .font(.system(size: size * 0.3))
                                 .foregroundColor(.cyan)
@@ -80,20 +72,16 @@ struct ProfilePictureView: View {
                                         .fill(.white)
                                         .frame(width: size * 0.3, height: size * 0.3)
                                 )
-                                .offset(x: size * 0.1, y: size * 0.1)
                         }
+                        .offset(x: size * 0.1, y: size * 0.1)
                     }
                 }
+                .frame(width: size, height: size)
             }
-            .frame(width: size, height: size)
         }
-        .buttonStyle(PlainButtonStyle())
-        .onAppear {
-            loadProfilePicture()
-        }
-        .onChange(of: profilePictureURL) { _, _ in
-            loadProfilePicture()
-        }
+        .frame(width: size, height: size)
+        .onAppear { loadProfilePicture() }
+        .onChange(of: profilePictureURL) { _, _ in loadProfilePicture() }
     }
 
     private func loadProfilePicture() {
@@ -125,19 +113,17 @@ struct ProfilePictureView: View {
             size: 60,
             profilePictureURL: nil,
             displayName: "John",
-            showEditIcon: true
-        ) {
-            print("Tapped profile picture")
-        }
+            showEditIcon: true,
+            selectedItem: .constant(nil)
+        )
 
         ProfilePictureView(
             size: 60,
             profilePictureURL: nil,
             displayName: "",
-            showEditIcon: true
-        ) {
-            print("Tapped profile picture")
-        }
+            showEditIcon: true,
+            selectedItem: .constant(nil)
+        )
     }
     .padding()
 }
