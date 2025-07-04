@@ -20,7 +20,7 @@ struct RootView: View {
                     .environmentObject(appStateManager)
 
             case .needsOnboarding:
-                OnboardingView()
+                NewOnboardingView(userProfileService: userProfileService)
                     .environmentObject(appStateManager)
                     .environmentObject(userProfileService)
                     .environmentObject(notificationService)

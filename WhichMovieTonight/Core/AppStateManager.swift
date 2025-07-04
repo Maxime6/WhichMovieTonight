@@ -29,9 +29,9 @@ class AppStateManager: ObservableObject {
         if let currentUser = Auth.auth().currentUser {
             // Load user preferences from Firebase to check if onboarding is completed
             await userProfileService.loadUserPreferences(userId: currentUser.uid)
-            let preferences = userProfileService.getUserPreferences()
 
-            if !preferences.favoriteGenres.isEmpty && !preferences.favoriteStreamingPlatforms.isEmpty {
+            // Check if user has completed onboarding (has required preferences)
+            if userProfileService.isValid {
                 appState = .authenticated
             } else {
                 appState = .needsOnboarding
@@ -51,11 +51,12 @@ class AppStateManager: ObservableObject {
 
         // Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: currentUser.uid)
-        let preferences = userProfileService.getUserPreferences()
 
-        if !preferences.favoriteGenres.isEmpty && !preferences.favoriteStreamingPlatforms.isEmpty {
+        // If user has completed onboarding, go to main app
+        if userProfileService.isValid {
             appState = .authenticated
         } else {
+            // User is authenticated but needs onboarding
             appState = .needsOnboarding
         }
     }
