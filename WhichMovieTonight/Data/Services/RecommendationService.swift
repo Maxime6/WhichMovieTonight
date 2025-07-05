@@ -57,7 +57,7 @@ final class RecommendationService: RecommendationServiceProtocol {
 
         // 1. Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: userId)
-        guard userProfileService.canGenerateRecommendations() else {
+        guard await userProfileService.canGenerateRecommendations() else {
             throw RecommendationError.missingUserPreferences
         }
 
@@ -80,11 +80,11 @@ final class RecommendationService: RecommendationServiceProtocol {
                 print("🔄 Generating movies (attempt \(attempts)/\(maxRetries))...")
 
                 let movieDTOs = try await openAIService.getMovieSuggestion(
-                    for: userPreferences.favoriteStreamingPlatforms.map { $0.rawValue },
-                    movieGenre: userPreferences.favoriteGenres,
+                    for: userProfileService.favoriteStreamingPlatforms.map { $0.rawValue },
+                    movieGenre: userProfileService.favoriteGenres,
                     userInteractions: userInteractions,
-                    favoriteActors: userPreferences.favoriteActors,
-                    favoriteGenres: userPreferences.favoriteGenres,
+                    favoriteActors: userProfileService.favoriteActors,
+                    favoriteGenres: userProfileService.favoriteGenres,
                     recentSuggestions: exclusionList
                 )
 

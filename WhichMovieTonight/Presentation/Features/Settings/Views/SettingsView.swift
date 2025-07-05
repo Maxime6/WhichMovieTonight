@@ -12,13 +12,8 @@ struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
-    @StateObject private var authViewModel: AuthenticationViewModel
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
-
-    init() {
-        _authViewModel = StateObject(wrappedValue: AuthenticationViewModel())
-    }
 
     var body: some View {
         NavigationStack {
@@ -31,7 +26,7 @@ struct SettingsView: View {
                             .foregroundColor(.blue)
 
                         VStack(alignment: .leading) {
-                            Text(authViewModel.displayName.isEmpty ? "User" : authViewModel.displayName)
+                            Text(userProfileService.displayName.isEmpty ? "User" : userProfileService.displayName)
                                 .font(.headline)
                             Text(Auth.auth().currentUser?.email ?? "No email")
                                 .font(.caption)

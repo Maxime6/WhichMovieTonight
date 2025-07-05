@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NotificationPermissionView: View {
     @EnvironmentObject var notificationService: NotificationService
+    @EnvironmentObject var userProfileService: UserProfileService
     @State private var isRequestingPermission = false
     @State private var showPermissionDeniedAlert = false
 

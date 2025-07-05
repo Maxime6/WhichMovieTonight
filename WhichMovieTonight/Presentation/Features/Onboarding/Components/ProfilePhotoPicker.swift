@@ -1,4 +1,5 @@
 import PhotosUI
+import FirebaseAuth
 import SwiftUI
 
 struct ProfilePhotoPicker: View {

@@ -121,7 +121,11 @@ struct FrequencyButton: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
-                            : Color.gray.opacity(0.1)
+                            : LinearGradient(
+                                colors: [Color.gray.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                     )
             )
         }
@@ -173,7 +177,11 @@ struct MoodButton: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
-                            : Color.gray.opacity(0.1)
+                            : LinearGradient(
+                                colors: [Color.gray.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                     )
             )
         }

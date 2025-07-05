@@ -29,6 +29,8 @@ class UserProfileService: ObservableObject {
     @Published var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     @Published var movieMoodPreference: MovieMoodPreference = .discover
     @Published var isLoading = false
+    @Published var hasCompletedOnboarding: Bool = false
+    @Published var hasCompletedNotificationStep: Bool = false
 
     // Cache management
     private let cacheExpirationMinutes = 30
@@ -68,6 +70,8 @@ class UserProfileService: ObservableObject {
             profilePictureURL = userProfile.profilePictureURL
             movieWatchingFrequency = userProfile.movieWatchingFrequency
             movieMoodPreference = userProfile.movieMoodPreference
+            hasCompletedOnboarding = userProfile.hasCompletedOnboarding
+            hasCompletedNotificationStep = userProfile.hasCompletedNotificationStep
 
             // Cache locally
             cachePreferences()
@@ -337,11 +341,6 @@ class UserProfileService: ObservableObject {
     }
 
     // MARK: - Onboarding Status
-
-    /// Check if user has completed the onboarding flow
-    func hasCompletedOnboarding() -> Bool {
-        return hasCompletedOnboarding
-    }
 
     /// Check if user can generate recommendations
     func canGenerateRecommendations() -> Bool {

@@ -38,7 +38,6 @@
 		9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */; };
 		9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */; };
 		9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED522E01FCBA00AD4811 /* SettingsActorView.swift */; };
-		9C73ED672E01FCBA00AD4811 /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED452E01FCBA00AD4811 /* ProfileMenuView.swift */; };
 		9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED5A2E01FCBA00AD4811 /* WatchlistView.swift */; };
 		9C73ED692E01FCBA00AD4811 /* SettingsGenreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED532E01FCBA00AD4811 /* SettingsGenreView.swift */; };
 		9C73ED6A2E01FCBA00AD4811 /* WatchlistViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED582E01FCBA00AD4811 /* WatchlistViewModel.swift */; };
@@ -123,7 +122,6 @@
 		9C73ED422E01FCBA00AD4811 /* MovieCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCardView.swift; sourceTree = "<group>"; };
 		9C73ED432E01FCBA00AD4811 /* MovieDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailSheet.swift; sourceTree = "<group>"; };
 		9C73ED442E01FCBA00AD4811 /* MovieInteractionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieInteractionButtons.swift; sourceTree = "<group>"; };
-		9C73ED452E01FCBA00AD4811 /* ProfileMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuView.swift; sourceTree = "<group>"; };
 		9C73ED462E01FCBA00AD4811 /* TestsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsUI.swift; sourceTree = "<group>"; };
 		9C73ED492E01FCBA00AD4811 /* ActorSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorSelectionView.swift; sourceTree = "<group>"; };
 		9C73ED4A2E01FCBA00AD4811 /* GenreSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenreSelectionView.swift; sourceTree = "<group>"; };
@@ -381,7 +379,6 @@
 				9C73ED422E01FCBA00AD4811 /* MovieCardView.swift */,
 				9C73ED432E01FCBA00AD4811 /* MovieDetailSheet.swift */,
 				9C73ED442E01FCBA00AD4811 /* MovieInteractionButtons.swift */,
-				9C73ED452E01FCBA00AD4811 /* ProfileMenuView.swift */,
 				9C73ED462E01FCBA00AD4811 /* TestsUI.swift */,
 			);
 			path = Views;
@@ -738,7 +735,6 @@
 				9C6EAEE12DD3B10F00C2A6D2 /* MockMovie.swift in Sources */,
 				9CF0B5F42DE4BCB0002002B4 /* OMDBService.swift in Sources */,
 				9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */,
-				9C73ED672E01FCBA00AD4811 /* ProfileMenuView.swift in Sources */,
 				9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */,
 				9C73ED692E01FCBA00AD4811 /* SettingsGenreView.swift in Sources */,
 				9C792AE52E141DF100709CB2 /* FavoritesView.swift in Sources */,

@@ -32,7 +32,7 @@ class AppStateManager: ObservableObject {
             await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
             // Check if user has completed onboarding
-            if userProfileService.hasCompletedOnboarding() {
+            if userProfileService.hasCompletedOnboarding {
                 // Future: Check if user has active subscription
                 // if hasActiveSubscription {
                 //     appState = .authenticated
@@ -60,7 +60,7 @@ class AppStateManager: ObservableObject {
         await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
         // If user has completed onboarding, go to main app
-        if userProfileService.hasCompletedOnboarding() {
+        if userProfileService.hasCompletedOnboarding {
             // Future: Check if user has active subscription
             // if hasActiveSubscription {
             //     appState = .authenticated
