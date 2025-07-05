@@ -1,18 +1,15 @@
 import Foundation
 
 enum OnboardingStep: Int, CaseIterable {
-    case valueProposition = 0
-    case personalInfo = 1
-    case genreSelection = 2
-    case actorSelection = 3
-    case streamingPlatforms = 4
-    case notifications = 5
-    case complete = 6
+    case personalInfo = 0
+    case genreSelection = 1
+    case actorSelection = 2
+    case streamingPlatforms = 3
+    case notifications = 4
+    case complete = 5
 
     var title: String {
         switch self {
-        case .valueProposition:
-            return "Welcome to WMT"
         case .personalInfo:
             return "Tell us about yourself"
         case .genreSelection:
@@ -30,7 +27,7 @@ enum OnboardingStep: Int, CaseIterable {
 
     var isRequired: Bool {
         switch self {
-        case .valueProposition, .personalInfo, .genreSelection, .streamingPlatforms, .notifications, .complete:
+        case .personalInfo, .genreSelection, .streamingPlatforms, .notifications, .complete:
             return true
         case .actorSelection:
             return false
@@ -39,7 +36,7 @@ enum OnboardingStep: Int, CaseIterable {
 
     var canGoBack: Bool {
         switch self {
-        case .valueProposition:
+        case .personalInfo:
             return false // Can't go back from first step
         default:
             return true

@@ -26,8 +26,9 @@ struct RootView: View {
                     .environmentObject(notificationService)
 
             case .needsAuthentication:
-                AuthenticationView()
+                ValuePropositionView()
                     .environmentObject(appStateManager)
+                    .environmentObject(userProfileService)
 
             case .authenticated:
                 ContentView()

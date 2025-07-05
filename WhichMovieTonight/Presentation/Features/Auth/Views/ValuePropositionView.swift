@@ -3,7 +3,8 @@ import CryptoKit
 import SwiftUI
 
 struct ValuePropositionView: View {
-    @EnvironmentObject var stepManager: OnboardingStepManager
+    @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var userProfileService: UserProfileService
     @State private var isAuthenticating = false
     @State private var showAuthError = false
     @State private var authErrorMessage = ""
@@ -52,46 +53,27 @@ struct ValuePropositionView: View {
             Spacer()
 
             // Apple Sign-In button
-            if !stepManager.isAuthenticated {
-                VStack(spacing: 16) {
-                    SignInWithAppleButton(.continue) { request in
-                        handleSignInWithAppleRequest(request)
-                    } onCompletion: { result in
-                        handleSignInWithAppleCompletion(result)
-                    }
-                    .frame(height: 50)
-                    .clipShape(Capsule())
-                    .disabled(isAuthenticating)
-
-                    if isAuthenticating {
-                        HStack {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Signing in...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
+            VStack(spacing: 16) {
+                SignInWithAppleButton(.continue) { request in
+                    handleSignInWithAppleRequest(request)
+                } onCompletion: { result in
+                    handleSignInWithAppleCompletion(result)
                 }
-                .padding(.horizontal)
-            } else {
-                // Success state
-                VStack(spacing: 12) {
+                .frame(height: 50)
+                .clipShape(Capsule())
+                .disabled(isAuthenticating)
+
+                if isAuthenticating {
                     HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("Successfully signed in!")
-                            .font(.headline)
-                            .foregroundColor(.green)
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Signing in...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-
-                    Text("Tap Next to continue with your profile setup")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
                 }
-                .padding(.horizontal)
             }
+            .padding(.horizontal)
 
             Spacer()
         }
@@ -166,9 +148,13 @@ struct ValuePropositionView: View {
             let result = try await Auth.auth().signIn(with: credential)
             await updateDisplayName(for: result.user, with: appleIDCredential)
 
+            // After successful authentication, let AppStateManager handle the routing
             await MainActor.run {
-                stepManager.setAuthenticated(true)
                 isAuthenticating = false
+                // AppStateManager will automatically determine if user needs onboarding or can go to main app
+                Task {
+                    await appStateManager.handleSuccessfulAuthentication()
+                }
             }
         } catch {
             await MainActor.run {
@@ -268,5 +254,6 @@ extension ASAuthorizationAppleIDCredential {
 
 #Preview {
     ValuePropositionView()
-        .environmentObject(OnboardingStepManager(userProfileService: UserProfileService()))
+        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
+        .environmentObject(UserProfileService())
 }

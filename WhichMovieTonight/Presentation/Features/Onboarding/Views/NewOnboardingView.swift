@@ -66,10 +66,6 @@ struct NewOnboardingView: View {
     @ViewBuilder
     private var currentStepView: some View {
         switch stepManager.currentStep {
-        case .valueProposition:
-            ValuePropositionView()
-                .environmentObject(stepManager)
-
         case .personalInfo:
             PersonalInfoView()
                 .environmentObject(stepManager)
@@ -94,6 +90,7 @@ struct NewOnboardingView: View {
         case .complete:
             OnboardingCompleteView()
                 .environmentObject(stepManager)
+                .environmentObject(userProfileService)
         }
     }
 }

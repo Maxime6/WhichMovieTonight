@@ -163,10 +163,7 @@ struct OnboardingCompleteView: View {
         }
     }
 
-    private var userProfileService: UserProfileService {
-        // Access UserProfileService through stepManager
-        return stepManager.userProfileService
-    }
+    @EnvironmentObject var userProfileService: UserProfileService
 }
 
 // MARK: - Preference Summary Row Component
@@ -200,4 +197,5 @@ struct PreferenceSummaryRow: View {
     OnboardingCompleteView()
         .environmentObject(OnboardingStepManager(userProfileService: UserProfileService()))
         .environmentObject(AppStateManager(userProfileService: UserProfileService()))
+        .environmentObject(UserProfileService())
 }

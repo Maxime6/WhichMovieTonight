@@ -3,8 +3,8 @@ import Foundation
 
 @MainActor
 class OnboardingStepManager: ObservableObject {
-    @Published var currentStep: OnboardingStep = .valueProposition
-    @Published var isAuthenticated = false
+    @Published var currentStep: OnboardingStep = .personalInfo
+
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -45,8 +45,6 @@ class OnboardingStepManager: ObservableObject {
 
     var canProceedToNextStep: Bool {
         switch currentStep {
-        case .valueProposition:
-            return isAuthenticated
         case .personalInfo:
             return !userProfileService.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .genreSelection:
@@ -64,8 +62,6 @@ class OnboardingStepManager: ObservableObject {
 
     var validationMessage: String? {
         switch currentStep {
-        case .valueProposition:
-            return isAuthenticated ? nil : "Please sign in with Apple to continue"
         case .personalInfo:
             return userProfileService.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Please enter your name" : nil
         case .genreSelection:
@@ -79,12 +75,6 @@ class OnboardingStepManager: ObservableObject {
         case .complete:
             return nil
         }
-    }
-
-    // MARK: - Authentication
-
-    func setAuthenticated(_ authenticated: Bool) {
-        isAuthenticated = authenticated
     }
 
     // MARK: - Completion
