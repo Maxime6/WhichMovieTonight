@@ -150,6 +150,9 @@ struct NotificationPermissionView: View {
                 if !granted {
                     showPermissionDeniedAlert = true
                 }
+
+                // Mark notification step as completed regardless of user choice
+                userProfileService.markNotificationStepCompleted()
             }
         }
     }
@@ -157,6 +160,9 @@ struct NotificationPermissionView: View {
     private func skipNotificationPermission() {
         // User chose to skip - we'll show reminder in settings later
         print("⏭️ User skipped notification permission")
+
+        // Mark notification step as completed
+        userProfileService.markNotificationStepCompleted()
     }
 }
 

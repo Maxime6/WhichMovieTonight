@@ -112,6 +112,8 @@ struct OnboardingCompleteView: View {
             Button(action: {
                 Task {
                     await stepManager.completeOnboarding()
+                    // Mark onboarding as completed
+                    userProfileService.markOnboardingCompleted()
                     // After completion, notify AppStateManager to move to main app
                     appStateManager.completeOnboarding()
                 }

@@ -24,7 +24,7 @@ struct UserPreferences {
         self.favoriteStreamingPlatforms = favoriteStreamingPlatforms
     }
 
-    var isValid: Bool {
+    var canGenerateRecommendations: Bool {
         !favoriteGenres.isEmpty && !favoriteStreamingPlatforms.isEmpty
     }
 }

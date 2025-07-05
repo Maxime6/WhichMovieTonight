@@ -1,5 +1,6 @@
 import AuthenticationServices
 import CryptoKit
+import FirebaseAuth
 import SwiftUI
 
 struct ValuePropositionView: View {

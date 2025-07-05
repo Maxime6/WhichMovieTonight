@@ -57,8 +57,7 @@ final class RecommendationService: RecommendationServiceProtocol {
 
         // 1. Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: userId)
-        let userPreferences = await MainActor.run { userProfileService.getUserPreferences() }
-        guard userPreferences.isValid else {
+        guard userProfileService.canGenerateRecommendations() else {
             throw RecommendationError.missingUserPreferences
         }
 

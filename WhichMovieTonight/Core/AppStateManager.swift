@@ -13,6 +13,7 @@ class AppStateManager: ObservableObject {
         case launch
         case needsOnboarding
         case needsAuthentication
+        case needsPaywall
         case authenticated
     }
 
@@ -30,8 +31,14 @@ class AppStateManager: ObservableObject {
             // Load user preferences from Firebase to check if onboarding is completed
             await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
-            // Check if user has completed onboarding (has required preferences)
-            if userProfileService.isValid {
+            // Check if user has completed onboarding
+            if userProfileService.hasCompletedOnboarding() {
+                // Future: Check if user has active subscription
+                // if hasActiveSubscription {
+                //     appState = .authenticated
+                // } else {
+                //     appState = .needsPaywall
+                // }
                 appState = .authenticated
             } else {
                 appState = .needsOnboarding
@@ -53,7 +60,13 @@ class AppStateManager: ObservableObject {
         await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
         // If user has completed onboarding, go to main app
-        if userProfileService.isValid {
+        if userProfileService.hasCompletedOnboarding() {
+            // Future: Check if user has active subscription
+            // if hasActiveSubscription {
+            //     appState = .authenticated
+            // } else {
+            //     appState = .needsPaywall
+            // }
             appState = .authenticated
         } else {
             // User is authenticated but needs onboarding

@@ -30,6 +30,14 @@ struct RootView: View {
                     .environmentObject(appStateManager)
                     .environmentObject(userProfileService)
 
+            case .needsPaywall:
+                // TODO: Implement PaywallView with RevenueCat
+                // For now, go directly to main app
+                ContentView()
+                    .environmentObject(appStateManager)
+                    .environmentObject(userProfileService)
+                    .environmentObject(notificationService)
+
             case .authenticated:
                 ContentView()
                     .environmentObject(appStateManager)

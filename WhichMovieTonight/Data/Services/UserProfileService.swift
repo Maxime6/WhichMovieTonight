@@ -335,6 +335,28 @@ class UserProfileService: ObservableObject {
         movieMoodPreference = mood
         try await saveUserPreferences(userId: userId)
     }
+
+    // MARK: - Onboarding Status
+
+    /// Check if user has completed the onboarding flow
+    func hasCompletedOnboarding() -> Bool {
+        return hasCompletedOnboarding
+    }
+
+    /// Check if user can generate recommendations
+    func canGenerateRecommendations() -> Bool {
+        return !favoriteGenres.isEmpty && !favoriteStreamingPlatforms.isEmpty
+    }
+
+    /// Mark notification step as completed
+    func markNotificationStepCompleted() {
+        hasCompletedNotificationStep = true
+    }
+
+    /// Mark onboarding as completed
+    func markOnboardingCompleted() {
+        hasCompletedOnboarding = true
+    }
 }
 
 // MARK: - UserProfile Model
@@ -347,6 +369,8 @@ struct UserProfile {
     var profilePictureURL: String?
     var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     var movieMoodPreference: MovieMoodPreference = .discover
+    var hasCompletedOnboarding: Bool = false
+    var hasCompletedNotificationStep: Bool = false
     var createdAt: Date = .init()
     var updatedAt: Date = .init()
 
@@ -404,6 +428,14 @@ struct UserProfile {
             movieMoodPreference = mood
         }
 
+        if let hasCompletedOnboarding = data["hasCompletedOnboarding"] as? Bool {
+            self.hasCompletedOnboarding = hasCompletedOnboarding
+        }
+
+        if let hasCompletedNotificationStep = data["hasCompletedNotificationStep"] as? Bool {
+            self.hasCompletedNotificationStep = hasCompletedNotificationStep
+        }
+
         if let timestamp = data["createdAt"] as? Timestamp {
             createdAt = timestamp.dateValue()
         }
@@ -425,14 +457,21 @@ struct UserProfile {
             "profilePictureURL": profilePictureURL,
             "movieWatchingFrequency": movieWatchingFrequency.rawValue,
             "movieMoodPreference": movieMoodPreference.rawValue,
+            "hasCompletedOnboarding": hasCompletedOnboarding,
+            "hasCompletedNotificationStep": hasCompletedNotificationStep,
             "createdAt": createdAt,
             "updatedAt": Date(),
         ]
     }
 
     /// Check if profile has valid preferences for recommendations
-    var isValid: Bool {
+    var canGenerateRecommendations: Bool {
         return !favoriteGenres.isEmpty && !favoriteStreamingPlatforms.isEmpty
+    }
+
+    /// Check if user has completed the onboarding flow
+    var isOnboardingCompleted: Bool {
+        return hasCompletedOnboarding
     }
 }
 
