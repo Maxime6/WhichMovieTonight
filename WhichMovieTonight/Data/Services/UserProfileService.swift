@@ -1,4 +1,5 @@
 import Combine
+import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 import Foundation
@@ -355,6 +356,36 @@ class UserProfileService: ObservableObject {
     /// Mark onboarding as completed
     func markOnboardingCompleted() {
         hasCompletedOnboarding = true
+    }
+
+    /// Delete the user's account from Auth, Firestore, and Storage
+    @MainActor
+    func deleteAccount() async -> Bool {
+        guard let user = Auth.auth().currentUser else { return false }
+        let userId = user.uid
+        do {
+            // Delete user document from Firestore
+            try await db.collection("users").document(userId).delete()
+
+            // Delete profile picture from Storage if exists
+            if let profilePictureURL = profilePictureURL, !profilePictureURL.isEmpty {
+                let storage = Storage.storage()
+                let storageRef = storage.reference(forURL: profilePictureURL)
+                do {
+                    try await storageRef.delete()
+                } catch {
+                    print("Warning: Failed to delete profile picture from Storage: \(error)")
+                    // Not fatal, continue
+                }
+            }
+
+            // Delete the Firebase Auth user
+            try await user.delete()
+            return true
+        } catch {
+            print("Error deleting account: \(error)")
+            return false
+        }
     }
 }
 

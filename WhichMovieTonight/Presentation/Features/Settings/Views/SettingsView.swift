@@ -212,7 +212,7 @@ struct SettingsView: View {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
                 Task {
-                    let success = await authViewModel.deleteAccount()
+                    let success = await userProfileService.deleteAccount()
                     if success {
                         appStateManager.handleAccountDeletion()
                     }
