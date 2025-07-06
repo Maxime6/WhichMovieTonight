@@ -19,6 +19,8 @@ class UserProfileService: ObservableObject {
     private let profilePictureURLKey = "cached_profilePictureURL"
     private let movieWatchingFrequencyKey = "cached_movieWatchingFrequency"
     private let movieMoodPreferenceKey = "cached_movieMoodPreference"
+    private let hasCompletedOnboardingKey = "cached_hasCompletedOnboarding"
+    private let hasCompletedNotificationStepKey = "cached_hasCompletedNotificationStep"
     private let lastSyncKey = "userProfile_lastSync"
 
     // Published properties for SwiftUI reactivity
@@ -99,7 +101,9 @@ class UserProfileService: ObservableObject {
             displayName: displayName,
             profilePictureURL: profilePictureURL,
             movieWatchingFrequency: movieWatchingFrequency,
-            movieMoodPreference: movieMoodPreference
+            movieMoodPreference: movieMoodPreference,
+            hasCompletedOnboarding: hasCompletedOnboarding,
+            hasCompletedNotificationStep: hasCompletedNotificationStep
         )
 
         try await saveUserProfile(userId: userId, userProfile: userProfile)
@@ -247,6 +251,15 @@ class UserProfileService: ObservableObject {
             movieMoodPreference = mood
         }
 
+        // Check if onboarding completion keys exist before reading
+        if userDefaults.object(forKey: hasCompletedOnboardingKey) != nil {
+            hasCompletedOnboarding = userDefaults.bool(forKey: hasCompletedOnboardingKey)
+        }
+
+        if userDefaults.object(forKey: hasCompletedNotificationStepKey) != nil {
+            hasCompletedNotificationStep = userDefaults.bool(forKey: hasCompletedNotificationStepKey)
+        }
+
         print("📱 Loaded cached user preferences")
     }
 
@@ -272,6 +285,8 @@ class UserProfileService: ObservableObject {
         userDefaults.set(profilePictureURL, forKey: profilePictureURLKey)
         userDefaults.set(movieWatchingFrequency.rawValue, forKey: movieWatchingFrequencyKey)
         userDefaults.set(movieMoodPreference.rawValue, forKey: movieMoodPreferenceKey)
+        userDefaults.set(hasCompletedOnboarding, forKey: hasCompletedOnboardingKey)
+        userDefaults.set(hasCompletedNotificationStep, forKey: hasCompletedNotificationStepKey)
 
         print("💾 Cached user preferences locally")
     }
@@ -351,11 +366,15 @@ class UserProfileService: ObservableObject {
     /// Mark notification step as completed
     func markNotificationStepCompleted() {
         hasCompletedNotificationStep = true
+        // Cache immediately to ensure persistence
+        cachePreferences()
     }
 
     /// Mark onboarding as completed
     func markOnboardingCompleted() {
         hasCompletedOnboarding = true
+        // Cache immediately to ensure persistence
+        cachePreferences()
     }
 
     /// Delete the user's account from Auth, Firestore, and Storage
@@ -413,7 +432,7 @@ struct UserProfile {
         updatedAt = Date()
     }
 
-    init(favoriteGenres: [MovieGenre], favoriteActors: [String], favoriteStreamingPlatforms: [StreamingPlatform], displayName: String, profilePictureURL: String?, movieWatchingFrequency: MovieWatchingFrequency, movieMoodPreference: MovieMoodPreference) {
+    init(favoriteGenres: [MovieGenre], favoriteActors: [String], favoriteStreamingPlatforms: [StreamingPlatform], displayName: String, profilePictureURL: String?, movieWatchingFrequency: MovieWatchingFrequency, movieMoodPreference: MovieMoodPreference, hasCompletedOnboarding: Bool = false, hasCompletedNotificationStep: Bool = false) {
         self.favoriteGenres = favoriteGenres
         self.favoriteActors = favoriteActors
         self.favoriteStreamingPlatforms = favoriteStreamingPlatforms
@@ -421,6 +440,8 @@ struct UserProfile {
         self.profilePictureURL = profilePictureURL
         self.movieWatchingFrequency = movieWatchingFrequency
         self.movieMoodPreference = movieMoodPreference
+        self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.hasCompletedNotificationStep = hasCompletedNotificationStep
         updatedAt = Date()
     }
 
