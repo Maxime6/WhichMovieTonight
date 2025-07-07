@@ -83,24 +83,8 @@ class OnboardingStepManager: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        guard let userId = Auth.auth().currentUser?.uid else {
-            errorMessage = "No authenticated user found"
-            isLoading = false
-            return
-        }
-
-        do {
-            // Save all onboarding data to Firebase
-            try await userProfileService.saveUserPreferences(userId: userId)
-            print("✅ Onboarding completed - preferences saved to Firebase")
-
-            // Move to complete step
-            currentStep = .complete
-
-        } catch {
-            print("⚠️ Failed to save preferences during onboarding: \(error)")
-            errorMessage = "Failed to save your preferences. Please try again."
-        }
+        // Move to complete step
+        currentStep = .complete
 
         isLoading = false
     }

@@ -1,9 +1,12 @@
+import FirebaseAuth
 import SwiftUI
 
 struct OnboardingCompleteView: View {
     @EnvironmentObject var stepManager: OnboardingStepManager
     @EnvironmentObject var appStateManager: AppStateManager
+    @EnvironmentObject var userProfileService: UserProfileService
     @State private var showCompletionAnimation = false
+    @State private var completionError: String?
 
     var body: some View {
         VStack(spacing: 40) {
@@ -111,11 +114,24 @@ struct OnboardingCompleteView: View {
             // Complete button
             Button(action: {
                 Task {
-                    await stepManager.completeOnboarding()
-                    // Mark onboarding as completed
-                    userProfileService.markOnboardingCompleted()
-                    // After completion, notify AppStateManager to move to main app
-                    appStateManager.completeOnboarding()
+                    do {
+                        // Complete onboarding with proper Firebase sync
+                        guard let userId = Auth.auth().currentUser?.uid else {
+                            completionError = "No authenticated user found"
+                            return
+                        }
+
+                        try await userProfileService.completeOnboarding(userId: userId)
+
+                        // Move to complete step
+                        stepManager.currentStep = .complete
+
+                        // After completion, notify AppStateManager to move to main app
+                        appStateManager.completeOnboarding()
+
+                    } catch {
+                        completionError = "Failed to complete onboarding: \(error.localizedDescription)"
+                    }
                 }
             }) {
                 HStack {
@@ -156,6 +172,14 @@ struct OnboardingCompleteView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
+
+            if let completionError = completionError {
+                Text(completionError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
         }
         .padding()
         .onAppear {
@@ -164,8 +188,6 @@ struct OnboardingCompleteView: View {
             }
         }
     }
-
-    @EnvironmentObject var userProfileService: UserProfileService
 }
 
 // MARK: - Preference Summary Row Component

@@ -377,6 +377,20 @@ class UserProfileService: ObservableObject {
         cachePreferences()
     }
 
+    /// Complete onboarding and save to Firebase
+    func completeOnboarding(userId: String) async throws {
+        // Set the completion flag
+        hasCompletedOnboarding = true
+
+        // Save everything to Firebase (including the completion status)
+        try await saveUserPreferences(userId: userId)
+
+        // Cache locally for immediate access
+        cachePreferences()
+
+        print("✅ Onboarding completed and saved to Firebase")
+    }
+
     /// Delete the user's account from Auth, Firestore, and Storage
     @MainActor
     func deleteAccount() async -> Bool {
