@@ -1,5 +1,5 @@
-import PhotosUI
 import FirebaseAuth
+import PhotosUI
 import SwiftUI
 
 struct ProfilePhotoPicker: View {
@@ -14,13 +14,7 @@ struct ProfilePhotoPicker: View {
             // Profile photo display
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.cyan.opacity(0.2), .purple.opacity(0.2)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(DesignSystem.subtleGradient)
                     .frame(width: 120, height: 120)
 
                 if let profilePictureURL = userProfileService.profilePictureURL,
@@ -38,13 +32,7 @@ struct ProfilePhotoPicker: View {
                 } else {
                     Image(systemName: "person.fill")
                         .font(.system(size: 48))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.cyan, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(DesignSystem.verticalGradient)
                 }
 
                 // Upload indicator

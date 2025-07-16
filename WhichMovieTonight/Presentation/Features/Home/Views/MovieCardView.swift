@@ -48,12 +48,18 @@ struct MovieCardView: View {
                     {
                         HStack(spacing: 4) {
                             Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.yellow, .orange],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                                 .font(.caption)
                             Text(String(format: "%.1f", rating))
                                 .font(.caption)
                                 .fontWeight(.medium)
-                                .foregroundColor(.primary)
+                                .foregroundStyle(DesignSystem.primaryGradient)
                         }
                     }
                 }
@@ -81,8 +87,23 @@ struct MovieCardView: View {
                             .resizable()
                             .scaledToFill()
                             .frame(width: posterWidth, height: posterHeight)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .shadow(color: .primary.opacity(0.15), radius: 8, x: 0, y: 4)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                            .overlay(
+                                // Subtle gradient overlay
+                                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                .clear,
+                                                .black.opacity(0.1),
+                                                .black.opacity(0.2),
+                                            ],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                            )
+                            .primaryShadow()
                     }
                     .buttonStyle(PlainButtonStyle())
                     .if(namespace != nil) { view in
@@ -103,7 +124,7 @@ struct MovieCardView: View {
         Button(action: {
             onPosterTap?()
         }) {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                 .fill(.gray.opacity(0.2))
                 .frame(width: width, height: height)
                 .overlay {
@@ -111,8 +132,9 @@ struct MovieCardView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50, height: 50)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                 }
+                .subtleShadow()
         }
         .buttonStyle(PlainButtonStyle())
         .if(namespace != nil) { view in

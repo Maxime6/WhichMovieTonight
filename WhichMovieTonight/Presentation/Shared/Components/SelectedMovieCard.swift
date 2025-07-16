@@ -38,17 +38,22 @@ struct SelectedMovieCard: View {
             Button(action: onDeselect) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title3)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(DesignSystem.primaryGradient)
             }
             .buttonStyle(PlainButtonStyle())
         }
         .frame(height: 102)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .primary.opacity(0.1), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
         )
+        .subtleShadow()
         .onTapGesture {
             onTap()
         }
@@ -85,7 +90,7 @@ struct SelectedMovieCard: View {
     }
 
     private var posterPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
             .fill(.gray.opacity(0.2))
             .frame(width: 60, height: 90)
             .overlay {
@@ -93,7 +98,7 @@ struct SelectedMovieCard: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignSystem.primaryGradient)
             }
     }
 }

@@ -29,6 +29,8 @@ struct FavoritesView: View {
             }
             .navigationTitle("Favorites")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(DesignSystem.primaryCyan.opacity(0.1), for: .navigationBar)
             .searchable(text: $viewModel.searchText, prompt: "Search movies...")
             .refreshable {
                 await viewModel.refreshFavorites()
@@ -68,6 +70,7 @@ struct FavoritesView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
+                .progressViewStyle(CircularProgressViewStyle(tint: DesignSystem.primaryCyan))
 
             Text("Loading your favorites...")
                 .font(.subheadline)
@@ -79,44 +82,28 @@ struct FavoritesView: View {
     // MARK: - Empty State View
 
     private var emptyStateView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "heart")
-                .font(.system(size: 64))
-                .foregroundColor(.pink)
-
-            VStack(spacing: 8) {
-                Text("No Favorites Yet")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-
-                Text("Start building your collection by exploring AI recommendations")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+        EmptyStateView(
+            icon: "heart",
+            title: "No Favorites Yet",
+            subtitle: "Start building your collection by exploring AI recommendations",
+            actionTitle: "Get Recommendations",
+            actionIcon: "star.fill",
+            onAction: {
+                // Navigate to home tab
+                // This would need to be handled by the parent view
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        )
     }
 
     // MARK: - Empty Search View
 
     private var emptySearchView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
-
-            Text("No movies found")
-                .font(.headline)
-
-            Text("Try adjusting your search terms")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptyStateView(
+            icon: "magnifyingglass",
+            title: "No movies found",
+            subtitle: "Try adjusting your search terms",
+            showSparkles: false
+        )
     }
 
     // MARK: - Favorites Grid View

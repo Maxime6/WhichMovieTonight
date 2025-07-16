@@ -60,7 +60,8 @@ struct ContentView: View {
                 }
                 .tag(3)
         }
-        .accentColor(.cyan)
+        .accentColor(DesignSystem.primaryCyan)
+        .tint(DesignSystem.primaryCyan)
     }
 }
 

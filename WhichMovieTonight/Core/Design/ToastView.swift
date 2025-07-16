@@ -1,5 +1,5 @@
 //
-//  MovieGenreSelectionView.swift
+//  ToastView.swift
 //  WhichMovieTonight
 //
 //  Created by Maxime Tanter on 09/05/2025.
@@ -21,7 +21,7 @@ struct ToastView: View {
             HStack(spacing: 12) {
                 if let icon {
                     Image(systemName: icon)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                 }
                 Text(message)
                     .font(.callout.bold())
@@ -32,8 +32,13 @@ struct ToastView: View {
             .background(
                 Capsule()
                     .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .overlay(
+                        Capsule()
+                            .stroke(DesignSystem.primaryGradient, lineWidth: 1)
+                            .blur(radius: 0.5)
+                    )
             )
+            .subtleShadow()
             .padding(.bottom, 40)
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .onAppear {

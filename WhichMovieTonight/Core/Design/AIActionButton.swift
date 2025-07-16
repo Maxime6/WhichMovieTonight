@@ -35,18 +35,18 @@ struct AIActionButton: View {
                 if !isDisabled {
                     AnimatedMeshGradient()
                         .mask {
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(lineWidth: 16)
                                 .blur(radius: 8)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(.white, lineWidth: 3)
                                 .blur(radius: 2)
                                 .blendMode(.overlay)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(.white, lineWidth: 1)
                                 .blur(radius: 1)
                                 .blendMode(.overlay)
@@ -54,17 +54,16 @@ struct AIActionButton: View {
                 }
             }
         )
-        .cornerRadius(16)
+        .cornerRadius(DesignSystem.largeRadius)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.blue.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                .stroke(DesignSystem.primaryCyan.opacity(0.5), lineWidth: 1)
         )
-        .shadow(color: .cyan.opacity(0.15), radius: 20, x: 0, y: 20)
-        .shadow(color: .purple.opacity(0.1), radius: 15, x: 0, y: 15)
+        .primaryShadow()
         .foregroundColor(.primary)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.cyan.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                .stroke(DesignSystem.primaryCyan.opacity(0.5), lineWidth: 1)
         )
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)

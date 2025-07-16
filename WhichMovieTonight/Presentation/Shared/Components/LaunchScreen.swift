@@ -30,13 +30,7 @@ struct LaunchScreen: View {
                     Text("Which Movie Tonight")
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color.cyan, Color.purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .foregroundStyle(DesignSystem.primaryGradient)
                         .offset(y: titleOffset)
                         .opacity(titleOpacity)
 
@@ -51,13 +45,7 @@ struct LaunchScreen: View {
                 HStack(spacing: 8) {
                     ForEach(0 ..< 3, id: \.self) { index in
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.cyan, Color.purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(DesignSystem.verticalGradient)
                             .frame(width: 8, height: 8)
                             .scaleEffect(logoOpacity)
                             .animation(

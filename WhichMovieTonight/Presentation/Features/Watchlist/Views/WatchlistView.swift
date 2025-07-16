@@ -40,6 +40,8 @@ struct WatchlistView: View {
             }
             .navigationTitle("Watchlist")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(DesignSystem.primaryCyan.opacity(0.1), for: .navigationBar)
             .searchable(text: $viewModel.searchText, prompt: "Search movies...")
             .refreshable {
                 await viewModel.refreshMovies()
@@ -85,6 +87,7 @@ struct WatchlistView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
+                .progressViewStyle(CircularProgressViewStyle(tint: DesignSystem.primaryCyan))
 
             Text("Loading your movies...")
                 .font(.subheadline)
@@ -96,67 +99,28 @@ struct WatchlistView: View {
     // MARK: - Empty State View
 
     private var emptyStateView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "film.stack")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
-
-            VStack(spacing: 8) {
-                Text("No Movies Yet")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-
-                Text("Your movie collection will appear here as you interact with recommendations")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+        EmptyStateView(
+            icon: "film.stack",
+            title: "No Movies Yet",
+            subtitle: "Your movie collection will appear here as you interact with recommendations",
+            actionTitle: "Get Recommendations",
+            actionIcon: "star.fill",
+            onAction: {
+                // Navigate to home tab
+                // This would need to be handled by the parent view
             }
-
-            // Suggestion to go to Home
-            NavigationLink(destination: EmptyView()) {
-                HStack {
-                    Image(systemName: "star.fill")
-                    Text("Get Recommendations")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.blue)
-                .cornerRadius(12)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        )
     }
 
     // MARK: - Empty Filter View
 
     private var emptyFilterView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: viewModel.searchText.isEmpty ? "line.3.horizontal.decrease.circle" : "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
-
-            if viewModel.searchText.isEmpty {
-                Text("No \(viewModel.selectedTag.displayName) Movies")
-                    .font(.headline)
-
-                Text("Try selecting a different filter or interact with more movies")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            } else {
-                Text("No search results within '\(viewModel.selectedTag.displayName)'")
-                    .font(.headline)
-
-                Text("Try adjusting your search terms")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptyStateView(
+            icon: viewModel.searchText.isEmpty ? "line.3.horizontal.decrease.circle" : "magnifyingglass",
+            title: viewModel.searchText.isEmpty ? "No \(viewModel.selectedTag.displayName) Movies" : "No search results within '\(viewModel.selectedTag.displayName)'",
+            subtitle: viewModel.searchText.isEmpty ? "Try selecting a different filter or interact with more movies" : "Try adjusting your search terms",
+            showSparkles: false
+        )
     }
 
     // MARK: - Movies Grid View
@@ -348,10 +312,15 @@ struct WatchlistMovieCard: View {
             )
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
         )
+        .subtleShadow()
     }
 }
 

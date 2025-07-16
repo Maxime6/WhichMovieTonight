@@ -290,23 +290,37 @@ struct InteractionButton: View {
                 } else {
                     Image(systemName: icon)
                         .font(.title2)
-                        .foregroundColor(color)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [color, color.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 }
 
                 Text(label)
                     .font(.caption)
-                    .foregroundColor(color)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                     .fill(color.opacity(0.1))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                             .stroke(color.opacity(0.3), lineWidth: 1)
+                            .blur(radius: 0.5)
                     )
             )
+            .subtleShadow()
         }
         .buttonStyle(PlainButtonStyle())
         .disabled(isLoading)

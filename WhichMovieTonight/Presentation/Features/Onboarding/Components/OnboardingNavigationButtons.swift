@@ -67,14 +67,10 @@ struct OnboardingNavigationButtons: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                             .fill(
                                 canProceed && !isLoading
-                                    ? LinearGradient(
-                                        colors: [.cyan, .blue, .purple],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    ? DesignSystem.primaryGradient
                                     : LinearGradient(
                                         colors: [.gray.opacity(0.5), .gray.opacity(0.3)],
                                         startPoint: .leading,

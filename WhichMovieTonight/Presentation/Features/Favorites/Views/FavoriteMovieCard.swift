@@ -65,10 +65,17 @@ struct FavoriteMovieCard: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                     .font(.caption2)
-                                    .foregroundColor(.yellow)
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.yellow, .orange],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
                                 Text(rating)
                                     .font(.caption2)
                                     .fontWeight(.medium)
+                                    .foregroundStyle(DesignSystem.primaryGradient)
                             }
                         }
                     }
@@ -94,10 +101,15 @@ struct FavoriteMovieCard: View {
             )
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
         )
+        .subtleShadow()
     }
 }
 

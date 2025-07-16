@@ -14,18 +14,7 @@ struct OnboardingProgressBar: View {
 
                 // Progress bar with animated mesh gradient
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.cyan,
-                                Color.blue,
-                                Color.purple,
-                                Color.pink,
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .fill(DesignSystem.primaryGradient)
                     .frame(width: geometry.size.width * animationProgress, height: 8)
                     .animation(.easeInOut(duration: 0.8), value: animationProgress)
 

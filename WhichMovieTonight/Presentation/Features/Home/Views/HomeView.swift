@@ -153,15 +153,15 @@ struct HomeView: View {
                     Text(viewModel.welcomeMessage(userProfileService: userProfileService))
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                         .opacity(1)
-                        .animation(.easeInOut(duration: 0.6).delay(0.2), value: true)
+                        .animation(DesignSystem.easeInOutAnimation.delay(0.2), value: true)
 
                     Text(viewModel.welcomeSubtitle)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .opacity(1)
-                        .animation(.easeInOut(duration: 0.6).delay(0.4), value: true)
+                        .animation(DesignSystem.easeInOutAnimation.delay(0.4), value: true)
                 }
 
                 Spacer()
@@ -179,6 +179,15 @@ struct HomeView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.extraLargeRadius)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.extraLargeRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
+        )
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,
@@ -187,7 +196,7 @@ struct HomeView: View {
                 topTrailingRadius: 0
             )
         )
-        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+        .subtleShadow()
     }
 
     // MARK: - Recommendations Section
@@ -198,7 +207,7 @@ struct HomeView: View {
                 Text("Daily Picks")
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(DesignSystem.primaryGradient)
 
                 Spacer()
             }
@@ -208,7 +217,7 @@ struct HomeView: View {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.2)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                        .progressViewStyle(CircularProgressViewStyle(tint: DesignSystem.primaryCyan))
 
                     Text("Generating your daily picks...")
                         .font(.subheadline)
@@ -216,8 +225,16 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 200)
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                                .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                                .blur(radius: 0.5)
+                        )
+                )
+                .subtleShadow()
             } else if viewModel.currentRecommendations.isEmpty {
                 // Empty state
                 emptyRecommendationsState
@@ -255,7 +272,7 @@ struct HomeView: View {
                 Text("Tonight's Pick")
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(DesignSystem.primaryGradient)
 
                 Spacer()
             }
@@ -287,13 +304,29 @@ struct HomeView: View {
 
     private var emptyRecommendationsState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "popcorn")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
+            ZStack {
+                Image(systemName: "popcorn")
+                    .font(.system(size: 48))
+                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .scaleEffect(1.0)
+                    .animation(
+                        .easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: UUID()
+                    )
+
+                // Subtle sparkles
+                HStack(spacing: 8) {
+                    SparkleAnimation(delay: 0.0)
+                    SparkleAnimation(delay: 0.3)
+                    SparkleAnimation(delay: 0.6)
+                }
+                .offset(x: 30, y: -20)
+            }
 
             Text("No recommendations yet")
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundStyle(DesignSystem.primaryGradient)
 
             Text("We're working on finding the perfect movies for you!")
                 .font(.subheadline)
@@ -302,15 +335,23 @@ struct HomeView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
+        )
+        .subtleShadow()
     }
 
     private var emptySelectedMovieState: some View {
         VStack(spacing: 8) {
             Image(systemName: "tv")
                 .font(.system(size: 24))
-                .foregroundColor(.secondary)
+                .foregroundStyle(DesignSystem.primaryGradient)
 
             Text("No movie selected for tonight")
                 .font(.subheadline)
@@ -322,8 +363,16 @@ struct HomeView: View {
         }
         .frame(height: 102)
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
-        .cornerRadius(12)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                        .blur(radius: 0.5)
+                )
+        )
+        .subtleShadow()
     }
 
     // MARK: - Floating Refresh Button
@@ -334,17 +383,18 @@ struct HomeView: View {
         }) {
             Image(systemName: "arrow.clockwise")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundStyle(DesignSystem.primaryGradient)
                 .frame(width: 56, height: 56)
                 .background(
                     Circle()
                         .fill(.ultraThickMaterial)
+                        .overlay(
+                            Circle()
+                                .stroke(DesignSystem.primaryGradient, lineWidth: 1)
+                                .blur(radius: 0.5)
+                        )
                 )
-                .overlay(
-                    Circle()
-                        .stroke(.primary.opacity(0.1), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                .primaryShadow()
         }
     }
 
@@ -371,7 +421,7 @@ struct HomeView: View {
                 VStack {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                            .foregroundStyle(DesignSystem.primaryGradient)
                         Text(errorMessage)
                             .font(.subheadline)
                             .foregroundColor(.primary)
@@ -382,12 +432,19 @@ struct HomeView: View {
                             viewModel.errorMessage = nil
                         }
                         .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                     }
                     .padding()
-                    .background(Color(.systemBackground))
-                    .cornerRadius(12)
-                    .shadow(radius: 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                            .fill(Color(.systemBackground))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                                    .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                                    .blur(radius: 0.5)
+                            )
+                    )
+                    .subtleShadow()
                     .padding(.horizontal)
 
                     Spacer()

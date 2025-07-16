@@ -23,11 +23,12 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "person.circle.fill")
                             .font(.system(size: 40))
-                            .foregroundColor(.blue)
+                            .foregroundStyle(DesignSystem.primaryGradient)
 
                         VStack(alignment: .leading) {
                             Text(userProfileService.displayName.isEmpty ? "User" : userProfileService.displayName)
                                 .font(.headline)
+                                .foregroundStyle(DesignSystem.primaryGradient)
                             Text(Auth.auth().currentUser?.email ?? "No email")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -137,7 +138,7 @@ struct SettingsView: View {
                 Section("About") {
                     HStack {
                         Image(systemName: "info.circle.fill")
-                            .foregroundColor(.blue)
+                            .foregroundStyle(DesignSystem.primaryGradient)
                             .frame(width: 20)
                         Text("Version")
                         Spacer()

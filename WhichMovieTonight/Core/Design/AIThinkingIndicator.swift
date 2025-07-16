@@ -24,7 +24,7 @@ struct AIThinkingIndicator: View {
                 Circle()
                     .fill(
                         RadialGradient(
-                            colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.1), Color.clear],
+                            colors: [DesignSystem.primaryCyan.opacity(0.3), DesignSystem.primaryPurple.opacity(0.1), Color.clear],
                             center: .center,
                             startRadius: 10,
                             endRadius: 60
@@ -37,13 +37,7 @@ struct AIThinkingIndicator: View {
                 // Brain icon
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: 40, weight: .medium))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.blue, Color.purple],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(DesignSystem.verticalGradient)
                     .rotationEffect(.degrees(isAnimating ? 5 : -5))
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isAnimating)
 
@@ -74,7 +68,7 @@ struct AIThinkingIndicator: View {
                 HStack(spacing: 4) {
                     ForEach(0 ..< 3, id: \.self) { index in
                         Circle()
-                            .fill(Color.blue)
+                            .fill(DesignSystem.primaryCyan)
                             .frame(width: 8, height: 8)
                             .scaleEffect(currentDotIndex == index ? 1.2 : 0.8)
                             .opacity(currentDotIndex == index ? 1.0 : 0.5)

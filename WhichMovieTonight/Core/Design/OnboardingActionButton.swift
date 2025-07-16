@@ -20,12 +20,12 @@ struct OnboardingActionButton: View {
                 if !isDisabled {
                     AnimatedMeshGradient()
                         .mask {
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(lineWidth: 16)
                                 .blur(radius: 8)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(.white, lineWidth: 1)
                                 .blur(radius: 1)
                                 .blendMode(.overlay)
@@ -33,7 +33,7 @@ struct OnboardingActionButton: View {
                 }
             }
         )
-        .cornerRadius(16)
+        .cornerRadius(DesignSystem.largeRadius)
         .foregroundColor(.primary)
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1)

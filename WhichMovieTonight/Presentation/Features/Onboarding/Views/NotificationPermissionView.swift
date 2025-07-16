@@ -24,7 +24,7 @@ struct NotificationPermissionView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.blue.opacity(0.2), .purple.opacity(0.2)],
+                                colors: [DesignSystem.primaryCyan.opacity(0.2), DesignSystem.primaryPurple.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -34,13 +34,7 @@ struct NotificationPermissionView: View {
                     // Bell icon with animation
                     Image(systemName: "bell.fill")
                         .font(.system(size: 48, weight: .medium))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(DesignSystem.verticalGradient)
                         .scaleEffect(isRequestingPermission ? 1.1 : 1.0)
                         .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isRequestingPermission)
                 }
@@ -99,15 +93,9 @@ struct NotificationPermissionView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(16)
-                    .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .background(DesignSystem.primaryGradient)
+                    .cornerRadius(DesignSystem.largeRadius)
+                    .primaryShadow()
                 }
                 .disabled(isRequestingPermission)
 

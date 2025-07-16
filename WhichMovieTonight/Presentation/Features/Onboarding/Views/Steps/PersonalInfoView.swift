@@ -113,14 +113,10 @@ struct FrequencyButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                     .fill(
                         isSelected
-                            ? LinearGradient(
-                                colors: [.cyan, .blue, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+                            ? DesignSystem.primaryGradient
                             : LinearGradient(
                                 colors: [Color.gray.opacity(0.1)],
                                 startPoint: .topLeading,
@@ -169,14 +165,10 @@ struct MoodButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                     .fill(
                         isSelected
-                            ? LinearGradient(
-                                colors: [.cyan, .blue, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+                            ? DesignSystem.primaryGradient
                             : LinearGradient(
                                 colors: [Color.gray.opacity(0.1)],
                                 startPoint: .topLeading,

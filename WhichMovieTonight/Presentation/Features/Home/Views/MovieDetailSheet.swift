@@ -61,7 +61,7 @@ struct MovieDetailSheet: View {
     }
 
     private var posterPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 16)
+        RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
             .fill(.gray.opacity(0.2))
             .frame(width: 160, height: 240)
             .overlay {
@@ -69,8 +69,9 @@ struct MovieDetailSheet: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DesignSystem.primaryGradient)
             }
+            .subtleShadow()
     }
 
     private var movieDetailsSection: some View {
@@ -104,7 +105,13 @@ struct MovieDetailSheet: View {
                 if let imdbRating = movie.imdbRating {
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")
-                            .foregroundStyle(.yellow.gradient)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.yellow, .orange],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                         Text(imdbRating)
                     }
                 }
@@ -143,6 +150,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Genres")
                     .font(.headline)
+                    .foregroundStyle(DesignSystem.primaryGradient)
                 Spacer()
             }
 
@@ -153,11 +161,12 @@ struct MovieDetailSheet: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(.thinMaterial)
-                        .cornerRadius(12)
-                        .overlay {
-                            Capsule()
-                                .stroke(.primary.opacity(0.1))
-                        }
+                        .cornerRadius(DesignSystem.mediumRadius)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                                .stroke(DesignSystem.subtleGradient, lineWidth: 1)
+                                .blur(radius: 0.5)
+                        )
                 }
             }
         }
@@ -168,6 +177,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Synopsis")
                     .font(.headline)
+                    .foregroundStyle(DesignSystem.primaryGradient)
                 Spacer()
             }
 
@@ -191,6 +201,7 @@ struct MovieDetailSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Réalisateur")
                         .font(.headline)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                     Text(director)
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -201,6 +212,7 @@ struct MovieDetailSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Acteurs principaux")
                         .font(.headline)
+                        .foregroundStyle(DesignSystem.primaryGradient)
                     Text(actors)
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -215,6 +227,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Disponible sur")
                     .font(.headline)
+                    .foregroundStyle(DesignSystem.primaryGradient)
                 Spacer()
             }
 
@@ -224,9 +237,13 @@ struct MovieDetailSheet: View {
                         .font(.caption)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .cornerRadius(8)
+                        .background(DesignSystem.primaryCyan.opacity(0.1))
+                        .foregroundColor(DesignSystem.primaryCyan)
+                        .cornerRadius(DesignSystem.smallRadius)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                .stroke(DesignSystem.primaryCyan.opacity(0.3), lineWidth: 1)
+                        )
                 }
             }
         }
@@ -248,8 +265,9 @@ struct MovieDetailSheet: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Color.blue)
-                .cornerRadius(12)
+                .background(DesignSystem.primaryGradient)
+                .cornerRadius(DesignSystem.mediumRadius)
+                .primaryShadow()
             }
 
             Text("Ce film deviendra votre film du soir")

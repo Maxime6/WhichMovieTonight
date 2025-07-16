@@ -18,7 +18,7 @@ struct OnboardingCompleteView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.green.opacity(0.2), .cyan.opacity(0.2)],
+                                colors: [DesignSystem.primaryCyan.opacity(0.2), DesignSystem.primaryPurple.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -27,13 +27,7 @@ struct OnboardingCompleteView: View {
 
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 80))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.green, .cyan],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(DesignSystem.verticalGradient)
                         .scaleEffect(showCompletionAnimation ? 1.0 : 0.5)
                         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCompletionAnimation)
                 }
@@ -152,14 +146,8 @@ struct OnboardingCompleteView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [.cyan, .blue, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                        .fill(DesignSystem.primaryGradient)
                 )
             }
             .disabled(stepManager.isLoading)
