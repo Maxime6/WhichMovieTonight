@@ -15,10 +15,15 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Published Properties
 
     @Published var currentRecommendations: [UserMovie] = []
-    @Published var selectedMovieForTonight: Movie?
-    @Published var selectedMovieForTonightUserMovie: UserMovie? = nil
     @Published var isGeneratingRecommendations = false
     @Published var userName: String = "Movie Lover"
+
+    // AI Search State
+    @Published var searchText: String = ""
+    @Published var isSearching: Bool = false
+    @Published var searchResult: Movie?
+    @Published var showSearchResult: Bool = false
+    @Published var searchValidationMessage: String?
 
     // UI State
     @Published var showToast: Bool = false
@@ -52,7 +57,6 @@ final class HomeViewModel: ObservableObject {
     /// Initialize all data for HomeView
     func initializeData(userProfileService: UserProfileService) async {
         await loadUserDisplayName(userProfileService: userProfileService)
-        await loadSelectedMovieForTonight()
         await loadOrGenerateRecommendations(userProfileService: userProfileService)
     }
 
@@ -173,46 +177,88 @@ final class HomeViewModel: ObservableObject {
         await generateRecommendations(userProfileService: userProfileService)
     }
 
-    // MARK: - Selected Movie For Tonight Management
+    // MARK: - AI Search Management
 
-    /// Select a movie for tonight using UserMovieService
-    func selectMovieForTonight(_ movie: Movie) async {
+    /// Perform AI search for a movie
+    func performAISearch(userProfileService: UserProfileService) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
             return
         }
 
-        do {
-            try await userMovieService.setTonightSelection(userId: userId, movieId: movie.id)
-            selectedMovieForTonight = movie
+        // Validate search input
+        let trimmedQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedQuery.isEmpty {
+            searchValidationMessage = "Please describe what you want to watch..."
+            return
+        }
 
-            // Load the UserMovie object for the selected movie
-            if let userMovie = try await userMovieService.getUserMovie(userId: userId, movieId: movie.id) {
-                selectedMovieForTonightUserMovie = userMovie
+        let words = trimmedQuery.components(separatedBy: .whitespaces)
+        if words.count < 2 {
+            searchValidationMessage = "Be more specific! Try describing the mood, genre, or actors you're looking for..."
+            return
+        }
+
+        // Clear validation message
+        searchValidationMessage = nil
+        isSearching = true
+
+        do {
+            // Get user interactions for AI context
+            let userInteractions = try await getUserInteractionsForAI(userId: userId)
+
+            // Get exclusion list
+            let exclusionList = try await getExclusionList(for: userId)
+
+            // Perform AI search
+            let openAIService = OpenAIService()
+            let movie = try await openAIService.searchSpecificMovie(
+                query: trimmedQuery,
+                userInteractions: userInteractions,
+                favoriteActors: userProfileService.favoriteActors,
+                favoriteGenres: userProfileService.favoriteGenres,
+                recentSuggestions: exclusionList
+            )
+
+            // Enrich with OMDB data
+            let enrichedMovie = try await enrichMovieWithOMDB(movie, userId: userId)
+
+            // Ensure minimum 2 seconds of loading
+            try await Task.sleep(nanoseconds: 2_000_000_000)
+
+            await MainActor.run {
+                searchResult = enrichedMovie
+                showSearchResult = true
+                isSearching = false
             }
 
-            showToastMessage("Selected for tonight: \(movie.title)")
         } catch {
-            print("❌ Error selecting movie for tonight: \(error)")
-            errorMessage = "Failed to select movie. Please try again."
+            await MainActor.run {
+                isSearching = false
+                if error.localizedDescription.contains("timeout") {
+                    errorMessage = "Search is taking longer than expected. Please try again."
+                } else if error.localizedDescription.contains("badServerResponse") {
+                    errorMessage = "I couldn't find a movie matching your request. Try being more specific."
+                } else {
+                    errorMessage = "Connection issue. Please try again."
+                }
+            }
         }
     }
 
-    /// Deselect current movie for tonight
-    func deselectMovieForTonight() async {
+    /// Add movie to watchlist
+    func addToWatchlist(_ movie: Movie) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
             return
         }
 
         do {
-            try await userMovieService.clearTonightSelection(userId: userId)
-            selectedMovieForTonight = nil
-            selectedMovieForTonightUserMovie = nil
-            showToastMessage("Movie deselected")
+            try await userMovieService.addToWatchlist(userId: userId, movieId: movie.id)
+            showToastMessage("Added to watchlist: \(movie.title)")
         } catch {
-            print("❌ Error deselecting movie: \(error)")
-            errorMessage = "Failed to deselect movie. Please try again."
+            print("❌ Error adding to watchlist: \(error)")
+            errorMessage = "Failed to add to watchlist. Please try again."
         }
     }
 
@@ -234,20 +280,64 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
-    private func loadSelectedMovieForTonight() async {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
+    private func getUserInteractionsForAI(userId: String) async throws -> UserMovieInteractions? {
+        let userMovies = try await userMovieService.getUserMovies(userId: userId, filter: nil)
 
+        // Convert UserMovies to legacy UserMovieInteractions format
+        var interactions: [String: UserMovieInteraction] = [:]
+
+        for userMovie in userMovies {
+            if userMovie.isLiked || userMovie.isDisliked || userMovie.isFavorite {
+                let interaction = UserMovieInteraction(
+                    movieId: userMovie.movieId,
+                    movieTitle: userMovie.movie.title,
+                    posterURL: userMovie.movie.posterURL?.absoluteString,
+                    likeStatus: userMovie.isLiked ? .liked : userMovie.isDisliked ? .disliked : .none,
+                    isFavorite: userMovie.isFavorite
+                )
+                interactions[userMovie.movieId] = interaction
+            }
+        }
+
+        if interactions.isEmpty {
+            return nil
+        }
+
+        var userInteractions = UserMovieInteractions(userId: userId)
+        userInteractions.interactions = interactions
+
+        print("📊 Converted \(interactions.count) UserMovies to AI context")
+        return userInteractions
+    }
+
+    private func getExclusionList(for userId: String) async throws -> [MovieFirestore] {
+        let userMovies = try await userMovieService.getUserMovies(userId: userId, filter: nil)
+
+        // Exclude movies from history and disliked movies
+        let excludedMovies = userMovies.filter {
+            $0.isInHistory || $0.isCurrentPick || $0.isDisliked
+        }
+
+        // Convert to legacy MovieFirestore format for OpenAI service
+        let exclusionList = excludedMovies.map { MovieFirestore(from: $0.movie) }
+
+        print("📝 Excluding \(exclusionList.count) movies from search (history + disliked)")
+        return exclusionList
+    }
+
+    private func enrichMovieWithOMDB(_ movie: Movie, userId _: String) async throws -> Movie {
         do {
-            if let userMovie = try await userMovieService.getTonightSelection(userId: userId) {
-                selectedMovieForTonight = userMovie.movie
-                selectedMovieForTonightUserMovie = userMovie
-                print("📱 Loaded selected movie for tonight: \(userMovie.movie.title)")
-            }
+            let omdbService = OMDBService()
+            let omdbMovie = try await omdbService.getMovieDetailsByTitle(title: movie.title)
+            let enrichedMovie = Movie(
+                from: omdbMovie,
+                originalGenres: movie.genres,
+                originalPlatforms: movie.streamingPlatforms
+            )
+            return enrichedMovie
         } catch {
-            print("❌ Error loading selected movie: \(error)")
-            if error.localizedDescription.contains("offline") {
-                print("📱 App is offline - selected movie will load when connection is restored")
-            }
+            print("⚠️ OMDB enrichment failed for \(movie.title), using OpenAI data only")
+            return movie
         }
     }
 

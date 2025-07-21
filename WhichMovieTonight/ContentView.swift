@@ -34,13 +34,21 @@ struct ContentView: View {
                 }
                 .tag(0)
 
+            NewWatchlistView()
+                .environmentObject(appStateManager)
+                .tabItem {
+                    Image(systemName: "bookmark.fill")
+                    Text("Watchlist")
+                }
+                .tag(1)
+
             WatchlistView()
                 .environmentObject(appStateManager)
                 .tabItem {
                     Image(systemName: "list.bullet")
-                    Text("Watchlist")
+                    Text("My Collection")
                 }
-                .tag(1)
+                .tag(2)
 
             FavoritesView()
                 .environmentObject(appStateManager)
@@ -48,7 +56,7 @@ struct ContentView: View {
                     Image(systemName: "heart.fill")
                     Text("Favorites")
                 }
-                .tag(2)
+                .tag(3)
 
             SettingsView()
                 .environmentObject(appStateManager)
@@ -58,7 +66,7 @@ struct ContentView: View {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(DesignSystem.primaryCyan)
         .tint(DesignSystem.primaryCyan)

@@ -30,10 +30,10 @@ protocol UserMovieServiceProtocol {
     func setCurrentPicks(userId: String, userMovies: [UserMovie]) async throws
     func clearCurrentPicks(userId: String) async throws
 
-    // Tonight Selection
-    func getTonightSelection(userId: String) async throws -> UserMovie?
-    func setTonightSelection(userId: String, movieId: String) async throws
-    func clearTonightSelection(userId: String) async throws
+    // Watchlist Management
+    func getWatchlistMovies(userId: String) async throws -> [UserMovie]
+    func addToWatchlist(userId: String, movieId: String) async throws
+    func removeFromWatchlist(userId: String, movieId: String) async throws
 
     // Cleanup Operations
     func cleanupOldHistory(userId: String, keepCount: Int) async throws
@@ -260,32 +260,27 @@ final class UserMovieService: UserMovieServiceProtocol {
         await cache.invalidateCache(userId: userId)
     }
 
-    // MARK: - Tonight Selection
+    // MARK: - Watchlist Management
 
-    func getTonightSelection(userId: String) async throws -> UserMovie? {
+    func getWatchlistMovies(userId: String) async throws -> [UserMovie] {
         let allMovies = try await getUserMovies(userId: userId)
-        return allMovies.tonightSelection
+        return allMovies.watchlistMovies
     }
 
-    func setTonightSelection(userId: String, movieId: String) async throws {
-        // Clear any existing tonight selection first
-        try await clearTonightSelection(userId: userId)
-
-        // Set new selection
+    func addToWatchlist(userId: String, movieId: String) async throws {
         try await updateMovieInteraction(userId: userId, movieId: movieId) { movie in
-            movie.selectForTonight()
+            movie.addToWatchlist()
         }
 
-        print("✅ Set tonight selection: \(movieId)")
+        print("✅ Added to watchlist: \(movieId)")
     }
 
-    func clearTonightSelection(userId: String) async throws {
-        if let currentSelection = try await getTonightSelection(userId: userId) {
-            try await updateMovieInteraction(userId: userId, movieId: currentSelection.movieId) { movie in
-                movie.deselectForTonight()
-            }
-            print("🔄 Cleared tonight selection")
+    func removeFromWatchlist(userId: String, movieId: String) async throws {
+        try await updateMovieInteraction(userId: userId, movieId: movieId) { movie in
+            movie.removeFromWatchlist()
         }
+
+        print("🔄 Removed from watchlist: \(movieId)")
     }
 
     // MARK: - Cleanup Operations

@@ -38,7 +38,7 @@ struct WatchlistView: View {
                     moviesGridView
                 }
             }
-            .navigationTitle("Watchlist")
+            .navigationTitle("My Collection")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(DesignSystem.primaryCyan.opacity(0.1), for: .navigationBar)
@@ -67,11 +67,11 @@ struct WatchlistView: View {
                     namespace: heroAnimation,
                     isPresented: .constant(true),
                     source: .currentMovie,
-                    onSelectForTonight: {
+                    onAddToWatchlist: {
                         // Find UserMovie for this movie
                         if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == userMovie.movie.id }) {
                             Task {
-                                await viewModel.selectForTonight(userMovie)
+                                await viewModel.addToWatchlist(userMovie)
                             }
                         }
                         selectedUserMovie = nil

@@ -10,4 +10,5 @@ import Foundation
 enum MovieDetailSource {
     case currentMovie
     case suggestion
+    case aiSearch
 }

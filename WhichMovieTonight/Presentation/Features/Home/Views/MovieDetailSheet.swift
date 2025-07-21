@@ -13,7 +13,7 @@ struct MovieDetailSheet: View {
     let namespace: Namespace.ID
     @Binding var isPresented: Bool
     let source: MovieDetailSource
-    let onSelectForTonight: (() -> Void)?
+    let onAddToWatchlist: (() -> Void)?
     @State private var scrollOffset: CGFloat = 0
 
     var body: some View {
@@ -86,9 +86,9 @@ struct MovieDetailSheet: View {
 
             streamingSection
 
-            if source == .suggestion {
-                selectForTonightButton
-            }
+//            if source == .suggestion {
+//                selectForTonightButton
+//            }
         }
         .padding()
     }
@@ -249,17 +249,17 @@ struct MovieDetailSheet: View {
         }
     }
 
-    private var selectForTonightButton: some View {
+    private var addToWatchlistButton: some View {
         VStack(spacing: 16) {
             Divider()
                 .padding(.vertical)
 
             Button(action: {
-                onSelectForTonight?()
+                onAddToWatchlist?()
             }) {
                 HStack {
-                    Image(systemName: "star.fill")
-                    Text("Choisir pour ce soir")
+                    Image(systemName: "bookmark.fill")
+                    Text("Add to Watchlist")
                         .fontWeight(.semibold)
                 }
                 .foregroundColor(.white)
@@ -270,7 +270,7 @@ struct MovieDetailSheet: View {
                 .primaryShadow()
             }
 
-            Text("Ce film deviendra votre film du soir")
+            Text("This movie will be added to your watchlist")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -286,8 +286,8 @@ struct MovieDetailSheet: View {
         namespace: namespace,
         isPresented: .constant(true),
         source: .suggestion,
-        onSelectForTonight: {
-            print("Selected for tonight!")
+        onAddToWatchlist: {
+            print("Added to watchlist!")
         }
     )
 }

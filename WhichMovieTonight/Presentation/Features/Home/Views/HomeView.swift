@@ -15,9 +15,9 @@ struct HomeView: View {
     @State private var showingMovieDetail = false
     @State private var selectedUserMovie: UserMovie?
     @State private var showingRefreshConfirmation = false
-    @State private var showingDeleteConfirmation = false
     @State private var showingProfileMenu = false
     @State private var showingProfileSheet = false
+    @State private var showingAISearching = false
     @Namespace private var heroAnimation
 
     var body: some View {
@@ -70,12 +70,12 @@ struct HomeView: View {
 
                 Spacer()
 
-                // Tonight's Pick fixé en bas
+                // AI Search Section fixé en bas
                 VStack(spacing: 0) {
                     Divider()
                         .background(.quaternary)
 
-                    selectedMovieSection
+                    aiSearchSection
                         .frame(height: 134)
                         .padding(.horizontal)
                         .padding(.vertical, 16)
@@ -90,7 +90,7 @@ struct HomeView: View {
                     if !viewModel.currentRecommendations.isEmpty && !viewModel.isGeneratingRecommendations {
                         floatingRefreshButton
                             .padding(.trailing, 20)
-                            .padding(.bottom, 140) // Au-dessus de Tonight's Pick
+                            .padding(.bottom, 140) // Au-dessus de AI Search
                     }
                 }
             }
@@ -115,16 +115,7 @@ struct HomeView: View {
         } message: {
             Text("Generate 5 new movie recommendations?")
         }
-        .confirmationDialog("Remove from Tonight's Pick", isPresented: $showingDeleteConfirmation) {
-            Button("Remove", role: .destructive) {
-                Task {
-                    await viewModel.deselectMovieForTonight()
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Remove this movie from tonight's selection?")
-        }
+
         .sheet(item: $selectedUserMovie, onDismiss: {
             selectedUserMovie = nil
         }) { userMovie in
@@ -134,12 +125,46 @@ struct HomeView: View {
                 namespace: heroAnimation,
                 isPresented: .constant(true),
                 source: .suggestion,
-                onSelectForTonight: {
+                onAddToWatchlist: {
                     Task {
-                        await viewModel.selectMovieForTonight(userMovie.movie)
+                        await viewModel.addToWatchlist(userMovie.movie)
                     }
                     selectedUserMovie = nil
                 }
+            )
+        }
+        .sheet(isPresented: $viewModel.showSearchResult) {
+            if let searchResult = viewModel.searchResult {
+                MovieDetailSheet(
+                    movie: searchResult,
+                    userMovie: nil,
+                    namespace: heroAnimation,
+                    isPresented: $viewModel.showSearchResult,
+                    source: .aiSearch,
+                    onAddToWatchlist: {
+                        Task {
+                            await viewModel.addToWatchlist(searchResult)
+                        }
+                        viewModel.showSearchResult = false
+                    }
+                )
+            }
+        }
+        .fullScreenCover(isPresented: $showingAISearching) {
+            AISearchingView(
+                message: "Searching for the perfect movie...",
+                isSearchQuery: true,
+                onCancel: {
+                    showingAISearching = false
+                    viewModel.isSearching = false
+                }
+            )
+        }
+        .fullScreenCover(isPresented: $viewModel.isGeneratingRecommendations) {
+            AISearchingView(
+                message: "Generating your daily recommendations...",
+                isSearchQuery: false,
+                onCancel: nil
             )
         }
     }
@@ -264,12 +289,12 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Selected Movie Section
+    // MARK: - AI Search Section
 
-    private var selectedMovieSection: some View {
+    private var aiSearchSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Tonight's Pick")
+                Text("AI Movie Search")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .foregroundStyle(DesignSystem.primaryGradient)
@@ -277,26 +302,21 @@ struct HomeView: View {
                 Spacer()
             }
 
-            // CONTENEUR AVEC HAUTEUR FIXE pour l'alignement
-            VStack {
-                if let movieForTonight = viewModel.selectedMovieForTonight {
-                    SelectedMovieCard(
-                        movie: movieForTonight,
-                        onTap: {
-                            print("🎬 Tapping on selected movie for tonight: \(movieForTonight.title)")
-                            print("   - selectedMovieForTonightUserMovie: \(viewModel.selectedMovieForTonightUserMovie?.movie.title ?? "nil")")
-                            print("   - userId: \(viewModel.selectedMovieForTonightUserMovie?.userId ?? "nil")")
-                            selectedUserMovie = viewModel.selectedMovieForTonightUserMovie
-                        },
-                        onDeselect: {
-                            showingDeleteConfirmation = true
+            // AI Search Bar
+            AISearchBar(
+                searchText: $viewModel.searchText,
+                placeholder: "Ask AI to find a movie...",
+                onSearch: {
+                    Task {
+                        await viewModel.performAISearch(userProfileService: userProfileService)
+                        if viewModel.isSearching {
+                            showingAISearching = true
                         }
-                    )
-                } else {
-                    emptySelectedMovieState
-                }
-            }
-            .frame(height: 115)
+                    }
+                },
+                isSearching: viewModel.isSearching,
+                validationMessage: viewModel.searchValidationMessage
+            )
         }
     }
 
@@ -340,34 +360,6 @@ struct HomeView: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
-                        .blur(radius: 0.5)
-                )
-        )
-        .subtleShadow()
-    }
-
-    private var emptySelectedMovieState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "tv")
-                .font(.system(size: 24))
-                .foregroundStyle(DesignSystem.primaryGradient)
-
-            Text("No movie selected for tonight")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Text("Choose one from your daily picks above!")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(height: 102)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                         .stroke(DesignSystem.subtleGradient, lineWidth: 1)
                         .blur(radius: 0.5)
                 )

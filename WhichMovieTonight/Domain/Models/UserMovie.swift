@@ -15,6 +15,19 @@ struct UserMovie: Identifiable, Codable {
     let userId: String
     let movie: Movie
 
+    // MARK: - Custom Coding Keys for Migration
+
+    enum CodingKeys: String, CodingKey {
+        case id, movieId, userId, movie
+        case isCurrentPick, isInHistory, isLiked, isDisliked, isFavorite, isSeen
+        case isToWatch
+        case isSelectedForTonight // For backward compatibility
+        case recommendedAt, currentPicksSince, likedAt, dislikedAt, favoriteAt, seenAt
+        case toWatchAt
+        case selectedAt // For backward compatibility
+        case lastUpdated
+    }
+
     // MARK: - Movie States
 
     var isCurrentPick: Bool = false
@@ -23,7 +36,7 @@ struct UserMovie: Identifiable, Codable {
     var isDisliked: Bool = false
     var isFavorite: Bool = false
     var isSeen: Bool = false
-    var isSelectedForTonight: Bool = false
+    var isToWatch: Bool = false
 
     // MARK: - Timestamps
 
@@ -33,7 +46,7 @@ struct UserMovie: Identifiable, Codable {
     var dislikedAt: Date?
     var favoriteAt: Date?
     var seenAt: Date?
-    var selectedAt: Date?
+    var toWatchAt: Date?
     var lastUpdated: Date = .init()
 
     // MARK: - Initializers
@@ -48,7 +61,7 @@ struct UserMovie: Identifiable, Codable {
         isDisliked: Bool = false,
         isFavorite: Bool = false,
         isSeen: Bool = false,
-        isSelectedForTonight: Bool = false
+        isToWatch: Bool = false
     ) {
         id = movie.id
         movieId = movie.id
@@ -60,8 +73,75 @@ struct UserMovie: Identifiable, Codable {
         self.isDisliked = isDisliked
         self.isFavorite = isFavorite
         self.isSeen = isSeen
-        self.isSelectedForTonight = isSelectedForTonight
+        self.isToWatch = isToWatch
         lastUpdated = Date()
+    }
+
+    // MARK: - Custom Encoding/Decoding for Migration
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(String.self, forKey: .id)
+        movieId = try container.decode(String.self, forKey: .movieId)
+        userId = try container.decode(String.self, forKey: .userId)
+        movie = try container.decode(Movie.self, forKey: .movie)
+
+        // Decode boolean states
+        isCurrentPick = try container.decodeIfPresent(Bool.self, forKey: .isCurrentPick) ?? false
+        isInHistory = try container.decodeIfPresent(Bool.self, forKey: .isInHistory) ?? false
+        isLiked = try container.decodeIfPresent(Bool.self, forKey: .isLiked) ?? false
+        isDisliked = try container.decodeIfPresent(Bool.self, forKey: .isDisliked) ?? false
+        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
+        isSeen = try container.decodeIfPresent(Bool.self, forKey: .isSeen) ?? false
+
+        // Handle migration from isSelectedForTonight to isToWatch
+        let oldIsSelectedForTonight = try container.decodeIfPresent(Bool.self, forKey: .isSelectedForTonight) ?? false
+        let newIsToWatch = try container.decodeIfPresent(Bool.self, forKey: .isToWatch) ?? false
+        isToWatch = oldIsSelectedForTonight || newIsToWatch
+
+        // Decode timestamps
+        recommendedAt = try container.decodeIfPresent(Date.self, forKey: .recommendedAt)
+        currentPicksSince = try container.decodeIfPresent(Date.self, forKey: .currentPicksSince)
+        likedAt = try container.decodeIfPresent(Date.self, forKey: .likedAt)
+        dislikedAt = try container.decodeIfPresent(Date.self, forKey: .dislikedAt)
+        favoriteAt = try container.decodeIfPresent(Date.self, forKey: .favoriteAt)
+        seenAt = try container.decodeIfPresent(Date.self, forKey: .seenAt)
+
+        // Handle migration from selectedAt to toWatchAt
+        let oldSelectedAt = try container.decodeIfPresent(Date.self, forKey: .selectedAt)
+        let newToWatchAt = try container.decodeIfPresent(Date.self, forKey: .toWatchAt)
+        toWatchAt = newToWatchAt ?? oldSelectedAt
+
+        lastUpdated = try container.decodeIfPresent(Date.self, forKey: .lastUpdated) ?? Date()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(id, forKey: .id)
+        try container.encode(movieId, forKey: .movieId)
+        try container.encode(userId, forKey: .userId)
+        try container.encode(movie, forKey: .movie)
+
+        // Encode boolean states
+        try container.encode(isCurrentPick, forKey: .isCurrentPick)
+        try container.encode(isInHistory, forKey: .isInHistory)
+        try container.encode(isLiked, forKey: .isLiked)
+        try container.encode(isDisliked, forKey: .isDisliked)
+        try container.encode(isFavorite, forKey: .isFavorite)
+        try container.encode(isSeen, forKey: .isSeen)
+        try container.encode(isToWatch, forKey: .isToWatch)
+
+        // Encode timestamps
+        try container.encodeIfPresent(recommendedAt, forKey: .recommendedAt)
+        try container.encodeIfPresent(currentPicksSince, forKey: .currentPicksSince)
+        try container.encodeIfPresent(likedAt, forKey: .likedAt)
+        try container.encodeIfPresent(dislikedAt, forKey: .dislikedAt)
+        try container.encodeIfPresent(favoriteAt, forKey: .favoriteAt)
+        try container.encodeIfPresent(seenAt, forKey: .seenAt)
+        try container.encodeIfPresent(toWatchAt, forKey: .toWatchAt)
+        try container.encode(lastUpdated, forKey: .lastUpdated)
     }
 
     // MARK: - Computed Properties
@@ -82,14 +162,14 @@ struct UserMovie: Identifiable, Codable {
         if isDisliked { tags.append(.disliked) }
         if isFavorite { tags.append(.favorites) }
         if isSeen { tags.append(.seen) }
-        if isSelectedForTonight { tags.append(.tonight) }
+        if isToWatch { tags.append(.toWatch) }
 
         return tags
     }
 
     /// Check if movie has any interactions (for cleanup logic)
     var hasOtherInteractions: Bool {
-        return isLiked || isDisliked || isFavorite || isSeen || isSelectedForTonight
+        return isLiked || isDisliked || isFavorite || isSeen || isToWatch
     }
 
     /// Check if movie contains a specific tag
@@ -148,17 +228,17 @@ struct UserMovie: Identifiable, Codable {
         lastUpdated = Date()
     }
 
-    /// Select for tonight
-    mutating func selectForTonight() {
-        isSelectedForTonight = true
-        selectedAt = Date()
+    /// Add to watchlist
+    mutating func addToWatchlist() {
+        isToWatch = true
+        toWatchAt = Date()
         lastUpdated = Date()
     }
 
-    /// Deselect for tonight
-    mutating func deselectForTonight() {
-        isSelectedForTonight = false
-        selectedAt = nil
+    /// Remove from watchlist
+    mutating func removeFromWatchlist() {
+        isToWatch = false
+        toWatchAt = nil
         lastUpdated = Date()
     }
 
@@ -207,9 +287,9 @@ extension Array where Element == UserMovie {
         return filter { $0.isInHistory && !$0.isCurrentPick }
     }
 
-    /// Get tonight's selection
-    var tonightSelection: UserMovie? {
-        return first { $0.isSelectedForTonight }
+    /// Get watchlist movies
+    var watchlistMovies: [UserMovie] {
+        return filter { $0.isToWatch }
     }
 
     /// Get movies that can be cleaned up (no interactions, old history)

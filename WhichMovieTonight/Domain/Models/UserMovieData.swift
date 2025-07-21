@@ -15,14 +15,13 @@ struct UserMovieData: Codable {
     let userId: String
     let currentPicks: [MovieFirestore] // Les 5 films actuellement recommandés
     let generationHistory: [MovieFirestore] // Les 10 dernières générations (pour éviter répétitions)
-    let selectedMovieForTonight: MovieFirestore?
     let createdAt: Date
     let updatedAt: Date
 
     // MARK: - Migration Support for Old Data Structure
 
     enum CodingKeys: String, CodingKey {
-        case id, userId, currentPicks, generationHistory, selectedMovieForTonight, createdAt, updatedAt
+        case id, userId, currentPicks, generationHistory, createdAt, updatedAt
     }
 
     init(from decoder: Decoder) throws {
@@ -37,7 +36,6 @@ struct UserMovieData: Codable {
         // Handle new fields with fallbacks for old data
         currentPicks = try container.decodeIfPresent([MovieFirestore].self, forKey: .currentPicks) ?? []
         generationHistory = try container.decodeIfPresent([MovieFirestore].self, forKey: .generationHistory) ?? []
-        selectedMovieForTonight = try container.decodeIfPresent(MovieFirestore.self, forKey: .selectedMovieForTonight)
 
         // Handle dates with fallbacks
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
@@ -50,17 +48,15 @@ struct UserMovieData: Codable {
         try container.encode(userId, forKey: .userId)
         try container.encode(currentPicks, forKey: .currentPicks)
         try container.encode(generationHistory, forKey: .generationHistory)
-        try container.encodeIfPresent(selectedMovieForTonight, forKey: .selectedMovieForTonight)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
     }
 
-    init(userId: String, currentPicks: [MovieFirestore] = [], selectedMovieForTonight: MovieFirestore? = nil) {
+    init(userId: String, currentPicks: [MovieFirestore] = []) {
         id = UUID().uuidString
         self.userId = userId
         self.currentPicks = currentPicks
         generationHistory = []
-        self.selectedMovieForTonight = selectedMovieForTonight
         createdAt = Date()
         updatedAt = Date()
     }
@@ -80,7 +76,6 @@ struct UserMovieData: Codable {
             userId: userId,
             currentPicks: newPicks,
             generationHistory: newHistory,
-            selectedMovieForTonight: selectedMovieForTonight,
             createdAt: createdAt,
             updatedAt: Date()
         )
@@ -90,12 +85,11 @@ struct UserMovieData: Codable {
 // MARK: - Helper init for UserMovieData
 
 extension UserMovieData {
-    init(id: String, userId: String, currentPicks: [MovieFirestore], generationHistory: [MovieFirestore], selectedMovieForTonight: MovieFirestore?, createdAt: Date, updatedAt: Date) {
+    init(id: String, userId: String, currentPicks: [MovieFirestore], generationHistory: [MovieFirestore], createdAt: Date, updatedAt: Date) {
         self.id = id
         self.userId = userId
         self.currentPicks = currentPicks
         self.generationHistory = generationHistory
-        self.selectedMovieForTonight = selectedMovieForTonight
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

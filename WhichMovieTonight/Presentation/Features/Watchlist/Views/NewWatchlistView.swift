@@ -1,15 +1,14 @@
 //
-//  FavoritesView.swift
+//  NewWatchlistView.swift
 //  WhichMovieTonight
 //
-//  Created by Maxime Tanter on 28/03/2025.
+//  Created by Maxime Tanter on 25/04/2025.
 //
 
 import SwiftUI
 
-struct FavoritesView: View {
-    @StateObject private var viewModel = FavoritesViewModel()
-    @State private var showingMovieDetail = false
+struct NewWatchlistView: View {
+    @StateObject private var viewModel = NewWatchlistViewModel()
     @State private var selectedUserMovie: UserMovie?
     @Namespace private var heroAnimation
 
@@ -19,21 +18,19 @@ struct FavoritesView: View {
                 // Main Content
                 if viewModel.isLoading {
                     loadingView
-                } else if !viewModel.hasFavorites {
+                } else if !viewModel.hasMovies {
                     emptyStateView
-                } else if !viewModel.hasFilteredFavorites {
-                    emptySearchView
                 } else {
-                    favoritesGridView
+                    moviesGridView
                 }
             }
-            .navigationTitle("Favorites")
+            .navigationTitle("Watchlist")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(DesignSystem.primaryCyan.opacity(0.1), for: .navigationBar)
-            .searchable(text: $viewModel.searchText, prompt: "Search movies...")
+            .searchable(text: $viewModel.searchText, prompt: "Search watchlist...")
             .refreshable {
-                await viewModel.refreshFavorites()
+                await viewModel.refreshMovies()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -57,9 +54,20 @@ struct FavoritesView: View {
                     isPresented: .constant(true),
                     source: .currentMovie,
                     onAddToWatchlist: {
+                        // Find UserMovie for this movie
+                        if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == userMovie.movie.id }) {
+                            Task {
+                                await viewModel.removeFromWatchlist(userMovie)
+                            }
+                        }
                         selectedUserMovie = nil
                     }
                 )
+            }
+        }
+        .onAppear {
+            Task {
+                await viewModel.loadUserMovies()
             }
         }
     }
@@ -72,7 +80,7 @@ struct FavoritesView: View {
                 .scaleEffect(1.2)
                 .progressViewStyle(CircularProgressViewStyle(tint: DesignSystem.primaryCyan))
 
-            Text("Loading your favorites...")
+            Text("Loading your watchlist...")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -83,42 +91,51 @@ struct FavoritesView: View {
 
     private var emptyStateView: some View {
         EmptyStateView(
-            icon: "heart",
-            title: "No Favorites Yet",
-            subtitle: "Start building your collection by exploring AI recommendations",
-            actionTitle: "Get Recommendations",
-            actionIcon: "star.fill",
+            icon: "bookmark",
+            title: "No Movies in Watchlist",
+            subtitle: "Movies you add to your watchlist will appear here",
+            actionTitle: "Search for Movies",
+            actionIcon: "magnifyingglass",
             onAction: {
-                // Navigate to home tab
+                // Navigate to home tab for AI search
                 // This would need to be handled by the parent view
             }
         )
     }
 
-    // MARK: - Empty Search View
+    // MARK: - Movies Grid View
 
-    private var emptySearchView: some View {
-        EmptyStateView(
-            icon: "magnifyingglass",
-            title: "No movies found",
-            subtitle: "Try adjusting your search terms",
-            showSparkles: false
-        )
-    }
-
-    // MARK: - Favorites Grid View
-
-    private var favoritesGridView: some View {
+    private var moviesGridView: some View {
         ScrollView {
             LazyVGrid(columns: [
                 GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 16),
             ], spacing: 16) {
-                ForEach(viewModel.sortedAndFilteredFavorites) { userMovie in
-                    FavoriteMovieCard(
+                ForEach(viewModel.filteredMovies) { userMovie in
+                    WatchlistMovieCard(
                         userMovie: userMovie,
                         namespace: heroAnimation,
                         onTap: {
                             selectedUserMovie = userMovie
+                        },
+                        onLikeToggle: {
+                            Task {
+                                await viewModel.toggleLike(userMovie)
+                            }
+                        },
+                        onDislikeToggle: {
+                            Task {
+                                await viewModel.toggleDislike(userMovie)
+                            }
+                        },
+                        onFavoriteToggle: {
+                            Task {
+                                await viewModel.toggleFavorite(userMovie)
+                            }
+                        },
+                        onMarkSeen: {
+                            Task {
+                                await viewModel.markAsSeen(userMovie)
+                            }
                         }
                     )
                 }
@@ -155,6 +172,5 @@ struct FavoritesView: View {
 }
 
 #Preview {
-    FavoritesView()
-        .environmentObject(AppStateManager(userProfileService: UserProfileService()))
+    NewWatchlistView()
 }

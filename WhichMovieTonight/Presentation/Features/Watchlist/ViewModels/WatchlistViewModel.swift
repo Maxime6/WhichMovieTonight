@@ -168,19 +168,19 @@ final class WatchlistViewModel: ObservableObject {
         }
     }
 
-    /// Select movie for tonight
-    func selectForTonight(_ movie: UserMovie) async {
+    /// Add movie to watchlist
+    func addToWatchlist(_ movie: UserMovie) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
-            try await userMovieService.setTonightSelection(userId: userId, movieId: movie.movieId)
+            try await userMovieService.addToWatchlist(userId: userId, movieId: movie.movieId)
 
             // Refresh local data
             await loadUserMovies()
 
         } catch {
-            print("❌ Error selecting for tonight: \(error)")
-            errorMessage = "Failed to select movie for tonight. Please try again."
+            print("❌ Error adding to watchlist: \(error)")
+            errorMessage = "Failed to add movie to watchlist. Please try again."
         }
     }
 
@@ -286,7 +286,7 @@ extension WatchlistViewModel {
     }
 
     /// Get tonight's selection
-    func getTonightSelection() -> UserMovie? {
-        return filteredMovies.tonightSelection
-    }
+//    func getTonightSelection() -> UserMovie? {
+//        return filteredMovies.tonightSelection
+//    }
 }

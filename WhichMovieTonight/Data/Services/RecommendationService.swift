@@ -140,6 +140,9 @@ final class RecommendationService: RecommendationServiceProtocol {
         // 5. Save new generation using UserMovieService
         try await saveNewGeneration(generatedMovies, for: userId)
 
+        // Ensure minimum 2 seconds of loading
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+
         print("🎉 Successfully generated \(generatedMovies.count) new recommendations")
         return generatedMovies
     }

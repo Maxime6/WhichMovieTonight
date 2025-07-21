@@ -159,6 +159,127 @@ final class OpenAIService {
         }
     }
 
+    func searchSpecificMovie(
+        query: String,
+        userInteractions: UserMovieInteractions?,
+        favoriteActors: [String],
+        favoriteGenres: [MovieGenre],
+        recentSuggestions: [MovieFirestore] = []
+    ) async throws -> Movie {
+        guard let apiKey = apiKey else {
+            print("OPENAI_API_KEY environment variable not set")
+            throw URLError(.userAuthenticationRequired)
+        }
+
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 15.0 // 15 second timeout for search
+
+        let favoriteGenresString = favoriteGenres.map { $0.rawValue }.joined(separator: ", ")
+        let favoriteActorsString = favoriteActors.joined(separator: ", ")
+
+        // Build user preferences context
+        let userPreferencesContext = buildUserPreferencesContext(
+            userInteractions: userInteractions,
+            favoriteActorsString: favoriteActorsString,
+            favoriteGenresString: favoriteGenresString,
+            recentSuggestions: recentSuggestions
+        )
+
+        let prompt = """
+        You are an AI movie finder. Find exactly ONE movie that matches the user's specific request.
+
+        USER REQUEST: \(query)
+        FAVORITE GENRES: \(favoriteGenresString)
+        FAVORITE ACTORS: \(favoriteActorsString)
+
+        USER PREFERENCE PROFILE:
+        \(userPreferencesContext)
+
+        REQUIREMENTS:
+        - Return exactly ONE movie that best matches the user's request
+        - Consider user's historical preferences and favorite genres/actors
+        - Avoid movies they've already seen/disliked
+        - Prioritize accuracy over variety
+        - The movie should be available on popular streaming platforms
+
+        Respond ONLY with a JSON object for exactly ONE movie in the following format:
+
+        {
+          "title": "...",
+          "genres": ["...", "..."],
+          "poster_url": "https://valid.image.url/of/poster.jpg",
+          "platforms": ["..."],
+          "recommendation_reason": "Brief explanation why this matches the user's request"
+        }
+
+        The "poster_url" must be a valid public link to an actual image of the movie poster.
+        Use reliable sources like Wikipedia, IMDb, or official image hosting sites.
+        Do not write placeholder values. Always include real image URLs.
+        The "recommendation_reason" should reference specific aspects of the user's request that make this a good match.
+        CRITICAL: Return exactly ONE movie, no more, no less.
+        """
+
+        let body: [String: Any] = [
+            "model": "gpt-4o",
+            "messages": [
+                ["role": "user", "content": prompt],
+            ],
+            "temperature": 0.7, // Slightly higher temperature for more creative matches
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let decoded = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+
+        let content = decoded.choices.first?.message.content ?? ""
+        print("OpenAI search content:\n\(content)")
+
+        // Check for negative responses
+        if content.lowercased().contains("i'm unable") ||
+            content.lowercased().contains("i can't") ||
+            content.lowercased().contains("i'm sorry")
+        {
+            throw URLError(.badServerResponse)
+        }
+
+        guard let jsonText = extractJSON(from: content),
+              let jsonData = jsonText.data(using: .utf8)
+        else {
+            print("Failed to extract JSON from OpenAI search response")
+            throw URLError(.badServerResponse)
+        }
+
+        do {
+            let movieDTO = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
+            print("✅ OpenAI found movie: \(movieDTO.title)")
+
+            // Convert to Movie object
+            return Movie(
+                title: movieDTO.title,
+                overview: nil,
+                posterURL: URL(string: movieDTO.posterUrl),
+                releaseDate: Date(),
+                genres: movieDTO.genres,
+                streamingPlatforms: movieDTO.platforms,
+                director: nil,
+                actors: nil,
+                runtime: nil,
+                imdbRating: nil,
+                imdbID: nil,
+                year: nil,
+                rated: nil,
+                awards: nil
+            )
+        } catch {
+            print("Failed to decode OpenAI search response: \(error)")
+            throw URLError(.cannotParseResponse)
+        }
+    }
+
     private func buildUserPreferencesContext(
         userInteractions: UserMovieInteractions?,
         favoriteActorsString: String,
