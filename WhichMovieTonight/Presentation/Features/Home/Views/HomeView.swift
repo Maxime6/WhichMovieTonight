@@ -26,36 +26,6 @@ struct HomeView: View {
             Color(.systemBackground)
                 .ignoresSafeArea()
 
-            // AnimatedMeshGradient in safe area
-            VStack {
-                ZStack {
-                    AnimatedMeshGradient()
-                        .opacity(0.1)
-                        .frame(height: 170)
-
-                    // Subtle shadow overlay at bottom for smooth integration
-                    VStack {
-                        Spacer()
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        .clear,
-                                        .black.opacity(0.1),
-                                        .black.opacity(0.2),
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .frame(height: 40)
-                    }
-                }
-                .ignoresSafeArea(edges: .top)
-
-                Spacer()
-            }
-
             VStack(spacing: 0) {
                 // Hero Section avec padding top
                 VStack {
@@ -65,34 +35,25 @@ struct HomeView: View {
                     // Daily Recommendations Section
                     recommendationsSection
                         .padding(.top, 24)
+                    
+                    HStack {
+                        Spacer()
+                        if !viewModel.currentRecommendations.isEmpty && !viewModel.isGeneratingRecommendations {
+                            floatingRefreshButton
+                                .padding(.trailing, 20)
+                                .padding(.top, -10)
+                        }
+                    }
                 }
                 .padding(.horizontal)
 
                 Spacer()
 
                 // AI Search Section fixé en bas
-                VStack(spacing: 0) {
-                    Divider()
-                        .background(.quaternary)
-
-                    aiSearchSection
-                        .frame(height: 134)
-                        .padding(.horizontal)
-                        .padding(.vertical, 16)
-                }
-            }
-
-            // Floating Refresh Button (bas droite)
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    if !viewModel.currentRecommendations.isEmpty && !viewModel.isGeneratingRecommendations {
-                        floatingRefreshButton
-                            .padding(.trailing, 20)
-                            .padding(.bottom, 140) // Au-dessus de AI Search
-                    }
-                }
+                aiSearchSection
+                    .frame(height: 134)
+                    .padding(.horizontal)
+                    .padding(.vertical, 16)
             }
         }
         .overlay(toastOverlay)
@@ -167,6 +128,7 @@ struct HomeView: View {
                 onCancel: nil
             )
         }
+        .modifier(KeyboardAdaptive())
     }
 
     // MARK: - Hero Section
@@ -178,7 +140,7 @@ struct HomeView: View {
                     Text(viewModel.welcomeMessage(userProfileService: userProfileService))
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundStyle(DesignSystem.primaryGradient)
+                        .foregroundStyle(.primary)
                         .opacity(1)
                         .animation(DesignSystem.easeInOutAnimation.delay(0.2), value: true)
 
@@ -232,7 +194,7 @@ struct HomeView: View {
                 Text("Daily Picks")
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .foregroundStyle(.primary)
 
                 Spacer()
             }
@@ -297,7 +259,7 @@ struct HomeView: View {
                 Text("AI Movie Search")
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .foregroundStyle(.primary)
 
                 Spacer()
             }
@@ -375,14 +337,14 @@ struct HomeView: View {
         }) {
             Image(systemName: "arrow.clockwise")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(DesignSystem.primaryGradient)
-                .frame(width: 56, height: 56)
+                .foregroundStyle(.primary)
+                .frame(width: 44, height: 44)
                 .background(
                     Circle()
                         .fill(.ultraThickMaterial)
                         .overlay(
                             Circle()
-                                .stroke(DesignSystem.primaryGradient, lineWidth: 1)
+                                .stroke(.primary, lineWidth: 1)
                                 .blur(radius: 0.5)
                         )
                 )

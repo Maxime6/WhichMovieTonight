@@ -18,6 +18,7 @@
 		9C4DA08D2E2E962B008A3E4B /* AISearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4DA08A2E2E962B008A3E4B /* AISearchBar.swift */; };
 		9C4DA08F2E2E9642008A3E4B /* NewWatchlistViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4DA08E2E2E9642008A3E4B /* NewWatchlistViewModel.swift */; };
 		9C4DA0912E2E9648008A3E4B /* NewWatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4DA0902E2E9648008A3E4B /* NewWatchlistView.swift */; };
+		9C4DA0C02E2FB9F9008A3E4B /* KeyboardResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4DA0BF2E2FB9F9008A3E4B /* KeyboardResponder.swift */; };
 		9C6EAEDC2DD3B10F00C2A6D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C6EAED82DD3B10F00C2A6D2 /* Assets.xcassets */; };
 		9C6EAEDD2DD3B10F00C2A6D2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C6EAED62DD3B10F00C2A6D2 /* Preview Assets.xcassets */; };
 		9C6EAEDE2DD3B10F00C2A6D2 /* OpenAIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC02DD3B10F00C2A6D2 /* OpenAIResponse.swift */; };
@@ -110,6 +111,7 @@
 		9C4DA08B2E2E962B008A3E4B /* AISearchingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISearchingView.swift; sourceTree = "<group>"; };
 		9C4DA08E2E2E9642008A3E4B /* NewWatchlistViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWatchlistViewModel.swift; sourceTree = "<group>"; };
 		9C4DA0902E2E9648008A3E4B /* NewWatchlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWatchlistView.swift; sourceTree = "<group>"; };
+		9C4DA0BF2E2FB9F9008A3E4B /* KeyboardResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardResponder.swift; sourceTree = "<group>"; };
 		9C6EAEB12DD3B10F00C2A6D2 /* AIActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIActionButton.swift; sourceTree = "<group>"; };
 		9C6EAEB22DD3B10F00C2A6D2 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		9C6EAEB32DD3B10F00C2A6D2 /* MovieGenreCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieGenreCapsule.swift; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 				9C792AE82E155FC800709CB2 /* SortOption.swift */,
 				9C467E062DF2D3A1002A78F6 /* MovieDetailSource.swift */,
 				9C6EAEB72DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift */,
+				9C4DA0BF2E2FB9F9008A3E4B /* KeyboardResponder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -804,6 +807,7 @@
 				9C9C41AB2E0F13C800E5DFA3 /* MovieTag.swift in Sources */,
 				9C4DA0912E2E9648008A3E4B /* NewWatchlistView.swift in Sources */,
 				9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */,
+				9C4DA0C02E2FB9F9008A3E4B /* KeyboardResponder.swift in Sources */,
 				9C792AE92E155FC800709CB2 /* SortOption.swift in Sources */,
 				9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */,
 				9CF0B5E92DE4B1CE002002B4 /* AppStateManager.swift in Sources */,

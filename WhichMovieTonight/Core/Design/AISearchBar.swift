@@ -49,11 +49,7 @@ struct AISearchBar: View {
                 ZStack {
                     // Animated mesh gradient glow
                     AnimatedMeshGradient()
-                        .mask {
-                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                                .stroke(lineWidth: 16)
-                                .blur(radius: 8)
-                        }
+                        .clipShape(.capsule)
                         .overlay {
                             RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .stroke(.white, lineWidth: 3)
