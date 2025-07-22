@@ -18,7 +18,7 @@ struct AISearchBar: View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
                 // Search input field
-                TextField(placeholder, text: $searchText)
+                TextField(placeholder, text: $searchText, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.body)
                     .foregroundColor(.white)
