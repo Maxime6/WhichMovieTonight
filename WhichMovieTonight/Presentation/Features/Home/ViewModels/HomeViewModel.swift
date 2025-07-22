@@ -203,6 +203,8 @@ final class HomeViewModel: ObservableObject {
         searchValidationMessage = nil
         isSearching = true
 
+        print("🔍 Starting AI search for: '\(trimmedQuery)'")
+
         do {
             // Get user interactions for AI context
             let userInteractions = try await getUserInteractionsForAI(userId: userId)
@@ -220,6 +222,8 @@ final class HomeViewModel: ObservableObject {
                 recentSuggestions: exclusionList
             )
 
+            print("✅ AI search successful, found: \(movie.title)")
+
             // Enrich with OMDB data
             let enrichedMovie = try await enrichMovieWithOMDB(movie, userId: userId)
 
@@ -230,15 +234,18 @@ final class HomeViewModel: ObservableObject {
                 searchResult = enrichedMovie
                 showSearchResult = true
                 isSearching = false
+                print("🎬 Showing search result: \(enrichedMovie.title)")
             }
-
         } catch {
+            print("❌ AI search failed: \(error)")
             await MainActor.run {
                 isSearching = false
                 if error.localizedDescription.contains("timeout") {
                     errorMessage = "Search is taking longer than expected. Please try again."
                 } else if error.localizedDescription.contains("badServerResponse") {
                     errorMessage = "I couldn't find a movie matching your request. Try being more specific."
+                } else if error.localizedDescription.contains("cannotParseResponse") {
+                    errorMessage = "Search completed but couldn't process the result. Please try again."
                 } else {
                     errorMessage = "Connection issue. Please try again."
                 }
