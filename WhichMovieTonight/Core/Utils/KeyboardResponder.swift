@@ -5,29 +5,29 @@
 //  Created by Maxime Tanter on 22/07/2025.
 //
 
-import UIKit
-import SwiftUI
 import Combine
+import SwiftUI
+import UIKit
 
 final class KeyboardResponder: ObservableObject {
     @Published var currentHeight: CGFloat = 0
-    
+
     private var cancellables: Set<AnyCancellable> = []
-    
+
     var keyboardWillShowNotification = NotificationCenter.default.publisher(
         for: UIResponder.keyboardWillShowNotification
     )
     var keyboardWillHideNotification = NotificationCenter.default.publisher(
         for: UIResponder.keyboardWillHideNotification
     )
-    
-    init () {
+
+    init() {
         keyboardWillShowNotification.map { notification in
             CGFloat((notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect)?.height ?? 0)
         }
         .assign(to: \.currentHeight, on: self)
         .store(in: &cancellables)
-        
+
         keyboardWillHideNotification.map { _ in
             CGFloat(0)
         }
@@ -38,7 +38,7 @@ final class KeyboardResponder: ObservableObject {
 
 struct KeyboardAdaptive: ViewModifier {
     @ObservedObject private var keyboard = KeyboardResponder()
-    
+
     func body(content: Content) -> some View {
         content
             .padding(.bottom, keyboard.currentHeight)

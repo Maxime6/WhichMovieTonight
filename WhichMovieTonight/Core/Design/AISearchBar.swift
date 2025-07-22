@@ -14,8 +14,6 @@ struct AISearchBar: View {
     let isSearching: Bool
     let validationMessage: String?
 
-    @FocusState private var isFocused: Bool
-
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
@@ -24,7 +22,6 @@ struct AISearchBar: View {
                     .textFieldStyle(.plain)
                     .font(.body)
                     .foregroundColor(.white)
-                    .focused($isFocused)
                     .onSubmit {
                         if canSearch {
                             onSearch()
