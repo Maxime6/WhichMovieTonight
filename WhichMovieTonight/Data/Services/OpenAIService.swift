@@ -205,21 +205,23 @@ final class OpenAIService {
         - Prioritize accuracy over variety
         - The movie should be available on popular streaming platforms
 
-        Respond ONLY with a JSON object for exactly ONE movie in the following format:
+        Respond ONLY with a JSON array containing exactly ONE movie in the following format:
 
-        {
-          "title": "...",
-          "genres": ["...", "..."],
-          "poster_url": "https://valid.image.url/of/poster.jpg",
-          "platforms": ["..."],
-          "recommendation_reason": "Brief explanation why this matches the user's request"
-        }
+        [
+          {
+            "title": "...",
+            "genres": ["...", "..."],
+            "poster_url": "https://valid.image.url/of/poster.jpg",
+            "platforms": ["..."],
+            "recommendation_reason": "Brief explanation why this matches the user's request"
+          }
+        ]
 
         The "poster_url" must be a valid public link to an actual image of the movie poster.
         Use reliable sources like Wikipedia, IMDb, or official image hosting sites.
         Do not write placeholder values. Always include real image URLs.
         The "recommendation_reason" should reference specific aspects of the user's request that make this a good match.
-        CRITICAL: Return exactly ONE movie, no more, no less.
+        CRITICAL: Return exactly ONE movie in an array, no more, no less.
         """
 
         let body: [String: Any] = [
@@ -237,6 +239,9 @@ final class OpenAIService {
 
         let content = decoded.choices.first?.message.content ?? ""
         print("OpenAI search content:\n\(content)")
+        print("Content length: \(content.count)")
+        print("First 50 characters: \(String(content.prefix(50)))")
+        print("Last 50 characters: \(String(content.suffix(50)))")
 
         // Check for negative responses
         if content.lowercased().contains("i'm unable") ||
@@ -253,8 +258,14 @@ final class OpenAIService {
             throw URLError(.badServerResponse)
         }
 
+        print("Extracted JSON text:\n\(jsonText)")
+        print("Extracted JSON length: \(jsonText.count)")
+
         do {
-            let movieDTO = try JSONDecoder().decode(OpenAIMovieDTO.self, from: jsonData)
+            let movieDTOs = try JSONDecoder().decode([OpenAIMovieDTO].self, from: jsonData)
+            guard let movieDTO = movieDTOs.first else {
+                throw URLError(.badServerResponse)
+            }
             print("✅ OpenAI found movie: \(movieDTO.title)")
 
             // Convert to Movie object

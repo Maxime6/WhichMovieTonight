@@ -284,11 +284,9 @@ struct HomeView: View {
                 searchText: $viewModel.searchText,
                 placeholder: "Ask AI to find a movie...",
                 onSearch: {
+                    showingAISearching = true
                     Task {
                         await viewModel.performAISearch(userProfileService: userProfileService)
-                        if viewModel.isSearching {
-                            showingAISearching = true
-                        }
                     }
                 },
                 isSearching: viewModel.isSearching,
