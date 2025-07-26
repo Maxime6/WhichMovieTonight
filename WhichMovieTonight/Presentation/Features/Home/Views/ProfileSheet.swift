@@ -152,6 +152,7 @@ struct ProfileSheet: View {
                 Text(errorMessage)
             }
         }
+        .dismissKeyboardOnTap()
         .presentationDetents([.medium])
         .overlay(
             // Success Toast

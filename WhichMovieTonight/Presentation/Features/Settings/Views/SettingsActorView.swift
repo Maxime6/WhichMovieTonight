@@ -79,6 +79,7 @@ struct ActorSettingsView: View {
         }
         .navigationTitle("Acteurs favoris")
         .navigationBarTitleDisplayMode(.inline)
+        .dismissKeyboardOnTap()
         .alert("Acteur déjà ajouté", isPresented: $showingAlert) {
             Button("OK", role: .cancel) {}
         } message: {

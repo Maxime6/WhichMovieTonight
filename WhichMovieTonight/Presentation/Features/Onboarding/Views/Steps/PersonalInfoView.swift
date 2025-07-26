@@ -87,6 +87,7 @@ struct PersonalInfoView: View {
             }
             .padding(.horizontal)
         }
+        .dismissKeyboardOnTap()
     }
 }
 

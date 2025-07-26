@@ -45,3 +45,30 @@ struct KeyboardAdaptive: ViewModifier {
             .animation(.easeInOut(duration: 0.16), value: keyboard.currentHeight)
     }
 }
+
+// MARK: - Keyboard Dismissal
+
+struct DismissKeyboardOnTap: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .onTapGesture {
+                hideKeyboard()
+            }
+    }
+
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+extension View {
+    /// Dismisses the keyboard when tapping outside of text fields
+    func dismissKeyboardOnTap() -> some View {
+        modifier(DismissKeyboardOnTap())
+    }
+
+    /// Adapts the view to keyboard appearance
+    func keyboardAdaptive() -> some View {
+        modifier(KeyboardAdaptive())
+    }
+}

@@ -19,7 +19,7 @@ struct HomeView: View {
     @State private var showingProfileSheet = false
     @State private var showingAISearching = false
     @Namespace private var heroAnimation
-    
+
     @State private var value: CGFloat = 0
 
     var body: some View {
@@ -37,7 +37,7 @@ struct HomeView: View {
                     // Daily Recommendations Section
                     recommendationsSection
                         .padding(.top, 24)
-                    
+
                     HStack {
                         Spacer()
                         if !viewModel.currentRecommendations.isEmpty && !viewModel.isGeneratingRecommendations {
@@ -58,6 +58,7 @@ struct HomeView: View {
                     .padding(.vertical, 16)
             }
         }
+        .dismissKeyboardOnTap()
         .overlay(toastOverlay)
         .sheet(isPresented: $showingProfileSheet) {
             ProfileSheet(userProfileService: userProfileService)
@@ -130,7 +131,7 @@ struct HomeView: View {
                 onCancel: nil
             )
         }
-        .offset(y: -self.value)
+        .offset(y: -value)
         .animation(.spring, value: value)
         .onAppear {
             NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { noti in
@@ -138,8 +139,8 @@ struct HomeView: View {
                 let height = value.height
                 self.value = height / 2
             }
-            
-            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { noti in
+
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
                 self.value = 0
             }
         }

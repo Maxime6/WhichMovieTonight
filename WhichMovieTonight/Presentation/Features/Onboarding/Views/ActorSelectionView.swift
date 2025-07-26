@@ -54,6 +54,7 @@ struct ActorSelectionView: View {
                 }
             }
         }
+        .dismissKeyboardOnTap()
         .alert("Acteur déjà ajouté", isPresented: $showingAlert) {
             Button("OK", role: .cancel) {}
         } message: {
