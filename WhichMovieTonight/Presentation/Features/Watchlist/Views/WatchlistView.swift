@@ -68,11 +68,8 @@ struct WatchlistView: View {
                     isPresented: .constant(true),
                     source: .currentMovie,
                     onAddToWatchlist: {
-                        // Find UserMovie for this movie
-                        if let userMovie = viewModel.userMovies.first(where: { $0.movie.id == userMovie.movie.id }) {
-                            Task {
-                                await viewModel.addToWatchlist(userMovie)
-                            }
+                        Task {
+                            await viewModel.toggleWatchlist(userMovie)
                         }
                         selectedUserMovie = nil
                     }

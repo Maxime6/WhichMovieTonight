@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MovieDetailSheet: View {
     let movie: Movie
-    let userMovie: UserMovie? // Optional UserMovie data when available
+    let userMovie: UserMovie?
     let namespace: Namespace.ID
     @Binding var isPresented: Bool
     let source: MovieDetailSource
@@ -86,9 +86,8 @@ struct MovieDetailSheet: View {
 
             streamingSection
 
-//            if source == .suggestion {
-//                selectForTonightButton
-//            }
+            // Add to Watchlist button at the bottom
+            addToWatchlistButton
         }
         .padding()
     }
@@ -97,7 +96,7 @@ struct MovieDetailSheet: View {
         VStack(spacing: 10) {
             Text(movie.title)
                 .font(.title.bold())
-                .foregroundColor(.white)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -134,12 +133,12 @@ struct MovieDetailSheet: View {
                     }
                 }
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.primary)
 
             HStack(spacing: 8) {
                 ForEach(movie.genres, id: \.self) { genre in
                     Text(genre)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
             }
         }
@@ -150,7 +149,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Genres")
                     .font(.headline)
-                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .foregroundStyle(.primary)
                 Spacer()
             }
 
@@ -177,7 +176,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Synopsis")
                     .font(.headline)
-                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .foregroundStyle(.primary)
                 Spacer()
             }
 
@@ -201,7 +200,7 @@ struct MovieDetailSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Réalisateur")
                         .font(.headline)
-                        .foregroundStyle(DesignSystem.primaryGradient)
+                        .foregroundStyle(.primary)
                     Text(director)
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -212,7 +211,7 @@ struct MovieDetailSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Acteurs principaux")
                         .font(.headline)
-                        .foregroundStyle(DesignSystem.primaryGradient)
+                        .foregroundStyle(.primary)
                     Text(actors)
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -227,7 +226,7 @@ struct MovieDetailSheet: View {
             HStack {
                 Text("Disponible sur")
                     .font(.headline)
-                    .foregroundStyle(DesignSystem.primaryGradient)
+                    .foregroundStyle(.primary)
                 Spacer()
             }
 
@@ -254,23 +253,40 @@ struct MovieDetailSheet: View {
             Divider()
                 .padding(.vertical)
 
-            Button(action: {
-                onAddToWatchlist?()
-            }) {
-                HStack {
-                    Image(systemName: "bookmark.fill")
-                    Text("Add to Watchlist")
-                        .fontWeight(.semibold)
+            if let userMovie = userMovie, userMovie.isToWatch {
+                // Remove from watchlist state
+                Button(action: {
+                    onAddToWatchlist?()
+                }) {
+                    HStack {
+                        Image(systemName: "bookmark.fill")
+                        Text("Remove from Watchlist")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
                 }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(DesignSystem.primaryGradient)
-                .cornerRadius(DesignSystem.mediumRadius)
-                .primaryShadow()
+            } else {
+                // Add to watchlist state
+                Button(action: {
+                    onAddToWatchlist?()
+                }) {
+                    HStack {
+                        Image(systemName: "bookmark")
+                        Text("Add to Watchlist")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(DesignSystem.primaryGradient)
+                    .cornerRadius(DesignSystem.mediumRadius)
+                    .primaryShadow()
+                }
             }
 
-            Text("This movie will be added to your watchlist")
+            Text(userMovie?.isToWatch == true ? "This movie will be removed from your watchlist" : "This movie will be added to your watchlist")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

@@ -57,6 +57,9 @@ struct FavoritesView: View {
                     isPresented: .constant(true),
                     source: .currentMovie,
                     onAddToWatchlist: {
+                        Task {
+                            await viewModel.toggleWatchlist(userMovie)
+                        }
                         selectedUserMovie = nil
                     }
                 )

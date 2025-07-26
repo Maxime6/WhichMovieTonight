@@ -233,6 +233,21 @@ struct UserMovie: Identifiable, Codable {
     mutating func markAsSeen() {
         isSeen = true
         seenAt = Date()
+        // Remove from watchlist when marked as seen
+        isToWatch = false
+        toWatchAt = nil
+        lastUpdated = Date()
+    }
+
+    /// Toggle seen status
+    mutating func toggleSeen() {
+        isSeen.toggle()
+        seenAt = isSeen ? Date() : nil
+        // Remove from watchlist when marked as seen
+        if isSeen {
+            isToWatch = false
+            toWatchAt = nil
+        }
         lastUpdated = Date()
     }
 

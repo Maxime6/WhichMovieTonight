@@ -281,19 +281,29 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
-    /// Add movie to watchlist
-    func addToWatchlist(_ movie: Movie) async {
+    /// Toggle movie watchlist status (add/remove)
+    func toggleWatchlist(_ movie: Movie) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
             return
         }
 
         do {
-            try await userMovieService.addToWatchlist(userId: userId, movieId: movie.id)
-            showToastMessage("Added to watchlist: \(movie.title)")
+            // Check if movie is already in watchlist
+            if let userMovie = try await userMovieService.getUserMovie(userId: userId, movieId: movie.id),
+               userMovie.isToWatch
+            {
+                // Remove from watchlist
+                try await userMovieService.removeFromWatchlist(userId: userId, movieId: movie.id)
+                showToastMessage("Removed from watchlist: \(movie.title)")
+            } else {
+                // Add to watchlist
+                try await userMovieService.addToWatchlist(userId: userId, movieId: movie.id)
+                showToastMessage("Added to watchlist: \(movie.title)")
+            }
         } catch {
-            print("❌ Error adding to watchlist: \(error)")
-            errorMessage = "Failed to add to watchlist. Please try again."
+            print("❌ Error toggling watchlist: \(error)")
+            errorMessage = "Failed to update watchlist. Please try again."
         }
     }
 

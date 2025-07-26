@@ -123,14 +123,14 @@ final class NewWatchlistViewModel: ObservableObject {
 
         do {
             try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.movieId) { userMovie in
-                userMovie.markAsSeen()
+                userMovie.toggleSeen()
             }
 
             // Refresh local data
             await loadUserMovies()
 
         } catch {
-            print("❌ Error marking as seen: \(error)")
+            print("❌ Error toggling seen status: \(error)")
             errorMessage = "Failed to update movie. Please try again."
         }
     }

@@ -156,31 +156,37 @@ final class WatchlistViewModel: ObservableObject {
 
         do {
             try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.movieId) { userMovie in
-                userMovie.markAsSeen()
+                userMovie.toggleSeen()
             }
 
             // Refresh local data
             await loadUserMovies()
 
         } catch {
-            print("❌ Error marking as seen: \(error)")
+            print("❌ Error toggling seen status: \(error)")
             errorMessage = "Failed to update movie. Please try again."
         }
     }
 
-    /// Add movie to watchlist
-    func addToWatchlist(_ movie: UserMovie) async {
+    /// Toggle movie watchlist status (add/remove)
+    func toggleWatchlist(_ movie: UserMovie) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
-            try await userMovieService.addToWatchlist(userId: userId, movieId: movie.movieId)
+            if movie.isToWatch {
+                // Remove from watchlist
+                try await userMovieService.removeFromWatchlist(userId: userId, movieId: movie.movieId)
+            } else {
+                // Add to watchlist
+                try await userMovieService.addToWatchlist(userId: userId, movieId: movie.movieId)
+            }
 
             // Refresh local data
             await loadUserMovies()
 
         } catch {
-            print("❌ Error adding to watchlist: \(error)")
-            errorMessage = "Failed to add movie to watchlist. Please try again."
+            print("❌ Error toggling watchlist: \(error)")
+            errorMessage = "Failed to update watchlist. Please try again."
         }
     }
 

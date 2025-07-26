@@ -251,19 +251,19 @@ struct MovieInteractionButtons: View {
 
         do {
             try await userMovieService.updateMovieInteraction(userId: userId, movieId: movie.id) { userMovie in
-                userMovie.markAsSeen()
+                userMovie.toggleSeen()
             }
 
             await MainActor.run {
-                isSeen = true
+                isSeen.toggle()
             }
 
             onInteractionUpdate?()
 
         } catch {
-            print("❌ Error marking as seen: \(error)")
+            print("❌ Error toggling seen status: \(error)")
             await MainActor.run {
-                errorMessage = "Failed to mark as seen"
+                errorMessage = "Failed to update seen status"
             }
         }
 

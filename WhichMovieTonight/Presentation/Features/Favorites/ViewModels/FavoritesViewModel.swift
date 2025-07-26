@@ -76,6 +76,28 @@ final class FavoritesViewModel: ObservableObject {
         currentSortOption = option
     }
 
+    /// Toggle movie watchlist status (add/remove)
+    func toggleWatchlist(_ movie: UserMovie) async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        do {
+            if movie.isToWatch {
+                // Remove from watchlist
+                try await userMovieService.removeFromWatchlist(userId: userId, movieId: movie.movieId)
+            } else {
+                // Add to watchlist
+                try await userMovieService.addToWatchlist(userId: userId, movieId: movie.movieId)
+            }
+
+            // Refresh local data
+            await loadFavorites()
+
+        } catch {
+            print("❌ Error toggling watchlist: \(error)")
+            errorMessage = "Failed to update watchlist. Please try again."
+        }
+    }
+
     // MARK: - Computed Properties
 
     /// Check if there are any favorites

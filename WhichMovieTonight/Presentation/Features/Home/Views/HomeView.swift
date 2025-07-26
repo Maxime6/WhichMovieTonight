@@ -91,7 +91,7 @@ struct HomeView: View {
                 source: .suggestion,
                 onAddToWatchlist: {
                     Task {
-                        await viewModel.addToWatchlist(userMovie.movie)
+                        await viewModel.toggleWatchlist(userMovie.movie)
                     }
                     selectedUserMovie = nil
                 }
@@ -107,7 +107,7 @@ struct HomeView: View {
                     source: .aiSearch,
                     onAddToWatchlist: {
                         Task {
-                            await viewModel.addToWatchlist(searchResult)
+                            await viewModel.toggleWatchlist(searchResult)
                         }
                         viewModel.showSearchResult = false
                     }
