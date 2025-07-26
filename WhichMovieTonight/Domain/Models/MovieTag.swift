@@ -19,6 +19,7 @@ enum MovieTag: String, CaseIterable, Identifiable {
     case favorites
     case seen
     case toWatch
+    case aiSearch
 
     var id: String { rawValue }
 
@@ -34,6 +35,7 @@ enum MovieTag: String, CaseIterable, Identifiable {
         case .favorites: return "Favorites"
         case .seen: return "Seen"
         case .toWatch: return "To Watch"
+        case .aiSearch: return "AI Found"
         }
     }
 
@@ -47,6 +49,7 @@ enum MovieTag: String, CaseIterable, Identifiable {
         case .favorites: return "heart.fill"
         case .seen: return "checkmark.circle.fill"
         case .toWatch: return "bookmark.fill"
+        case .aiSearch: return "sparkles"
         }
     }
 
@@ -60,6 +63,7 @@ enum MovieTag: String, CaseIterable, Identifiable {
         case .favorites: return .pink
         case .seen: return .purple
         case .toWatch: return .cyan
+        case .aiSearch: return .indigo
         }
     }
 
@@ -70,6 +74,7 @@ enum MovieTag: String, CaseIterable, Identifiable {
         case .seen: return 100
         case .toWatch: return 90
         case .favorites: return 80
+        case .aiSearch: return 85
         case .liked: return 70
         case .disliked: return 60
         case .currentPicks: return 50

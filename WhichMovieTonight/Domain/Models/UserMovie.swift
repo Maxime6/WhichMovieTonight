@@ -20,7 +20,7 @@ struct UserMovie: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case id, movieId, userId, movie
         case isCurrentPick, isInHistory, isLiked, isDisliked, isFavorite, isSeen
-        case isToWatch
+        case isToWatch, isAISearchResult
         case isSelectedForTonight // For backward compatibility
         case recommendedAt, currentPicksSince, likedAt, dislikedAt, favoriteAt, seenAt
         case toWatchAt
@@ -37,6 +37,7 @@ struct UserMovie: Identifiable, Codable {
     var isFavorite: Bool = false
     var isSeen: Bool = false
     var isToWatch: Bool = false
+    var isAISearchResult: Bool = false
 
     // MARK: - Timestamps
 
@@ -61,7 +62,8 @@ struct UserMovie: Identifiable, Codable {
         isDisliked: Bool = false,
         isFavorite: Bool = false,
         isSeen: Bool = false,
-        isToWatch: Bool = false
+        isToWatch: Bool = false,
+        isAISearchResult: Bool = false
     ) {
         id = movie.id
         movieId = movie.id
@@ -74,6 +76,7 @@ struct UserMovie: Identifiable, Codable {
         self.isFavorite = isFavorite
         self.isSeen = isSeen
         self.isToWatch = isToWatch
+        self.isAISearchResult = isAISearchResult
         lastUpdated = Date()
     }
 
@@ -99,6 +102,9 @@ struct UserMovie: Identifiable, Codable {
         let oldIsSelectedForTonight = try container.decodeIfPresent(Bool.self, forKey: .isSelectedForTonight) ?? false
         let newIsToWatch = try container.decodeIfPresent(Bool.self, forKey: .isToWatch) ?? false
         isToWatch = oldIsSelectedForTonight || newIsToWatch
+
+        // Decode AI search result flag
+        isAISearchResult = try container.decodeIfPresent(Bool.self, forKey: .isAISearchResult) ?? false
 
         // Decode timestamps
         recommendedAt = try container.decodeIfPresent(Date.self, forKey: .recommendedAt)
@@ -132,6 +138,7 @@ struct UserMovie: Identifiable, Codable {
         try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(isSeen, forKey: .isSeen)
         try container.encode(isToWatch, forKey: .isToWatch)
+        try container.encode(isAISearchResult, forKey: .isAISearchResult)
 
         // Encode timestamps
         try container.encodeIfPresent(recommendedAt, forKey: .recommendedAt)
@@ -163,6 +170,7 @@ struct UserMovie: Identifiable, Codable {
         if isFavorite { tags.append(.favorites) }
         if isSeen { tags.append(.seen) }
         if isToWatch { tags.append(.toWatch) }
+        if isAISearchResult { tags.append(.aiSearch) }
 
         return tags
     }

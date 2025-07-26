@@ -72,3 +72,10 @@ extension View {
         modifier(KeyboardAdaptive())
     }
 }
+
+// MARK: - Global Keyboard Functions
+
+/// Dismisses the keyboard globally
+func hideKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+}

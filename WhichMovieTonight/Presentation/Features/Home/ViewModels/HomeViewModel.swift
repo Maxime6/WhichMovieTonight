@@ -22,6 +22,7 @@ final class HomeViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isSearching: Bool = false
     @Published var searchResult: Movie?
+    @Published var searchResultUserMovie: UserMovie?
     @Published var showSearchResult: Bool = false
     @Published var searchValidationMessage: String?
 
@@ -29,6 +30,7 @@ final class HomeViewModel: ObservableObject {
     @Published var showToast: Bool = false
     @Published var toastMessage: String?
     @Published var errorMessage: String?
+    @Published var shouldResetKeyboardOffset: Bool = false
 
     // MARK: - Dependencies (Unified)
 
@@ -227,19 +229,39 @@ final class HomeViewModel: ObservableObject {
             // Enrich with OMDB data
             let enrichedMovie = try await enrichMovieWithOMDB(movie, userId: userId)
 
+            // Save as UserMovie with AI search flag
+            let userMovie = UserMovie(
+                userId: userId,
+                movie: enrichedMovie,
+                isInHistory: true,
+                isAISearchResult: true
+            )
+
+            try await userMovieService.saveUserMovie(userMovie)
+            print("💾 Saved AI search result as UserMovie: \(enrichedMovie.title)")
+
             // Ensure minimum 2 seconds of loading
             try await Task.sleep(nanoseconds: 2_000_000_000)
 
             await MainActor.run {
                 searchResult = enrichedMovie
+                searchResultUserMovie = userMovie
                 showSearchResult = true
                 isSearching = false
+                searchText = "" // Clear search text
                 print("🎬 Showing search result: \(enrichedMovie.title)")
+            }
+
+            // Dismiss keyboard after successful search
+            DispatchQueue.main.async {
+                hideKeyboard()
+                self.shouldResetKeyboardOffset = true
             }
         } catch {
             print("❌ AI search failed: \(error)")
             await MainActor.run {
                 isSearching = false
+                searchText = "" // Clear search text even on error
                 if error.localizedDescription.contains("timeout") {
                     errorMessage = "Search is taking longer than expected. Please try again."
                 } else if error.localizedDescription.contains("badServerResponse") {
@@ -249,6 +271,12 @@ final class HomeViewModel: ObservableObject {
                 } else {
                     errorMessage = "Connection issue. Please try again."
                 }
+            }
+
+            // Dismiss keyboard after failed search
+            DispatchQueue.main.async {
+                hideKeyboard()
+                self.shouldResetKeyboardOffset = true
             }
         }
     }
@@ -334,16 +362,33 @@ final class HomeViewModel: ObservableObject {
 
     private func enrichMovieWithOMDB(_ movie: Movie, userId _: String) async throws -> Movie {
         do {
+            print("🔍 Enriching movie with OMDB: \(movie.title)")
             let omdbService = OMDBService()
             let omdbMovie = try await omdbService.getMovieDetailsByTitle(title: movie.title)
+
+            print("📊 OMDB data retrieved:")
+            print("   - Title: \(omdbMovie.title)")
+            print("   - Year: \(omdbMovie.year)")
+            print("   - Plot: \(omdbMovie.plot?.prefix(50) ?? "No plot")...")
+            print("   - Director: \(omdbMovie.director ?? "Unknown")")
+            print("   - Actors: \(omdbMovie.actors?.prefix(50) ?? "Unknown")...")
+
             let enrichedMovie = Movie(
                 from: omdbMovie,
                 originalGenres: movie.genres,
                 originalPlatforms: movie.streamingPlatforms
             )
+
+            print("✅ Movie enriched successfully: \(enrichedMovie.title)")
+            print("   - Overview: \(enrichedMovie.overview?.prefix(50) ?? "No overview")...")
+            print("   - Director: \(enrichedMovie.director ?? "Unknown")")
+            print("   - Actors: \(enrichedMovie.actors?.prefix(50) ?? "Unknown")...")
+
             return enrichedMovie
         } catch {
-            print("⚠️ OMDB enrichment failed for \(movie.title), using OpenAI data only")
+            print("⚠️ OMDB enrichment failed for \(movie.title): \(error)")
+            print("   - Using OpenAI data only")
+            print("   - Available data: title=\(movie.title), genres=\(movie.genres), platforms=\(movie.streamingPlatforms)")
             return movie
         }
     }

@@ -101,7 +101,7 @@ struct HomeView: View {
             if let searchResult = viewModel.searchResult {
                 MovieDetailSheet(
                     movie: searchResult,
-                    userMovie: nil,
+                    userMovie: viewModel.searchResultUserMovie,
                     namespace: heroAnimation,
                     isPresented: $viewModel.showSearchResult,
                     source: .aiSearch,
@@ -114,6 +114,22 @@ struct HomeView: View {
                 )
             }
         }
+        .onChange(of: viewModel.showSearchResult) { isPresented in
+            if !isPresented {
+                // Reset AI searching state when detail sheet is dismissed
+                showingAISearching = false
+                viewModel.isSearching = false
+                // Dismiss keyboard and reset offset
+                hideKeyboard()
+                value = 0
+            }
+        }
+        .onChange(of: viewModel.shouldResetKeyboardOffset) { shouldReset in
+            if shouldReset {
+                value = 0
+                viewModel.shouldResetKeyboardOffset = false
+            }
+        }
         .fullScreenCover(isPresented: $showingAISearching) {
             AISearchingView(
                 message: "Searching for the perfect movie...",
@@ -121,6 +137,9 @@ struct HomeView: View {
                 onCancel: {
                     showingAISearching = false
                     viewModel.isSearching = false
+                    // Dismiss keyboard and reset offset
+                    hideKeyboard()
+                    value = 0
                 }
             )
         }
