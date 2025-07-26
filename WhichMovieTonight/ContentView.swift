@@ -12,6 +12,7 @@ struct ContentView: View {
     @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
     @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var ratingManager = AppRatingManager()
 
     init() {
         // Create services
@@ -62,6 +63,7 @@ struct ContentView: View {
                 .environmentObject(appStateManager)
                 .environmentObject(userProfileService)
                 .environmentObject(notificationService)
+                .environmentObject(ratingManager)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
@@ -70,6 +72,15 @@ struct ContentView: View {
         }
         .accentColor(DesignSystem.primaryCyan)
         .tint(DesignSystem.primaryCyan)
+        .onAppear {
+            // Track app usage for rating prompts
+            ratingManager.incrementAppUsage()
+        }
+        .overlay {
+            if ratingManager.shouldShowRatingPopup {
+                AppRatingView(ratingManager: ratingManager)
+            }
+        }
     }
 }
 

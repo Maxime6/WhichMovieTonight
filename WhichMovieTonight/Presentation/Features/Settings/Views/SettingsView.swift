@@ -12,6 +12,7 @@ struct SettingsView: View {
     @EnvironmentObject var appStateManager: AppStateManager
     @EnvironmentObject var userProfileService: UserProfileService
     @EnvironmentObject var notificationService: NotificationService
+    @EnvironmentObject var ratingManager: AppRatingManager
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
     @State private var displayName: String
@@ -215,16 +216,21 @@ struct SettingsView: View {
 
                 // About Section
                 Section("About") {
-                    HStack {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                            .frame(width: 20)
-                        Text("Rate App")
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
+                    Button(action: {
+                        ratingManager.showRatingPopup()
+                    }) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                                .frame(width: 20)
+                            Text("Rate App")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    
+                    .buttonStyle(PlainButtonStyle())
+
                     HStack {
                         Image(systemName: "info.circle.fill")
                             .foregroundStyle(.secondary)
