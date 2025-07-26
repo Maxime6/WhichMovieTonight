@@ -29,7 +29,6 @@
 		9C6EAEE62DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */; };
 		9C6EAEE72DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEBF2DD3B10F00C2A6D2 /* MovieSuggestionDTO.swift */; };
 		9C6EAEEA2DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC92DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift */; };
-		9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEC72DD3B10F00C2A6D2 /* MockMovieRepository.swift */; };
 		9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB22DD3B10F00C2A6D2 /* FlowLayout.swift */; };
 		9C6EAEEE2DD3B10F00C2A6D2 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB52DD3B10F00C2A6D2 /* ToastView.swift */; };
 		9C6EAEF02DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6EAEB72DD3B10F00C2A6D2 /* AnimatedMeshGradient.swift */; };
@@ -122,7 +121,6 @@
 		9C6EAEC02DD3B10F00C2A6D2 /* OpenAIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIResponse.swift; sourceTree = "<group>"; };
 		9C6EAEC22DD3B10F00C2A6D2 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		9C6EAEC52DD3B10F00C2A6D2 /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
-		9C6EAEC72DD3B10F00C2A6D2 /* MockMovieRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMovieRepository.swift; sourceTree = "<group>"; };
 		9C6EAEC82DD3B10F00C2A6D2 /* MovieRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieRepository.swift; sourceTree = "<group>"; };
 		9C6EAEC92DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieRepositoryImpl.swift; sourceTree = "<group>"; };
 		9C6EAECE2DD3B10F00C2A6D2 /* MockMovie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMovie.swift; sourceTree = "<group>"; };
@@ -256,7 +254,6 @@
 		9C6EAEBE2DD3B10F00C2A6D2 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				9C73ED832E01FD3900AD4811 /* Dependency */,
 				9CE050862DE5F60A00A0EB8B /* Config.swift */,
 				9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */,
 				9C6EAEB62DD3B10F00C2A6D2 /* Design */,
@@ -315,18 +312,10 @@
 		9C6EAECA2DD3B10F00C2A6D2 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
-				9C6EAEC72DD3B10F00C2A6D2 /* MockMovieRepository.swift */,
 				9C6EAEC82DD3B10F00C2A6D2 /* MovieRepository.swift */,
 				9C6EAEC92DD3B10F00C2A6D2 /* MovieRepositoryImpl.swift */,
 			);
 			path = Repositories;
-			sourceTree = "<group>";
-		};
-		9C6EAECC2DD3B10F00C2A6D2 /* UseCases */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = UseCases;
 			sourceTree = "<group>";
 		};
 		9C6EAECD2DD3B10F00C2A6D2 /* Domain */ = {
@@ -334,7 +323,6 @@
 			children = (
 				9C6EAEC62DD3B10F00C2A6D2 /* Models */,
 				9C6EAECA2DD3B10F00C2A6D2 /* Repositories */,
-				9C6EAECC2DD3B10F00C2A6D2 /* UseCases */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -370,7 +358,6 @@
 				9C792AEE2E16E40D00709CB2 /* Info.plist */,
 				9CE050842DE5F5CD00A0EB8B /* APIKeys.plist */,
 				9CE0507D2DE4BF2900A0EB8B /* WhichMovieTonight.entitlements */,
-				9CF0B5EA2DE4B204002002B4 /* RootView.swift */,
 				9C6EAEBE2DD3B10F00C2A6D2 /* Core */,
 				9C6EAEC42DD3B10F00C2A6D2 /* Data */,
 				9C6EAECD2DD3B10F00C2A6D2 /* Domain */,
@@ -378,6 +365,7 @@
 				9C6EAED52DD3B10F00C2A6D2 /* Presentation */,
 				9C6EAED72DD3B10F00C2A6D2 /* Preview Content */,
 				9C6EAED82DD3B10F00C2A6D2 /* Assets.xcassets */,
+				9CF0B5EA2DE4B204002002B4 /* RootView.swift */,
 				9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */,
 				9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */,
 				9C4959712DDF70C900BD170D /* GoogleService-Info.plist */,
@@ -525,13 +513,6 @@
 				9C73ED642E01FCBA00AD4811 /* ViewModifiers */,
 			);
 			path = Shared;
-			sourceTree = "<group>";
-		};
-		9C73ED832E01FD3900AD4811 /* Dependency */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Dependency;
 			sourceTree = "<group>";
 		};
 		9C792AE02E141DF100709CB2 /* ViewModels */ = {
@@ -806,7 +787,6 @@
 				9C9C41AA2E0F13C800E5DFA3 /* UserMovie.swift in Sources */,
 				9C9C41AB2E0F13C800E5DFA3 /* MovieTag.swift in Sources */,
 				9C4DA0912E2E9648008A3E4B /* NewWatchlistView.swift in Sources */,
-				9C6EAEEB2DD3B10F00C2A6D2 /* MockMovieRepository.swift in Sources */,
 				9C4DA0C02E2FB9F9008A3E4B /* KeyboardResponder.swift in Sources */,
 				9C792AE92E155FC800709CB2 /* SortOption.swift in Sources */,
 				9C6EAEEC2DD3B10F00C2A6D2 /* FlowLayout.swift in Sources */,

@@ -284,9 +284,4 @@ extension WatchlistViewModel {
     func getCurrentPicks() -> [UserMovie] {
         return filteredMovies.currentPicks
     }
-
-    /// Get tonight's selection
-//    func getTonightSelection() -> UserMovie? {
-//        return filteredMovies.tonightSelection
-//    }
 }
