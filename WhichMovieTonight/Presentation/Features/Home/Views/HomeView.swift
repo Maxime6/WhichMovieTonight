@@ -19,6 +19,8 @@ struct HomeView: View {
     @State private var showingProfileSheet = false
     @State private var showingAISearching = false
     @Namespace private var heroAnimation
+    
+    @State private var value: CGFloat = 0
 
     var body: some View {
         ZStack {
@@ -128,7 +130,19 @@ struct HomeView: View {
                 onCancel: nil
             )
         }
-        .modifier(KeyboardAdaptive())
+        .offset(y: -self.value)
+        .animation(.spring, value: value)
+        .onAppear {
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { noti in
+                let value = noti.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as! CGRect
+                let height = value.height
+                self.value = height / 2
+            }
+            
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { noti in
+                self.value = 0
+            }
+        }
     }
 
     // MARK: - Hero Section
