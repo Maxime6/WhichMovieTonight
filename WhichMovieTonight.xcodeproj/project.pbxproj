@@ -69,12 +69,11 @@
 		9C792AEB2E16C78F00709CB2 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AEA2E16C78F00709CB2 /* NotificationService.swift */; };
 		9C792AED2E16C7D100709CB2 /* NotificationPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AEC2E16C7D100709CB2 /* NotificationPermissionView.swift */; };
 		9C792AF12E17CD3700709CB2 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AEF2E17CD3700709CB2 /* UIImage+Extensions.swift */; };
-		9C792AF42E17CD4500709CB2 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AF32E17CD4500709CB2 /* ProfileSheet.swift */; };
-		9C792AF62E17CD5000709CB2 /* ProfilePictureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AF52E17CD5000709CB2 /* ProfilePictureView.swift */; };
-		9C792AF92E17D12700709CB2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 9C792AF82E17D12700709CB2 /* FirebaseStorage */; };
+
+
 		9C792B012E18152A00709CB2 /* OnboardingStepManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AFF2E18152A00709CB2 /* OnboardingStepManager.swift */; };
 		9C792B022E18152A00709CB2 /* OnboardingNavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AFA2E18152A00709CB2 /* OnboardingNavigationButtons.swift */; };
-		9C792B032E18152A00709CB2 /* ProfilePhotoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AFC2E18152A00709CB2 /* ProfilePhotoPicker.swift */; };
+
 		9C792B042E18152A00709CB2 /* OnboardingProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AFB2E18152A00709CB2 /* OnboardingProgressBar.swift */; };
 		9C792B052E18152A00709CB2 /* OnboardingStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792AFE2E18152A00709CB2 /* OnboardingStep.swift */; };
 		9C792B0B2E18153300709CB2 /* PersonalInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792B082E18153300709CB2 /* PersonalInfoView.swift */; };
@@ -157,11 +156,10 @@
 		9C792AEC2E16C7D100709CB2 /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
 		9C792AEE2E16E40D00709CB2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9C792AEF2E17CD3700709CB2 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
-		9C792AF32E17CD4500709CB2 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
-		9C792AF52E17CD5000709CB2 /* ProfilePictureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePictureView.swift; sourceTree = "<group>"; };
+
 		9C792AFA2E18152A00709CB2 /* OnboardingNavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingNavigationButtons.swift; sourceTree = "<group>"; };
 		9C792AFB2E18152A00709CB2 /* OnboardingProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingProgressBar.swift; sourceTree = "<group>"; };
-		9C792AFC2E18152A00709CB2 /* ProfilePhotoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePhotoPicker.swift; sourceTree = "<group>"; };
+
 		9C792AFE2E18152A00709CB2 /* OnboardingStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep.swift; sourceTree = "<group>"; };
 		9C792AFF2E18152A00709CB2 /* OnboardingStepManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepManager.swift; sourceTree = "<group>"; };
 		9C792B062E18153300709CB2 /* NewOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewOnboardingView.swift; sourceTree = "<group>"; };
@@ -206,7 +204,7 @@
 				9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */,
 				9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */,
 				9C6EAEFF2DD3BFAD00C2A6D2 /* FirebaseAuth in Frameworks */,
-				9C792AF92E17D12700709CB2 /* FirebaseStorage in Frameworks */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,7 +382,6 @@
 		9C73ED472E01FCBA00AD4811 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				9C792AF32E17CD4500709CB2 /* ProfileSheet.swift */,
 				9C73ED412E01FCBA00AD4811 /* HomeView.swift */,
 				9C73ED422E01FCBA00AD4811 /* MovieCardView.swift */,
 				9C73ED432E01FCBA00AD4811 /* MovieDetailSheet.swift */,
@@ -488,7 +485,6 @@
 		9C73ED632E01FCBA00AD4811 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				9C792AF52E17CD5000709CB2 /* ProfilePictureView.swift */,
 				9C0C47292E0C69A7009D40D5 /* LaunchScreen.swift */,
 				9C73ED8E2E0B031800AD4811 /* SelectedMovieCard.swift */,
 				9C73ED5E2E01FCBA00AD4811 /* ActorChip.swift */,
@@ -553,7 +549,6 @@
 			children = (
 				9C792AFA2E18152A00709CB2 /* OnboardingNavigationButtons.swift */,
 				9C792AFB2E18152A00709CB2 /* OnboardingProgressBar.swift */,
-				9C792AFC2E18152A00709CB2 /* ProfilePhotoPicker.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -640,7 +635,7 @@
 				9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */,
 				9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */,
 				9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */,
-				9C792AF82E17D12700709CB2 /* FirebaseStorage */,
+
 			);
 			productName = Findy;
 			productReference = 9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */;
@@ -766,7 +761,7 @@
 				9C792AED2E16C7D100709CB2 /* NotificationPermissionView.swift in Sources */,
 				9C9C41A72E0F13B400E5DFA3 /* UserMovieService.swift in Sources */,
 				9C73ED772E01FCBA00AD4811 /* GenreButton.swift in Sources */,
-				9C792AF62E17CD5000709CB2 /* ProfilePictureView.swift in Sources */,
+
 				9C73ED782E01FCBA00AD4811 /* HomeViewModel.swift in Sources */,
 				9C73ED792E01FCBA00AD4811 /* MovieDetailSheet.swift in Sources */,
 				9C73ED7B2E01FCBA00AD4811 /* SettingsView.swift in Sources */,
@@ -806,14 +801,14 @@
 				9CE050872DE5F60A00A0EB8B /* Config.swift in Sources */,
 				9C792B012E18152A00709CB2 /* OnboardingStepManager.swift in Sources */,
 				9C792B022E18152A00709CB2 /* OnboardingNavigationButtons.swift in Sources */,
-				9C792B032E18152A00709CB2 /* ProfilePhotoPicker.swift in Sources */,
+
 				9C792B042E18152A00709CB2 /* OnboardingProgressBar.swift in Sources */,
 				9C792B052E18152A00709CB2 /* OnboardingStep.swift in Sources */,
 				9C6EAEF52DD3B10F00C2A6D2 /* Movie.swift in Sources */,
 				9C6EAEF62DD3B10F00C2A6D2 /* MovieGenreSelectionView.swift in Sources */,
 				9C4DA08C2E2E962B008A3E4B /* AISearchingView.swift in Sources */,
 				9C4DA08D2E2E962B008A3E4B /* AISearchBar.swift in Sources */,
-				9C792AF42E17CD4500709CB2 /* ProfileSheet.swift in Sources */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1119,11 +1114,7 @@
 			package = 9C6EAEFB2DD3BFAD00C2A6D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
-		9C792AF82E17D12700709CB2 /* FirebaseStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9C6EAEFB2DD3BFAD00C2A6D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseStorage;
-		};
+
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9C8C93F42D96F4B300B1DC00 /* Project object */;

@@ -14,6 +14,12 @@ struct SettingsView: View {
     @EnvironmentObject var notificationService: NotificationService
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
+    @State private var displayName: String
+    @State private var showingNameEdit = false
+
+    init() {
+        _displayName = State(initialValue: "")
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,8 +41,63 @@ struct SettingsView: View {
                         }
 
                         Spacer()
+
+                        Button("Edit") {
+                            displayName = userProfileService.displayName
+                            showingNameEdit = true
+                        }
+                        .font(.caption)
+                        .foregroundColor(.cyan)
                     }
                     .padding(.vertical, 8)
+
+                    // Watching Frequency
+                    HStack {
+                        Image(systemName: "clock.fill")
+                            .foregroundColor(.blue)
+                            .frame(width: 20)
+                        Text("Watching frequency")
+                        Spacer()
+                        Menu {
+                            ForEach(MovieWatchingFrequency.allCases, id: \.self) { frequency in
+                                Button(frequency.displayText) {
+                                    updateWatchingFrequency(frequency)
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(userProfileService.movieWatchingFrequency.displayText)
+                                    .foregroundColor(.primary)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+
+                    // Movie Mood
+                    HStack {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.pink)
+                            .frame(width: 20)
+                        Text("Movie mood")
+                        Spacer()
+                        Menu {
+                            ForEach(MovieMoodPreference.allCases, id: \.self) { mood in
+                                Button(mood.displayText) {
+                                    updateMovieMood(mood)
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(userProfileService.movieMoodPreference.displayText)
+                                    .foregroundColor(.primary)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                 }
 
                 // Preferences Section
@@ -209,6 +270,56 @@ struct SettingsView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingNameEdit) {
+            NavigationView {
+                VStack(spacing: 20) {
+                    Text("Edit Name")
+                        .font(.headline)
+                        .padding(.top)
+
+                    TextField("Enter your name", text: $displayName)
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.words)
+                        .onChange(of: displayName) { _, newValue in
+                            // Remove spaces and limit to 15 characters
+                            displayName = newValue.replacingOccurrences(of: " ", with: "")
+                                .prefix(15).description
+                        }
+                        .overlay(
+                            HStack {
+                                Spacer()
+                                Text("\(displayName.count)/15")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.trailing, 8)
+                        )
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Edit Name")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            showingNameEdit = false
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            Task {
+                                if let userId = Auth.auth().currentUser?.uid {
+                                    try? await userProfileService.updateDisplayName(displayName, userId: userId)
+                                }
+                            }
+                            showingNameEdit = false
+                        }
+                        .disabled(displayName.isEmpty)
+                    }
+                }
+            }
+        }
         .alert("Delete Account", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
@@ -225,6 +336,22 @@ struct SettingsView: View {
     }
 
     // MARK: - Private Methods
+
+    private func updateWatchingFrequency(_ frequency: MovieWatchingFrequency) {
+        Task {
+            if let userId = Auth.auth().currentUser?.uid {
+                try? await userProfileService.updateMovieWatchingFrequency(frequency, userId: userId)
+            }
+        }
+    }
+
+    private func updateMovieMood(_ mood: MovieMoodPreference) {
+        Task {
+            if let userId = Auth.auth().currentUser?.uid {
+                try? await userProfileService.updateMovieMoodPreference(mood, userId: userId)
+            }
+        }
+    }
 
     private func handleNotificationToggle(_ isEnabled: Bool) {
         if isEnabled {

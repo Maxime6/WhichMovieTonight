@@ -21,16 +21,6 @@ struct PersonalInfoView: View {
                 }
                 .padding(.top)
 
-                // Profile Photo
-                VStack(spacing: 16) {
-                    Text("Profile Photo")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    ProfilePhotoPicker()
-                }
-
                 // Name Input
                 VStack(spacing: 16) {
                     Text("What should we call you?")

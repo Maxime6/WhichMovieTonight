@@ -4,8 +4,7 @@
 <dict>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>e'll send you daily movie recommendations to help you discover great films!</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to set your profile picture.</string>
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

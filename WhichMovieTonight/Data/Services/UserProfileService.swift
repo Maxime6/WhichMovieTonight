@@ -1,7 +1,6 @@
 import Combine
 import FirebaseAuth
 import FirebaseFirestore
-import FirebaseStorage
 import Foundation
 
 /// Service for managing user profile data including preferences on Firebase
@@ -16,7 +15,6 @@ class UserProfileService: ObservableObject {
     private let favoriteActorsKey = "cached_favoriteActors"
     private let favoriteStreamingPlatformsKey = "cached_favoriteStreamingPlatforms"
     private let displayNameKey = "cached_displayName"
-    private let profilePictureURLKey = "cached_profilePictureURL"
     private let movieWatchingFrequencyKey = "cached_movieWatchingFrequency"
     private let movieMoodPreferenceKey = "cached_movieMoodPreference"
     private let hasCompletedOnboardingKey = "cached_hasCompletedOnboarding"
@@ -28,7 +26,6 @@ class UserProfileService: ObservableObject {
     @Published var favoriteActors: [String] = []
     @Published var favoriteStreamingPlatforms: [StreamingPlatform] = []
     @Published var displayName: String = ""
-    @Published var profilePictureURL: String?
     @Published var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     @Published var movieMoodPreference: MovieMoodPreference = .discover
     @Published var isLoading = false
@@ -70,7 +67,6 @@ class UserProfileService: ObservableObject {
             favoriteActors = userProfile.favoriteActors
             favoriteStreamingPlatforms = userProfile.favoriteStreamingPlatforms
             displayName = userProfile.displayName
-            profilePictureURL = userProfile.profilePictureURL
             movieWatchingFrequency = userProfile.movieWatchingFrequency
             movieMoodPreference = userProfile.movieMoodPreference
             hasCompletedOnboarding = userProfile.hasCompletedOnboarding
@@ -99,7 +95,6 @@ class UserProfileService: ObservableObject {
             favoriteActors: favoriteActors,
             favoriteStreamingPlatforms: favoriteStreamingPlatforms,
             displayName: displayName,
-            profilePictureURL: profilePictureURL,
             movieWatchingFrequency: movieWatchingFrequency,
             movieMoodPreference: movieMoodPreference,
             hasCompletedOnboarding: hasCompletedOnboarding,
@@ -235,10 +230,6 @@ class UserProfileService: ObservableObject {
             self.displayName = displayName
         }
 
-        if let profilePictureURL = userDefaults.string(forKey: profilePictureURLKey) {
-            self.profilePictureURL = profilePictureURL
-        }
-
         if let frequencyString = userDefaults.string(forKey: movieWatchingFrequencyKey),
            let frequency = MovieWatchingFrequency(rawValue: frequencyString)
         {
@@ -282,60 +273,12 @@ class UserProfileService: ObservableObject {
 
         // Cache profile fields
         userDefaults.set(displayName, forKey: displayNameKey)
-        userDefaults.set(profilePictureURL, forKey: profilePictureURLKey)
         userDefaults.set(movieWatchingFrequency.rawValue, forKey: movieWatchingFrequencyKey)
         userDefaults.set(movieMoodPreference.rawValue, forKey: movieMoodPreferenceKey)
         userDefaults.set(hasCompletedOnboarding, forKey: hasCompletedOnboardingKey)
         userDefaults.set(hasCompletedNotificationStep, forKey: hasCompletedNotificationStepKey)
 
         print("💾 Cached user preferences locally")
-    }
-
-    // MARK: - Profile Picture Management
-
-    /// Upload profile picture to Firebase Storage
-    func uploadProfilePicture(userId: String, image: UIImage) async throws -> String {
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            throw NSError(domain: "ProfilePictureError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to compress image"])
-        }
-
-        let storage = Storage.storage()
-        let storageRef = storage.reference()
-        let profilePictureRef = storageRef.child("users/\(userId)/profile-pictures/\(UUID().uuidString).jpg")
-
-        let metadata = StorageMetadata()
-        metadata.contentType = "image/jpeg"
-
-        _ = try await profilePictureRef.putDataAsync(imageData, metadata: metadata)
-        let downloadURL = try await profilePictureRef.downloadURL()
-
-        // Update local state
-        profilePictureURL = downloadURL.absoluteString
-
-        // Save to Firebase
-        try await saveUserPreferences(userId: userId)
-
-        return downloadURL.absoluteString
-    }
-
-    /// Delete profile picture from Firebase Storage
-    func deleteProfilePicture(userId: String) async throws {
-        guard let urlString = profilePictureURL,
-              let url = URL(string: urlString)
-        else {
-            return
-        }
-
-        let storage = Storage.storage()
-        let storageRef = storage.reference(forURL: urlString)
-
-        try await storageRef.delete()
-
-        // Update local state
-        profilePictureURL = nil
-
-        // Save to Firebase
-        try await saveUserPreferences(userId: userId)
     }
 
     /// Update display name
@@ -400,18 +343,6 @@ class UserProfileService: ObservableObject {
             // Delete user document from Firestore
             try await db.collection("users").document(userId).delete()
 
-            // Delete profile picture from Storage if exists
-            if let profilePictureURL = profilePictureURL, !profilePictureURL.isEmpty {
-                let storage = Storage.storage()
-                let storageRef = storage.reference(forURL: profilePictureURL)
-                do {
-                    try await storageRef.delete()
-                } catch {
-                    print("Warning: Failed to delete profile picture from Storage: \(error)")
-                    // Not fatal, continue
-                }
-            }
-
             // Delete the Firebase Auth user
             try await user.delete()
             return true
@@ -429,7 +360,6 @@ struct UserProfile {
     var favoriteActors: [String] = []
     var favoriteStreamingPlatforms: [StreamingPlatform] = []
     var displayName: String = ""
-    var profilePictureURL: String?
     var movieWatchingFrequency: MovieWatchingFrequency = .weekly
     var movieMoodPreference: MovieMoodPreference = .discover
     var hasCompletedOnboarding: Bool = false
@@ -446,12 +376,11 @@ struct UserProfile {
         updatedAt = Date()
     }
 
-    init(favoriteGenres: [MovieGenre], favoriteActors: [String], favoriteStreamingPlatforms: [StreamingPlatform], displayName: String, profilePictureURL: String?, movieWatchingFrequency: MovieWatchingFrequency, movieMoodPreference: MovieMoodPreference, hasCompletedOnboarding: Bool = false, hasCompletedNotificationStep: Bool = false) {
+    init(favoriteGenres: [MovieGenre], favoriteActors: [String], favoriteStreamingPlatforms: [StreamingPlatform], displayName: String, movieWatchingFrequency: MovieWatchingFrequency, movieMoodPreference: MovieMoodPreference, hasCompletedOnboarding: Bool = false, hasCompletedNotificationStep: Bool = false) {
         self.favoriteGenres = favoriteGenres
         self.favoriteActors = favoriteActors
         self.favoriteStreamingPlatforms = favoriteStreamingPlatforms
         self.displayName = displayName
-        self.profilePictureURL = profilePictureURL
         self.movieWatchingFrequency = movieWatchingFrequency
         self.movieMoodPreference = movieMoodPreference
         self.hasCompletedOnboarding = hasCompletedOnboarding
@@ -475,10 +404,6 @@ struct UserProfile {
 
         if let displayName = data["displayName"] as? String {
             self.displayName = displayName
-        }
-
-        if let profilePictureURL = data["profilePictureURL"] as? String {
-            self.profilePictureURL = profilePictureURL
         }
 
         if let frequencyString = data["movieWatchingFrequency"] as? String,
@@ -519,7 +444,6 @@ struct UserProfile {
             "favoriteActors": favoriteActors,
             "favoriteStreamingPlatforms": favoriteStreamingPlatforms.map { $0.rawValue },
             "displayName": displayName,
-            "profilePictureURL": profilePictureURL,
             "movieWatchingFrequency": movieWatchingFrequency.rawValue,
             "movieMoodPreference": movieMoodPreference.rawValue,
             "hasCompletedOnboarding": hasCompletedOnboarding,

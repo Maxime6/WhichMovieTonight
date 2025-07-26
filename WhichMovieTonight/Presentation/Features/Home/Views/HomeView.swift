@@ -16,7 +16,6 @@ struct HomeView: View {
     @State private var selectedUserMovie: UserMovie?
     @State private var showingRefreshConfirmation = false
     @State private var showingProfileMenu = false
-    @State private var showingProfileSheet = false
     @State private var showingAISearching = false
     @Namespace private var heroAnimation
 
@@ -60,9 +59,6 @@ struct HomeView: View {
         }
         .dismissKeyboardOnTap()
         .overlay(toastOverlay)
-        .sheet(isPresented: $showingProfileSheet) {
-            ProfileSheet(userProfileService: userProfileService)
-        }
         .onAppear {
             // Initialize ViewModel with UserProfileService
             Task {
@@ -186,16 +182,6 @@ struct HomeView: View {
                 }
 
                 Spacer()
-
-                Button(action: { showingProfileSheet = true }) {
-                    ProfilePictureView(
-                        size: 50,
-                        profilePictureURL: userProfileService.profilePictureURL,
-                        displayName: userProfileService.displayName.isEmpty ? viewModel.userName : userProfileService.displayName,
-                        showEditIcon: false
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.horizontal, 20)
