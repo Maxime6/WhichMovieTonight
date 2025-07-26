@@ -474,10 +474,10 @@ enum MovieWatchingFrequency: String, CaseIterable, Codable {
 
     var displayText: String {
         switch self {
-        case .daily: return "Watches daily"
-        case .twoThreeTimesWeek: return "Watches 2-3 times/week"
+        case .daily: return "Daily"
+        case .twoThreeTimesWeek: return "2-3 times/week"
         case .weekly: return "Watches weekly"
-        case .occasionally: return "Watches occasionally"
+        case .occasionally: return "Occasionally"
         }
     }
 }

@@ -15,7 +15,7 @@ struct SettingsView: View {
     @State private var showingProfileMenu = false
     @State private var showingDeleteAlert = false
     @State private var displayName: String
-    @State private var showingNameEdit = false
+    @State private var isEditingName = false
 
     init() {
         _displayName = State(initialValue: "")
@@ -27,27 +27,45 @@ struct SettingsView: View {
                 // Profile Section
                 Section("Profile") {
                     HStack {
-                        Image(systemName: "person.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(DesignSystem.primaryGradient)
-
-                        VStack(alignment: .leading) {
-                            Text(userProfileService.displayName.isEmpty ? "User" : userProfileService.displayName)
+                        if isEditingName {
+                            TextField("Enter your name", text: $displayName)
+                                .textFieldStyle(.plain)
                                 .font(.headline)
-                                .foregroundStyle(DesignSystem.primaryGradient)
-                            Text(Auth.auth().currentUser?.email ?? "No email")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.primary)
+                                .autocapitalization(.words)
+                                .onChange(of: displayName) { _, newValue in
+                                    // Remove spaces and limit to 15 characters
+                                    displayName = newValue.replacingOccurrences(of: " ", with: "")
+                                        .prefix(15).description
+                                }
+                        } else {
+                            Text(userProfileService.displayName.isEmpty ? "USER" : userProfileService.displayName.uppercased())
+                                .font(.headline)
+                                .foregroundStyle(.primary)
                         }
 
                         Spacer()
 
-                        Button("Edit") {
-                            displayName = userProfileService.displayName
-                            showingNameEdit = true
+                        Button(action: {
+                            if isEditingName {
+                                // Save the name
+                                Task {
+                                    if let userId = Auth.auth().currentUser?.uid {
+                                        try? await userProfileService.updateDisplayName(displayName, userId: userId)
+                                    }
+                                }
+                                isEditingName = false
+                            } else {
+                                // Start editing
+                                displayName = userProfileService.displayName
+                                isEditingName = true
+                            }
+                        }) {
+                            Image(systemName: isEditingName ? "checkmark.circle.fill" : "pencil.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(isEditingName ? .green : .cyan)
                         }
-                        .font(.caption)
-                        .foregroundColor(.cyan)
+                        .disabled(isEditingName && displayName.isEmpty)
                     }
                     .padding(.vertical, 8)
 
@@ -198,22 +216,22 @@ struct SettingsView: View {
                 // About Section
                 Section("About") {
                     HStack {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundStyle(DesignSystem.primaryGradient)
-                            .frame(width: 20)
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
                         Image(systemName: "star.fill")
                             .foregroundColor(.yellow)
                             .frame(width: 20)
                         Text("Rate App")
                         Spacer()
                         Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20)
+                        Text("Version")
+                        Spacer()
+                        Text("1.0.0")
                             .foregroundColor(.secondary)
                     }
 
@@ -257,7 +275,7 @@ struct SettingsView: View {
                                 .foregroundColor(.red)
                                 .frame(width: 20)
                             Text("Delete Account")
-                                .foregroundColor(.red)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -270,56 +288,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingNameEdit) {
-            NavigationView {
-                VStack(spacing: 20) {
-                    Text("Edit Name")
-                        .font(.headline)
-                        .padding(.top)
 
-                    TextField("Enter your name", text: $displayName)
-                        .textFieldStyle(.roundedBorder)
-                        .autocapitalization(.words)
-                        .onChange(of: displayName) { _, newValue in
-                            // Remove spaces and limit to 15 characters
-                            displayName = newValue.replacingOccurrences(of: " ", with: "")
-                                .prefix(15).description
-                        }
-                        .overlay(
-                            HStack {
-                                Spacer()
-                                Text("\(displayName.count)/15")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.trailing, 8)
-                        )
-
-                    Spacer()
-                }
-                .padding()
-                .navigationTitle("Edit Name")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
-                            showingNameEdit = false
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
-                            Task {
-                                if let userId = Auth.auth().currentUser?.uid {
-                                    try? await userProfileService.updateDisplayName(displayName, userId: userId)
-                                }
-                            }
-                            showingNameEdit = false
-                        }
-                        .disabled(displayName.isEmpty)
-                    }
-                }
-            }
-        }
         .alert("Delete Account", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
