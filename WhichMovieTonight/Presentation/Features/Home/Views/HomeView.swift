@@ -184,25 +184,7 @@ struct HomeView: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.extraLargeRadius)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.extraLargeRadius)
-                        .stroke(DesignSystem.subtleGradient, lineWidth: 1)
-                        .blur(radius: 0.5)
-                )
-        )
-        .clipShape(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 0,
-                bottomLeadingRadius: 20,
-                bottomTrailingRadius: 20,
-                topTrailingRadius: 0
-            )
-        )
         .subtleShadow()
     }
 
