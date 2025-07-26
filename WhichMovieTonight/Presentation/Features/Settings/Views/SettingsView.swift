@@ -241,15 +241,16 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
 
-                    HStack {
-                        Image(systemName: "questionmark.circle.fill")
-                            .foregroundColor(.gray)
-                            .frame(width: 20)
-                        Text("Help & Support")
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
+                    // TODO: - Implement help and support
+//                    HStack {
+//                        Image(systemName: "questionmark.circle.fill")
+//                            .foregroundColor(.gray)
+//                            .frame(width: 20)
+//                        Text("Help & Support")
+//                        Spacer()
+//                        Image(systemName: "chevron.right")
+//                            .foregroundColor(.secondary)
+//                    }
                 }
 
                 // Account Section
