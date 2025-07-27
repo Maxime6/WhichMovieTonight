@@ -46,6 +46,8 @@
 		9C73534E2E356C9E00DA6237 /* FeedbackFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73534A2E356C9E00DA6237 /* FeedbackFormView.swift */; };
 		9C73534F2E356C9E00DA6237 /* EmailFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7353492E356C9E00DA6237 /* EmailFeedbackView.swift */; };
 		9C7353512E356D0400DA6237 /* AppRatingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7353502E356D0400DA6237 /* AppRatingManager.swift */; };
+		9C7353682E363F1F00DA6237 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9C7353672E363F1F00DA6237 /* RevenueCat */; };
+		9C73536A2E363F1F00DA6237 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9C7353692E363F1F00DA6237 /* RevenueCatUI */; };
 		9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED522E01FCBA00AD4811 /* SettingsActorView.swift */; };
 		9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED5A2E01FCBA00AD4811 /* WatchlistView.swift */; };
 		9C73ED692E01FCBA00AD4811 /* SettingsGenreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED532E01FCBA00AD4811 /* SettingsGenreView.swift */; };
@@ -206,6 +208,8 @@
 			files = (
 				9C6EAEFD2DD3BFAD00C2A6D2 /* FirebaseAnalytics in Frameworks */,
 				9C6EAF032DD3BFAD00C2A6D2 /* FirebaseCrashlytics in Frameworks */,
+				9C73536A2E363F1F00DA6237 /* RevenueCatUI in Frameworks */,
+				9C7353682E363F1F00DA6237 /* RevenueCat in Frameworks */,
 				9C6EAF012DD3BFAD00C2A6D2 /* FirebaseCore in Frameworks */,
 				9C6EAF052DD3BFAD00C2A6D2 /* FirebaseFirestore in Frameworks */,
 				9C6EAEFF2DD3BFAD00C2A6D2 /* FirebaseAuth in Frameworks */,
@@ -644,6 +648,8 @@
 				9C6EAF002DD3BFAD00C2A6D2 /* FirebaseCore */,
 				9C6EAF022DD3BFAD00C2A6D2 /* FirebaseCrashlytics */,
 				9C6EAF042DD3BFAD00C2A6D2 /* FirebaseFirestore */,
+				9C7353672E363F1F00DA6237 /* RevenueCat */,
+				9C7353692E363F1F00DA6237 /* RevenueCatUI */,
 			);
 			productName = Findy;
 			productReference = 9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */;
@@ -700,6 +706,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9C6EAEFB2DD3BFAD00C2A6D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				9C7353662E363F1F00DA6237 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9C8C93FD2D96F4B300B1DC00 /* Products */;
@@ -1096,6 +1103,14 @@
 				minimumVersion = 11.12.0;
 			};
 		};
+		9C7353662E363F1F00DA6237 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.33.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1123,6 +1138,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9C6EAEFB2DD3BFAD00C2A6D2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		9C7353672E363F1F00DA6237 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C7353662E363F1F00DA6237 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		9C7353692E363F1F00DA6237 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C7353662E363F1F00DA6237 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
