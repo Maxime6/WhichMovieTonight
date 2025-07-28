@@ -1,9 +1,14 @@
 import FirebaseAuth
 import Foundation
+import RevenueCat
 
 @MainActor
 class AppStateManager: ObservableObject {
     @Published var appState: AppState = .launch
+    @Published var isSubscribed: Bool = false
+    @Published var isTrialActive: Bool = false
+    @Published var subscriptionStatus: SubscriptionStatus = .unknown
+    @Published var shouldShowPaywall: Bool = false
 
     private let userProfileService: UserProfileService
 
@@ -15,6 +20,14 @@ class AppStateManager: ObservableObject {
         case needsAuthentication
         case needsPaywall
         case authenticated
+    }
+
+    enum SubscriptionStatus {
+        case unknown
+        case notSubscribed
+        case trialActive
+        case subscribed
+        case expired
     }
 
     // MARK: - Initialization
@@ -33,18 +46,106 @@ class AppStateManager: ObservableObject {
 
             // Check if user has completed onboarding
             if userProfileService.hasCompletedOnboarding {
-                // Future: Check if user has active subscription
-                // if hasActiveSubscription {
-                //     appState = .authenticated
-                // } else {
-                //     appState = .needsPaywall
-                // }
-                appState = .authenticated
+                // Check subscription status
+                await checkSubscriptionStatus()
+
+                if isSubscribed || isTrialActive {
+                    appState = .authenticated
+                } else {
+                    appState = .needsPaywall
+                    shouldShowPaywall = true
+                }
             } else {
                 appState = .needsOnboarding
             }
         } else {
             appState = .needsAuthentication
+        }
+    }
+
+    // MARK: - Subscription Management
+
+    func checkSubscriptionStatus() async {
+        // Safety check: ensure RevenueCat is configured
+        guard Purchases.isConfigured else {
+            print("⚠️ RevenueCat not configured yet, skipping subscription check")
+            return
+        }
+
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            updateSubscriptionState(from: customerInfo)
+        } catch {
+            print("❌ Error checking subscription status: \(error)")
+            subscriptionStatus = .unknown
+            isSubscribed = false
+            isTrialActive = false
+        }
+    }
+
+    private func updateSubscriptionState(from customerInfo: CustomerInfo) {
+        // Check if user has active entitlement
+        let hasActiveEntitlement = customerInfo.entitlements.active["Premium"] != nil
+
+        if hasActiveEntitlement {
+            let entitlement = customerInfo.entitlements.active["Premium"]!
+
+            if entitlement.isActive {
+                if entitlement.periodType == .trial {
+                    subscriptionStatus = .trialActive
+                    isTrialActive = true
+                    isSubscribed = false
+                } else {
+                    subscriptionStatus = .subscribed
+                    isSubscribed = true
+                    isTrialActive = false
+                }
+            } else {
+                subscriptionStatus = .expired
+                isSubscribed = false
+                isTrialActive = false
+            }
+        } else {
+            subscriptionStatus = .notSubscribed
+            isSubscribed = false
+            isTrialActive = false
+        }
+
+        print("📱 Subscription Status: \(subscriptionStatus)")
+        print("📱 Is Subscribed: \(isSubscribed)")
+        print("📱 Is Trial Active: \(isTrialActive)")
+    }
+
+    func handleSubscriptionUpdate() async {
+        // Safety check: ensure RevenueCat is configured
+        guard Purchases.isConfigured else {
+            print("⚠️ RevenueCat not configured yet, skipping subscription update")
+            return
+        }
+
+        await checkSubscriptionStatus()
+
+        if isSubscribed || isTrialActive {
+            appState = .authenticated
+            shouldShowPaywall = false
+        } else {
+            appState = .needsPaywall
+            shouldShowPaywall = true
+        }
+    }
+
+    func handleSuccessfulPurchase() async {
+        // Safety check: ensure RevenueCat is configured
+        guard Purchases.isConfigured else {
+            print("⚠️ RevenueCat not configured yet, skipping purchase handling")
+            return
+        }
+
+        await checkSubscriptionStatus()
+
+        if isSubscribed || isTrialActive {
+            appState = .authenticated
+            shouldShowPaywall = false
         }
     }
 
@@ -59,15 +160,16 @@ class AppStateManager: ObservableObject {
         // Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
-        // If user has completed onboarding, go to main app
+        // If user has completed onboarding, check subscription
         if userProfileService.hasCompletedOnboarding {
-            // Future: Check if user has active subscription
-            // if hasActiveSubscription {
-            //     appState = .authenticated
-            // } else {
-            //     appState = .needsPaywall
-            // }
-            appState = .authenticated
+            await checkSubscriptionStatus()
+
+            if isSubscribed || isTrialActive {
+                appState = .authenticated
+            } else {
+                appState = .needsPaywall
+                shouldShowPaywall = true
+            }
         } else {
             // User is authenticated but needs onboarding
             appState = .needsOnboarding
@@ -76,13 +178,31 @@ class AppStateManager: ObservableObject {
 
     func handleSignOut() {
         appState = .needsAuthentication
+        isSubscribed = false
+        isTrialActive = false
+        subscriptionStatus = .unknown
+        shouldShowPaywall = false
     }
 
     func handleAccountDeletion() {
         appState = .needsAuthentication
+        isSubscribed = false
+        isTrialActive = false
+        subscriptionStatus = .unknown
+        shouldShowPaywall = false
     }
 
     func completeOnboarding() {
-        appState = .authenticated
+        // After onboarding, check subscription status and show paywall if needed
+        Task {
+            await checkSubscriptionStatus()
+
+            if isSubscribed || isTrialActive {
+                appState = .authenticated
+            } else {
+                appState = .needsPaywall
+                shouldShowPaywall = true
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 import FirebaseAuth
+import RevenueCatUI
 import SwiftUI
 
 struct RootView: View {
@@ -31,8 +32,7 @@ struct RootView: View {
                     .environmentObject(userProfileService)
 
             case .needsPaywall:
-                // TODO: Implement PaywallView with RevenueCat
-                // For now, go directly to main app
+                // Show main app content but with paywall overlay
                 ContentView()
                     .environmentObject(appStateManager)
                     .environmentObject(userProfileService)
@@ -45,12 +45,28 @@ struct RootView: View {
                     .environmentObject(notificationService)
             }
         }
+        .sheet(isPresented: $appStateManager.shouldShowPaywall) {
+            PaywallView(displayCloseButton: false)
+                .onDisappear {
+                    // Check subscription status when paywall disappears
+                    // This handles successful purchases, restores, and cancellations
+                    Task {
+                        await appStateManager.handleSubscriptionUpdate()
+                    }
+                }
+        }
         .onAppear {
             // Clear app badge when app opens
             notificationService.clearAppBadge()
 
             // Check if app was opened from notification
             checkIfOpenedFromNotification()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // Check subscription status when app becomes active (in case user cancelled in App Store)
+            Task {
+                await appStateManager.handleSubscriptionUpdate()
+            }
         }
     }
 

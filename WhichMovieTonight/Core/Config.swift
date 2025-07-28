@@ -18,6 +18,11 @@ enum Config {
     /// Clé API OMDB - Déjà intégrée dans le service
     static let omdbAPIKey = "a8e95e30"
 
+    /// Clé API RevenueCat - À configurer dans le fichier APIKeys.plist
+    static var revenueCatAPIKey: String? {
+        return getAPIKey(for: "REVENUECAT_API_KEY")
+    }
+
     // MARK: - Private Methods
 
     private static func getAPIKey(for key: String) -> String? {
@@ -48,6 +53,10 @@ enum Config {
 
         if openAIAPIKey == nil {
             missingKeys.append("OPENAI_API_KEY")
+        }
+
+        if revenueCatAPIKey == nil {
+            missingKeys.append("REVENUECAT_API_KEY")
         }
 
         return (missingKeys.isEmpty, missingKeys)

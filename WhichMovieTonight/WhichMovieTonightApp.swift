@@ -7,6 +7,7 @@
 
 import FirebaseCore
 import FirebaseFirestore
+import RevenueCat
 import SwiftUI
 import UserNotifications
 
@@ -65,9 +66,35 @@ struct WhichMovieTonightApp: App {
             RootView()
                 .environmentObject(notificationService)
                 .task {
+                    // Validate configuration
+                    let configValidation = Config.validateConfiguration()
+                    if !configValidation.isValid {
+                        print("❌ Missing API keys: \(configValidation.missingKeys)")
+                    } else {
+                        print("✅ All API keys configured")
+                    }
+
+                    // Configure RevenueCat FIRST
+                    configureRevenueCat()
+
                     // Check notification permission status on app launch
                     await notificationService.checkNotificationPermissionStatus()
                 }
         }
+    }
+
+    private func configureRevenueCat() {
+        if RevenueCatConfig.enableDebugLogging {
+            Purchases.logLevel = .debug
+        }
+
+        // Configure with your RevenueCat API key
+        Purchases.configure(
+            with: Configuration.Builder(withAPIKey: RevenueCatConfig.apiKey)
+                .with(usesStoreKit2IfAvailable: true)
+                .build()
+        )
+
+        print("✅ RevenueCat configured successfully")
     }
 }

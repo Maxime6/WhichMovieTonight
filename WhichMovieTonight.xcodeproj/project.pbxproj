@@ -48,6 +48,7 @@
 		9C7353512E356D0400DA6237 /* AppRatingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7353502E356D0400DA6237 /* AppRatingManager.swift */; };
 		9C7353682E363F1F00DA6237 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9C7353672E363F1F00DA6237 /* RevenueCat */; };
 		9C73536A2E363F1F00DA6237 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9C7353692E363F1F00DA6237 /* RevenueCatUI */; };
+		9C73536C2E3774A000DA6237 /* RevenueCatConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73536B2E3774A000DA6237 /* RevenueCatConfig.swift */; };
 		9C73ED662E01FCBA00AD4811 /* SettingsActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED522E01FCBA00AD4811 /* SettingsActorView.swift */; };
 		9C73ED682E01FCBA00AD4811 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED5A2E01FCBA00AD4811 /* WatchlistView.swift */; };
 		9C73ED692E01FCBA00AD4811 /* SettingsGenreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C73ED532E01FCBA00AD4811 /* SettingsGenreView.swift */; };
@@ -136,6 +137,7 @@
 		9C73534A2E356C9E00DA6237 /* FeedbackFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackFormView.swift; sourceTree = "<group>"; };
 		9C73534B2E356C9E00DA6237 /* RatingStarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingStarsView.swift; sourceTree = "<group>"; };
 		9C7353502E356D0400DA6237 /* AppRatingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRatingManager.swift; sourceTree = "<group>"; };
+		9C73536B2E3774A000DA6237 /* RevenueCatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfig.swift; sourceTree = "<group>"; };
 		9C73ED3E2E01FCBA00AD4811 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		9C73ED412E01FCBA00AD4811 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9C73ED422E01FCBA00AD4811 /* MovieCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCardView.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 		9C6EAEBE2DD3B10F00C2A6D2 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				9C73536B2E3774A000DA6237 /* RevenueCatConfig.swift */,
 				9CE050862DE5F60A00A0EB8B /* Config.swift */,
 				9CF0B5E82DE4B1CE002002B4 /* AppStateManager.swift */,
 				9C6EAEB62DD3B10F00C2A6D2 /* Design */,
@@ -818,6 +821,7 @@
 				9C9C41802E0D93FA00E5DFA3 /* RecommendationService.swift in Sources */,
 				9CE050872DE5F60A00A0EB8B /* Config.swift in Sources */,
 				9C792B012E18152A00709CB2 /* OnboardingStepManager.swift in Sources */,
+				9C73536C2E3774A000DA6237 /* RevenueCatConfig.swift in Sources */,
 				9C792B022E18152A00709CB2 /* OnboardingNavigationButtons.swift in Sources */,
 				9C792B042E18152A00709CB2 /* OnboardingProgressBar.swift in Sources */,
 				9C7353512E356D0400DA6237 /* AppRatingManager.swift in Sources */,
