@@ -93,8 +93,33 @@ struct NotificationPermissionView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(DesignSystem.primaryGradient)
-                    .cornerRadius(DesignSystem.largeRadius)
+                    .background(
+                        ZStack {
+                            // Animated mesh gradient glow
+                            AnimatedMeshGradient()
+                                .clipShape(.capsule)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                                        .stroke(.white, lineWidth: 3)
+                                        .blur(radius: 2)
+                                        .blendMode(.overlay)
+                                }
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                                        .stroke(.white, lineWidth: 1)
+                                        .blur(radius: 1)
+                                        .blendMode(.overlay)
+                                }
+
+                            // Background
+                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                                .fill(.ultraThinMaterial)
+                        }
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                            .stroke(DesignSystem.primaryCyan.opacity(0.5), lineWidth: 1)
+                    )
                     .primaryShadow()
                 }
                 .disabled(isRequestingPermission)

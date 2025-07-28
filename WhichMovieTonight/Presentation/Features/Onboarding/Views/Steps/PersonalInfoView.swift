@@ -93,27 +93,20 @@ struct FrequencyButton: View {
             VStack(spacing: 8) {
                 Image(systemName: frequencyIcon)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(isSelected ? .white : .primary)
 
                 Text(frequency.displayText)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(isSelected ? .white : .primary)
                     .multilineTextAlignment(.center)
             }
+            .foregroundStyle(isSelected ? .cyan : .secondary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                    .fill(
-                        isSelected
-                            ? DesignSystem.primaryGradient
-                            : LinearGradient(
-                                colors: [Color.gray.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                    )
+            .padding(.vertical, 12)
+            .background(isSelected ? Color.black : Color.gray)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.cyan : Color.clear, lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -145,15 +138,13 @@ struct MoodButton: View {
             VStack(spacing: 8) {
                 Image(systemName: moodIcon)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(isSelected ? .white : .primary)
 
                 Text(mood.displayText)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(isSelected ? .white : .primary)
                     .multilineTextAlignment(.center)
             }
-            .foregroundColor(isSelected ? .cyan : .secondary)
+            .foregroundStyle(isSelected ? .cyan : .secondary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(isSelected ? Color.black : Color.gray)

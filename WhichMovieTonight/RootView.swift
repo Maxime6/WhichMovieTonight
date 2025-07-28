@@ -45,16 +45,16 @@ struct RootView: View {
                     .environmentObject(notificationService)
             }
         }
-//        .sheet(isPresented: $appStateManager.shouldShowPaywall) {
-//            PaywallView(displayCloseButton: false)
-//                .onDisappear {
-//                    // Check subscription status when paywall disappears
-//                    // This handles successful purchases, restores, and cancellations
-//                    Task {
-//                        await appStateManager.handleSubscriptionUpdate()
-//                    }
-//                }
-//        }
+        .sheet(isPresented: $appStateManager.shouldShowPaywall) {
+            PaywallView(displayCloseButton: false)
+                .onDisappear {
+                    // Check subscription status when paywall disappears
+                    // This handles successful purchases, restores, and cancellations
+                    Task {
+                        await appStateManager.handleSubscriptionUpdate()
+                    }
+                }
+        }
         .onAppear {
             // Clear app badge when app opens
             notificationService.clearAppBadge()
