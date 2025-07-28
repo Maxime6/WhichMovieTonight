@@ -59,7 +59,7 @@ struct MovieCardView: View {
                             Text(String(format: "%.1f", rating))
                                 .font(.caption)
                                 .fontWeight(.medium)
-                                .foregroundStyle(DesignSystem.primaryGradient)
+                                .foregroundStyle(.primary)
                         }
                     }
                 }

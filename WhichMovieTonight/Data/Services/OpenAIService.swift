@@ -50,7 +50,7 @@ final class OpenAIService {
         let sessionMoviesContext = buildSessionMoviesContext(alreadyGeneratedMovies)
 
         let prompt = """
-        You are an AI movie recommender. Generate exactly 5 diverse, creative, lesser-known movies for the user's daily recommendations based on their comprehensive preferences.
+        You are an AI movie recommender. Generate exactly 5 diverse, creative movies for the user's daily recommendations based on their comprehensive preferences.
 
         REQUIREMENTS FOR ALL 5 MOVIES:
         - Must be available on: \(platforms.joined(separator: ", "))

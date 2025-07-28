@@ -279,7 +279,7 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "trash.fill")
-                                .foregroundColor(.red)
+                                .foregroundStyle(.secondary)
                                 .frame(width: 20)
                             Text("Delete Account")
                                 .foregroundStyle(.secondary)

@@ -17,7 +17,7 @@ enum DesignSystem {
     // MARK: - Gradients
 
     static let primaryGradient = LinearGradient(
-        colors: [primaryCyan, accentBlue, primaryPurple],
+        colors: [primaryCyan.opacity(0.7), primaryPurple.opacity(0.7)],
         startPoint: .leading,
         endPoint: .trailing
     )

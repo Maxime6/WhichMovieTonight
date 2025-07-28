@@ -58,7 +58,7 @@ struct NotificationPermissionView: View {
 
             // Content
             VStack(spacing: 16) {
-                Text("Restez connecté !")
+                Text("Keep connected !")
                     .font(.title)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct NotificationPermissionView: View {
                                 .font(.system(size: 16, weight: .semibold))
                         }
 
-                        Text(isRequestingPermission ? "Demande en cours..." : "Activer les notifications")
+                        Text(isRequestingPermission ? "Requesting access..." : "Allow notifications")
                             .font(.headline)
                             .fontWeight(.semibold)
                     }

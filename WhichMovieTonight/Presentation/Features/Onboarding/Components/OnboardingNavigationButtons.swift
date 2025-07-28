@@ -70,7 +70,7 @@ struct OnboardingNavigationButtons: View {
                         RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                             .fill(
                                 canProceed && !isLoading
-                                    ? DesignSystem.primaryGradient
+                                ? DesignSystem.primaryGradient
                                     : LinearGradient(
                                         colors: [.gray.opacity(0.5), .gray.opacity(0.3)],
                                         startPoint: .leading,

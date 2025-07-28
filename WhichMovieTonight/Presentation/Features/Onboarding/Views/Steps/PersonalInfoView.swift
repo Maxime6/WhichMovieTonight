@@ -153,19 +153,14 @@ struct MoodButton: View {
                     .foregroundColor(isSelected ? .white : .primary)
                     .multilineTextAlignment(.center)
             }
+            .foregroundColor(isSelected ? .cyan : .secondary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                    .fill(
-                        isSelected
-                            ? DesignSystem.primaryGradient
-                            : LinearGradient(
-                                colors: [Color.gray.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                    )
+            .padding(.vertical, 12)
+            .background(isSelected ? Color.black : Color.gray)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.cyan : Color.clear, lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())

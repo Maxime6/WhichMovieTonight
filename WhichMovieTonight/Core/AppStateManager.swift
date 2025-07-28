@@ -75,6 +75,22 @@ class AppStateManager: ObservableObject {
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             updateSubscriptionState(from: customerInfo)
+
+            // Debug: Check available offerings
+            let offerings = try await Purchases.shared.offerings()
+            if let current = offerings.current {
+                print("📱 Current offering: \(current.identifier)")
+                print("📱 Available packages:")
+                for package in current.availablePackages {
+                    print("   - \(package.identifier): \(package.storeProduct.localizedTitle)")
+                    print("     Price: \(package.storeProduct.localizedPriceString)")
+                    if let introPrice = package.storeProduct.introductoryDiscount {
+                        print("     Intro Price: \(introPrice.localizedPriceString)")
+                    }
+                }
+            } else {
+                print("❌ No current offering available")
+            }
         } catch {
             print("❌ Error checking subscription status: \(error)")
             subscriptionStatus = .unknown
