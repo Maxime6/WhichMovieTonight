@@ -29,36 +29,38 @@ struct NewOnboardingView: View {
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
 
-            // Navigation buttons
-            OnboardingNavigationButtons(
-                canGoBack: stepManager.currentStep.canGoBack,
-                canProceed: stepManager.canProceedToNextStep,
-                canSkip: stepManager.currentStep.canSkip,
-                isLastStep: stepManager.currentStep == .complete,
-                isLoading: stepManager.isLoading,
-                validationMessage: stepManager.validationMessage,
-                onBack: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        stepManager.previousStep()
-                    }
-                },
-                onNext: {
-                    if stepManager.currentStep == .complete {
-                        // Handle completion in the complete view
-                        return
-                    }
+            // Navigation buttons (hidden on complete step)
+            if stepManager.currentStep != .complete {
+                OnboardingNavigationButtons(
+                    canGoBack: stepManager.currentStep.canGoBack,
+                    canProceed: stepManager.canProceedToNextStep,
+                    canSkip: stepManager.currentStep.canSkip,
+                    isLastStep: stepManager.currentStep == .complete,
+                    isLoading: stepManager.isLoading,
+                    validationMessage: stepManager.validationMessage,
+                    onBack: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            stepManager.previousStep()
+                        }
+                    },
+                    onNext: {
+                        if stepManager.currentStep == .complete {
+                            // Handle completion in the complete view
+                            return
+                        }
 
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        stepManager.nextStep()
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            stepManager.nextStep()
+                        }
+                    },
+                    onSkip: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            stepManager.skipCurrentStep()
+                        }
                     }
-                },
-                onSkip: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        stepManager.skipCurrentStep()
-                    }
-                }
-            )
-            .padding(.bottom)
+                )
+                .padding(.bottom)
+            }
         }
         .environmentObject(stepManager)
     }
