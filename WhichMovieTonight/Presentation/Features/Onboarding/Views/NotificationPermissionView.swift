@@ -12,6 +12,8 @@ struct NotificationPermissionView: View {
     @EnvironmentObject var userProfileService: UserProfileService
     @State private var isRequestingPermission = false
     @State private var showPermissionDeniedAlert = false
+    @State private var isAnimating = false
+    @State private var isPermissionGranted = false
 
     var body: some View {
         VStack(spacing: 32) {
@@ -35,8 +37,8 @@ struct NotificationPermissionView: View {
                     Image(systemName: "bell.fill")
                         .font(.system(size: 48, weight: .medium))
                         .foregroundStyle(DesignSystem.verticalGradient)
-                        .scaleEffect(isRequestingPermission ? 1.1 : 1.0)
-                        .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isRequestingPermission)
+                        .scaleEffect(isAnimating ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isAnimating)
                 }
 
                 // Sparkles around the bell
@@ -45,12 +47,12 @@ struct NotificationPermissionView: View {
                         Image(systemName: "sparkle")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.yellow)
-                            .opacity(isRequestingPermission ? 1.0 : 0.3)
+                            .opacity(isAnimating ? 1.0 : 0.3)
                             .animation(
                                 .easeInOut(duration: 0.8)
                                     .repeatForever(autoreverses: true)
                                     .delay(Double(index) * 0.2),
-                                value: isRequestingPermission
+                                value: isAnimating
                             )
                     }
                 }
@@ -81,12 +83,15 @@ struct NotificationPermissionView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else if isPermissionGranted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 16, weight: .semibold))
                         } else {
                             Image(systemName: "bell.fill")
                                 .font(.system(size: 16, weight: .semibold))
                         }
 
-                        Text(isRequestingPermission ? "Requesting access..." : "Allow notifications")
+                        Text(buttonText)
                             .font(.headline)
                             .fontWeight(.semibold)
                     }
@@ -122,7 +127,7 @@ struct NotificationPermissionView: View {
                     )
                     .primaryShadow()
                 }
-                .disabled(isRequestingPermission)
+                .disabled(isRequestingPermission || isPermissionGranted)
 
                 // Skip Button
                 Button(action: skipNotificationPermission) {
@@ -137,7 +142,7 @@ struct NotificationPermissionView: View {
         }
         .padding()
         .onAppear {
-            startAnimations()
+            startVisualAnimations()
         }
         .alert("Notifications désactivées", isPresented: $showPermissionDeniedAlert) {
             Button("OK") {}
@@ -146,13 +151,27 @@ struct NotificationPermissionView: View {
         }
     }
 
+    // MARK: - Computed Properties
+
+    private var buttonText: String {
+        if isRequestingPermission {
+            return "Requesting access..."
+        } else if isPermissionGranted {
+            return "Notifications allowed"
+        } else {
+            return "Allow notifications"
+        }
+    }
+
     // MARK: - Private Methods
 
-    private func startAnimations() {
-        isRequestingPermission = true
+    private func startVisualAnimations() {
+        // Start visual animations immediately when view appears
+        isAnimating = true
     }
 
     private func requestNotificationPermissions() {
+        // Only set requesting state when user actually taps the button
         isRequestingPermission = true
 
         Task {
@@ -161,7 +180,9 @@ struct NotificationPermissionView: View {
             await MainActor.run {
                 isRequestingPermission = false
 
-                if !granted {
+                if granted {
+                    isPermissionGranted = true
+                } else {
                     showPermissionDeniedAlert = true
                 }
 
