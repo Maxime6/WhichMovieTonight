@@ -18,7 +18,6 @@ class AppStateManager: ObservableObject {
         case launch
         case needsOnboarding
         case needsAuthentication
-        case needsPaywall
         case authenticated
     }
 
@@ -46,21 +45,46 @@ class AppStateManager: ObservableObject {
 
             // Check if user has completed onboarding
             if userProfileService.hasCompletedOnboarding {
-                // Check subscription status
-                await checkSubscriptionStatus()
-
-                if isSubscribed || isTrialActive {
-                    appState = .authenticated
-                } else {
-                    appState = .needsPaywall
-                    shouldShowPaywall = true
-                }
+                // User is authenticated and has completed onboarding
+                // Set to authenticated state - premium checks will happen when needed
+                appState = .authenticated
             } else {
                 appState = .needsOnboarding
             }
         } else {
             appState = .needsAuthentication
         }
+    }
+
+    // MARK: - Premium Access Check
+
+    /// Check if user has premium access for generating new recommendations
+    func checkPremiumAccess() async -> Bool {
+        // Safety check: ensure RevenueCat is configured
+        guard Purchases.isConfigured else {
+            print("⚠️ RevenueCat not configured yet, cannot check premium access")
+            return false
+        }
+
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            updateSubscriptionState(from: customerInfo)
+
+            let hasPremium = isSubscribed || isTrialActive
+            print("📱 Premium access check: \(hasPremium)")
+            return hasPremium
+        } catch {
+            print("❌ Error checking premium access: \(error)")
+            subscriptionStatus = .unknown
+            isSubscribed = false
+            isTrialActive = false
+            return false
+        }
+    }
+
+    /// Show paywall for premium features
+    func showPaywallForPremiumFeature() async {
+        shouldShowPaywall = true
     }
 
     // MARK: - Subscription Management
@@ -142,10 +166,8 @@ class AppStateManager: ObservableObject {
         await checkSubscriptionStatus()
 
         if isSubscribed || isTrialActive {
-            appState = .authenticated
             shouldShowPaywall = false
         } else {
-            appState = .needsPaywall
             shouldShowPaywall = true
         }
     }
@@ -160,7 +182,6 @@ class AppStateManager: ObservableObject {
         await checkSubscriptionStatus()
 
         if isSubscribed || isTrialActive {
-            appState = .authenticated
             shouldShowPaywall = false
         }
     }
@@ -176,16 +197,9 @@ class AppStateManager: ObservableObject {
         // Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: currentUser.uid)
 
-        // If user has completed onboarding, check subscription
+        // If user has completed onboarding, set to authenticated
         if userProfileService.hasCompletedOnboarding {
-            await checkSubscriptionStatus()
-
-            if isSubscribed || isTrialActive {
-                appState = .authenticated
-            } else {
-                appState = .needsPaywall
-                shouldShowPaywall = true
-            }
+            appState = .authenticated
         } else {
             // User is authenticated but needs onboarding
             appState = .needsOnboarding
@@ -209,16 +223,7 @@ class AppStateManager: ObservableObject {
     }
 
     func completeOnboarding() {
-        // After onboarding, check subscription status and show paywall if needed
-        Task {
-            await checkSubscriptionStatus()
-
-            if isSubscribed || isTrialActive {
-                appState = .authenticated
-            } else {
-                appState = .needsPaywall
-                shouldShowPaywall = true
-            }
-        }
+        // After onboarding, set to authenticated state
+        appState = .authenticated
     }
 }

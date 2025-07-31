@@ -24,6 +24,7 @@ final class RecommendationService: RecommendationServiceProtocol {
     private let omdbService: OMDBService
     private let userMovieService: UserMovieServiceProtocol
     private let userProfileService: UserProfileService
+    private let appStateManager: AppStateManager
 
     // MARK: - Initialization
 
@@ -31,12 +32,14 @@ final class RecommendationService: RecommendationServiceProtocol {
         openAIService: OpenAIService = OpenAIService(),
         omdbService: OMDBService = OMDBService(),
         userMovieService: UserMovieServiceProtocol = UserMovieService(),
-        userProfileService: UserProfileService
+        userProfileService: UserProfileService,
+        appStateManager: AppStateManager
     ) {
         self.openAIService = openAIService
         self.omdbService = omdbService
         self.userMovieService = userMovieService
         self.userProfileService = userProfileService
+        self.appStateManager = appStateManager
     }
 
     // MARK: - Public Methods
@@ -54,6 +57,14 @@ final class RecommendationService: RecommendationServiceProtocol {
     /// Generate new recommendations with retry logic
     func generateNewRecommendations(for userId: String) async throws -> [UserMovie] {
         print("🎬 Generating new recommendations for user: \(userId)")
+
+        // 0. Check premium access first
+        let hasPremiumAccess = await appStateManager.checkPremiumAccess()
+        guard hasPremiumAccess else {
+            print("🔒 Premium access required for generating new recommendations")
+            await appStateManager.showPaywallForPremiumFeature()
+            throw RecommendationError.premiumAccessRequired
+        }
 
         // 1. Load user preferences from Firebase
         await userProfileService.loadUserPreferences(userId: userId)
@@ -263,6 +274,7 @@ enum RecommendationError: LocalizedError {
     case missingUserPreferences
     case noMoviesGenerated
     case generationFailedAfterRetries(Error)
+    case premiumAccessRequired
 
     var errorDescription: String? {
         switch self {
@@ -272,6 +284,8 @@ enum RecommendationError: LocalizedError {
             return "Unable to generate movie recommendations. Please try again."
         case let .generationFailedAfterRetries(underlyingError):
             return "Failed to generate recommendations after multiple attempts: \(underlyingError.localizedDescription)"
+        case .premiumAccessRequired:
+            return "Premium access is required to generate new recommendations. Please upgrade your plan."
         }
     }
 }

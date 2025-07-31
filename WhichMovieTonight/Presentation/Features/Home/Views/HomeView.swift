@@ -65,6 +65,22 @@ struct HomeView: View {
                 await viewModel.initializeData(userProfileService: userProfileService)
             }
         }
+        .onChange(of: appStateManager.isSubscribed) { isSubscribed in
+            // Retry pending operations when premium status changes
+            if isSubscribed {
+                Task {
+                    await viewModel.retryPendingOperations()
+                }
+            }
+        }
+        .onChange(of: appStateManager.isTrialActive) { isTrialActive in
+            // Retry pending operations when trial status changes
+            if isTrialActive {
+                Task {
+                    await viewModel.retryPendingOperations()
+                }
+            }
+        }
         .confirmationDialog("Refresh Recommendations", isPresented: $showingRefreshConfirmation) {
             Button("Generate New Movies") {
                 Task {
@@ -310,10 +326,28 @@ struct HomeView: View {
                 .font(.headline)
                 .foregroundStyle(DesignSystem.primaryGradient)
 
-            Text("We're working on finding the perfect movies for you!")
+            Text("Get your personalized movie recommendations!")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+
+            Button(action: {
+                showingRefreshConfirmation = true
+            }) {
+                HStack {
+                    Image(systemName: "wand.and.stars")
+                    Text("Generate Recommendations")
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                        .fill(DesignSystem.primaryGradient)
+                )
+            }
         }
         .padding()
         .frame(maxWidth: .infinity)
@@ -413,10 +447,10 @@ struct HomeView: View {
 #Preview {
     let userProfileService = UserProfileService()
     let homeViewModel = HomeViewModel(
-        userMovieService: UserMovieService()
+        userMovieService: UserMovieService(), appStateManager: AppStateManager(userProfileService: userProfileService)
     )
 
-    return HomeView()
+    HomeView()
         .environmentObject(AppStateManager(userProfileService: userProfileService))
         .environmentObject(homeViewModel)
         .environmentObject(userProfileService)

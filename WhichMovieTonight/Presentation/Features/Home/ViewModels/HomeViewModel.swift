@@ -32,15 +32,40 @@ final class HomeViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var shouldResetKeyboardOffset: Bool = false
 
+    // Pending operations for premium upgrade
+    private var pendingSearchQuery: String?
+    private var pendingUserProfileService: UserProfileService?
+
     // MARK: - Dependencies (Unified)
 
     private let userMovieService: UserMovieServiceProtocol
+    private var appStateManager: AppStateManager
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
 
-    init(userMovieService: UserMovieServiceProtocol) {
+    init(userMovieService: UserMovieServiceProtocol, appStateManager: AppStateManager) {
         self.userMovieService = userMovieService
+        self.appStateManager = appStateManager
+    }
+
+    // MARK: - Dependency Updates
+
+    /// Update AppStateManager reference (used by ContentView)
+    func updateAppStateManager(_ newAppStateManager: AppStateManager) {
+        appStateManager = newAppStateManager
+    }
+
+    /// Retry pending operations when premium status changes
+    func retryPendingOperations() async {
+        // Retry pending AI search if any
+        if let pendingQuery = pendingSearchQuery, let userProfileService = pendingUserProfileService {
+            print("🔄 Retrying pending AI search: '\(pendingQuery)'")
+            searchText = pendingQuery
+            pendingSearchQuery = nil
+            pendingUserProfileService = nil
+            await performAISearch(userProfileService: userProfileService)
+        }
     }
 
     // MARK: - Computed Properties
@@ -70,8 +95,11 @@ final class HomeViewModel: ObservableObject {
         }
 
         do {
-            // Create recommendation service with userProfileService
-            let recommendationService = RecommendationService(userProfileService: userProfileService)
+            // Create recommendation service with userProfileService and appStateManager
+            let recommendationService = RecommendationService(
+                userProfileService: userProfileService,
+                appStateManager: appStateManager
+            )
 
             // Try to load existing recommendations
             let existingRecommendations = try await recommendationService.loadCurrentRecommendations(for: userId)
@@ -87,8 +115,12 @@ final class HomeViewModel: ObservableObject {
                     }
                 }
             } else {
-                // No existing recommendations - generate new ones
-                await generateRecommendations(userProfileService: userProfileService)
+                // No existing recommendations - show empty state instead of auto-generating
+                // User will need to manually trigger generation (which will show paywall if needed)
+                print("📱 No existing recommendations - showing empty state")
+                await MainActor.run {
+                    currentRecommendations = []
+                }
             }
         } catch {
             print("❌ Error loading recommendations: \(error)")
@@ -156,10 +188,29 @@ final class HomeViewModel: ObservableObject {
         isGeneratingRecommendations = true
 
         do {
-            let recommendationService = RecommendationService(userProfileService: userProfileService)
+            let recommendationService = RecommendationService(
+                userProfileService: userProfileService,
+                appStateManager: appStateManager
+            )
             let newRecommendations = try await recommendationService.generateNewRecommendations(for: userId)
             await MainActor.run {
                 currentRecommendations = newRecommendations
+            }
+        } catch let error as RecommendationError {
+            print("❌ Failed to generate recommendations: \(error)")
+
+            switch error {
+            case .premiumAccessRequired:
+                // Paywall will be shown by AppStateManager, no need to show error
+                print("🔒 Premium access required - paywall should be shown")
+            case .missingUserPreferences:
+                errorMessage = "Please complete your profile to get recommendations."
+            case .noMoviesGenerated, .generationFailedAfterRetries:
+                if error.localizedDescription.contains("offline") {
+                    showOfflineMessage()
+                } else {
+                    errorMessage = "Unable to generate recommendations. Please try again."
+                }
             }
         } catch {
             print("❌ Failed to generate recommendations: \(error)")
@@ -185,6 +236,17 @@ final class HomeViewModel: ObservableObject {
     func performAISearch(userProfileService: UserProfileService) async {
         guard let userId = Auth.auth().currentUser?.uid else {
             errorMessage = "Authentication required"
+            return
+        }
+
+        // Check premium access for AI search
+        let hasPremiumAccess = await appStateManager.checkPremiumAccess()
+        guard hasPremiumAccess else {
+            print("🔒 Premium access required for AI search")
+            // Store pending search operation for retry after premium upgrade
+            pendingSearchQuery = searchText
+            pendingUserProfileService = userProfileService
+            await appStateManager.showPaywallForPremiumFeature()
             return
         }
 

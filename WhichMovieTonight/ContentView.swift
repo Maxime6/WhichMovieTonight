@@ -18,8 +18,10 @@ struct ContentView: View {
         // Create services
         let userMovieService = UserMovieService()
 
+        // Initialize with placeholder - will be updated in onAppear
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(
-            userMovieService: userMovieService
+            userMovieService: userMovieService,
+            appStateManager: AppStateManager(userProfileService: UserProfileService())
         ))
     }
 
@@ -75,6 +77,9 @@ struct ContentView: View {
         .onAppear {
             // Track app usage for rating prompts
             ratingManager.incrementAppUsage()
+
+            // Update HomeViewModel with the correct AppStateManager from environment
+            homeViewModel.updateAppStateManager(appStateManager)
         }
         .overlay {
             if ratingManager.shouldShowRatingPopup {

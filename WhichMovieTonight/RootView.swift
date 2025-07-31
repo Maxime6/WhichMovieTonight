@@ -31,13 +31,6 @@ struct RootView: View {
                     .environmentObject(appStateManager)
                     .environmentObject(userProfileService)
 
-            case .needsPaywall:
-                // Show main app content but with paywall overlay
-                ContentView()
-                    .environmentObject(appStateManager)
-                    .environmentObject(userProfileService)
-                    .environmentObject(notificationService)
-
             case .authenticated:
                 ContentView()
                     .environmentObject(appStateManager)
@@ -51,7 +44,14 @@ struct RootView: View {
                     // Check subscription status when paywall disappears
                     // This handles successful purchases, restores, and cancellations
                     Task {
-                        await appStateManager.handleSubscriptionUpdate()
+                        await appStateManager.checkSubscriptionStatus()
+
+                        // If user successfully upgraded to premium, trigger any pending operations
+                        if appStateManager.isSubscribed || appStateManager.isTrialActive {
+                            print("🎉 User upgraded to premium - triggering pending operations")
+                            // Trigger retry of pending operations in HomeViewModel
+                            // This will be handled by the HomeView's environment object
+                        }
                     }
                 }
         }
@@ -61,12 +61,6 @@ struct RootView: View {
 
             // Check if app was opened from notification
             checkIfOpenedFromNotification()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            // Check subscription status when app becomes active (in case user cancelled in App Store)
-            Task {
-                await appStateManager.handleSubscriptionUpdate()
-            }
         }
     }
 
