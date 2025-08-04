@@ -104,20 +104,19 @@ final class HomeViewModel: ObservableObject {
             // Try to load existing recommendations
             let existingRecommendations = try await recommendationService.loadCurrentRecommendations(for: userId)
 
-            if !existingRecommendations.isEmpty {
-                // Check if we need to generate new daily picks
-                if await shouldGenerateNewDailyPicks(for: userId) {
-                    await generateRecommendations(userProfileService: userProfileService)
-                } else {
-                    // Use existing recommendations from today
-                    await MainActor.run {
-                        currentRecommendations = existingRecommendations
-                    }
+            // Always check if we need to generate new daily picks (regardless of existing recommendations)
+            if await shouldGenerateNewDailyPicks(for: userId) {
+                print("📱 New daily picks needed - generating recommendations")
+                await generateRecommendations(userProfileService: userProfileService)
+            } else if !existingRecommendations.isEmpty {
+                // Use existing recommendations if we don't need new ones
+                print("📱 Using existing recommendations from today")
+                await MainActor.run {
+                    currentRecommendations = existingRecommendations
                 }
             } else {
-                // No existing recommendations - show empty state instead of auto-generating
-                // User will need to manually trigger generation (which will show paywall if needed)
-                print("📱 No existing recommendations - showing empty state")
+                // No existing recommendations and no new ones needed
+                print("📱 No recommendations available - showing empty state")
                 await MainActor.run {
                     currentRecommendations = []
                 }
@@ -201,8 +200,8 @@ final class HomeViewModel: ObservableObject {
 
             switch error {
             case .premiumAccessRequired:
-                // Paywall will be shown by AppStateManager, no need to show error
-                print("🔒 Premium access required - paywall should be shown")
+                // Paywall should already be shown when app opened
+                print("🔒 Premium access required - paywall should already be shown")
             case .missingUserPreferences:
                 errorMessage = "Please complete your profile to get recommendations."
             case .noMoviesGenerated, .generationFailedAfterRetries:
@@ -227,6 +226,15 @@ final class HomeViewModel: ObservableObject {
     /// Manual refresh recommendations
     func refreshRecommendations(userProfileService: UserProfileService) async {
         print("🔄 Manual refresh triggered")
+
+        // Check premium access for manual refresh
+        let hasPremiumAccess = await appStateManager.checkPremiumAccess()
+        guard hasPremiumAccess else {
+            print("🔒 Premium access required for manual refresh")
+            await appStateManager.showPaywallForPremiumFeature()
+            return
+        }
+
         await generateRecommendations(userProfileService: userProfileService)
     }
 

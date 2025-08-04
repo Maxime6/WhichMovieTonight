@@ -1,0 +1,163 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "51E16082",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6749199800",
+    "_developerTeamID" : "WC244SYFG3",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 775677241.54212904,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21741759",
+      "localizations" : [
+
+      ],
+      "name" : "MovieBuddy_AI_Subscription",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6749199960",
+          "introductoryOffer" : {
+            "internalID" : "B0F2EC9A",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly premium subscription",
+              "displayName" : "MovieBuddy AI Premium Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "MovieBuddy_AI_Premium_Monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "MovieBuddy AI Monthly",
+          "subscriptionGroupID" : "21741759",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+            {
+              "displayPrice" : "22.99",
+              "internalID" : "2CCEE116",
+              "numberOfPeriods" : 1,
+              "offerID" : "MovieBuddyAI_Yearly_Offer",
+              "paymentMode" : "payUpFront",
+              "referenceName" : "Premium Yearly Offer",
+              "subscriptionPeriod" : "P1Y"
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "59.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6749199917",
+          "introductoryOffer" : {
+            "internalID" : "1770DCD6",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "MovieBuddy AI premium yearly subscription",
+              "displayName" : "MovieBuddy AI Premium Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "MovieBuddy_AI_Premium_Yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "MovieBuddy AI Yearly",
+          "subscriptionGroupID" : "21741759",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

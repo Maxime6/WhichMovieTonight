@@ -40,6 +40,9 @@ struct RootView: View {
         }
         .sheet(isPresented: $appStateManager.shouldShowPaywall) {
             PaywallView(displayCloseButton: false)
+                .interactiveDismissDisabled(true)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
                 .onDisappear {
                     // Check subscription status when paywall disappears
                     // This handles successful purchases, restores, and cancellations
@@ -61,6 +64,13 @@ struct RootView: View {
 
             // Check if app was opened from notification
             checkIfOpenedFromNotification()
+
+            // Ensure paywall is shown for non-premium users when app becomes active
+            if appStateManager.appState == .authenticated {
+                Task {
+                    await appStateManager.checkAndShowPaywallIfNeeded()
+                }
+            }
         }
     }
 

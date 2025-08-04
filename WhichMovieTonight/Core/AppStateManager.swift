@@ -8,7 +8,11 @@ class AppStateManager: ObservableObject {
     @Published var isSubscribed: Bool = false
     @Published var isTrialActive: Bool = false
     @Published var subscriptionStatus: SubscriptionStatus = .unknown
-    @Published var shouldShowPaywall: Bool = false
+    @Published var shouldShowPaywall: Bool = false {
+        didSet {
+            print("🔒 shouldShowPaywall changed to: \(shouldShowPaywall)")
+        }
+    }
 
     private let userProfileService: UserProfileService
 
@@ -46,8 +50,9 @@ class AppStateManager: ObservableObject {
             // Check if user has completed onboarding
             if userProfileService.hasCompletedOnboarding {
                 // User is authenticated and has completed onboarding
-                // Set to authenticated state - premium checks will happen when needed
                 appState = .authenticated
+                // Always check premium status on app launch
+                await checkAndShowPaywallIfNeeded()
             } else {
                 appState = .needsOnboarding
             }
@@ -60,6 +65,7 @@ class AppStateManager: ObservableObject {
 
     /// Check if user has premium access for generating new recommendations
     func checkPremiumAccess() async -> Bool {
+        print("🔍 Checking premium access...")
         // Safety check: ensure RevenueCat is configured
         guard Purchases.isConfigured else {
             print("⚠️ RevenueCat not configured yet, cannot check premium access")
@@ -71,7 +77,7 @@ class AppStateManager: ObservableObject {
             updateSubscriptionState(from: customerInfo)
 
             let hasPremium = isSubscribed || isTrialActive
-            print("📱 Premium access check: \(hasPremium)")
+            print("📱 Premium access check result: \(hasPremium)")
             return hasPremium
         } catch {
             print("❌ Error checking premium access: \(error)")
@@ -82,8 +88,28 @@ class AppStateManager: ObservableObject {
         }
     }
 
+    /// Check if user needs premium and show paywall automatically
+    func checkAndShowPaywallIfNeeded() async {
+        print("🔍 Checking if paywall should be shown automatically...")
+
+        // Reset paywall state first
+        shouldShowPaywall = false
+
+        // Check premium access
+        let hasPremiumAccess = await checkPremiumAccess()
+
+        if !hasPremiumAccess {
+            print("🔒 User is not premium - showing paywall automatically")
+            shouldShowPaywall = true
+        } else {
+            print("✅ User has premium access - no paywall needed")
+            shouldShowPaywall = false
+        }
+    }
+
     /// Show paywall for premium features
     func showPaywallForPremiumFeature() async {
+        print("🔒 Showing paywall for premium feature")
         shouldShowPaywall = true
     }
 
@@ -165,11 +191,11 @@ class AppStateManager: ObservableObject {
 
         await checkSubscriptionStatus()
 
+        // Only hide paywall if user is premium, don't automatically show it
         if isSubscribed || isTrialActive {
             shouldShowPaywall = false
-        } else {
-            shouldShowPaywall = true
         }
+        // Removed automatic paywall showing - it should only be shown when explicitly requested
     }
 
     func handleSuccessfulPurchase() async {
@@ -183,6 +209,7 @@ class AppStateManager: ObservableObject {
 
         if isSubscribed || isTrialActive {
             shouldShowPaywall = false
+            print("🎉 Purchase successful - paywall hidden")
         }
     }
 
@@ -212,6 +239,7 @@ class AppStateManager: ObservableObject {
         isTrialActive = false
         subscriptionStatus = .unknown
         shouldShowPaywall = false
+        print("🔒 User signed out - paywall reset")
     }
 
     func handleAccountDeletion() {
@@ -220,6 +248,7 @@ class AppStateManager: ObservableObject {
         isTrialActive = false
         subscriptionStatus = .unknown
         shouldShowPaywall = false
+        print("🔒 User account deleted - paywall reset")
     }
 
     func completeOnboarding() {

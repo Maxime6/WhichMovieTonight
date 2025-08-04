@@ -62,7 +62,7 @@ final class RecommendationService: RecommendationServiceProtocol {
         let hasPremiumAccess = await appStateManager.checkPremiumAccess()
         guard hasPremiumAccess else {
             print("🔒 Premium access required for generating new recommendations")
-            await appStateManager.showPaywallForPremiumFeature()
+            // Paywall should already be shown when app opened, just throw error
             throw RecommendationError.premiumAccessRequired
         }
 

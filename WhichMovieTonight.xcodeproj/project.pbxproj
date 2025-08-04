@@ -85,6 +85,7 @@
 		9C792B0C2E18153300709CB2 /* OnboardingCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792B072E18153300709CB2 /* OnboardingCompleteView.swift */; };
 		9C792B0D2E18153300709CB2 /* NewOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792B062E18153300709CB2 /* NewOnboardingView.swift */; };
 		9C792B152E19538500709CB2 /* ValuePropositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C792B112E19538500709CB2 /* ValuePropositionView.swift */; };
+		9C7D52BE2E3BE4DC005BC13B /* InAppPuchaseConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 9C7D52BD2E3BE4DC005BC13B /* InAppPuchaseConfiguration.storekit */; };
 		9C9959B32E26FB3E0020586A /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9959B12E26FB3E0020586A /* DesignSystem.swift */; };
 		9C9959B42E26FB3E0020586A /* SparkleEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9959B22E26FB3E0020586A /* SparkleEffect.swift */; };
 		9C9959B62E280E3F0020586A /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9959B52E280E3F0020586A /* EmptyStateView.swift */; };
@@ -175,6 +176,7 @@
 		9C792B072E18153300709CB2 /* OnboardingCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCompleteView.swift; sourceTree = "<group>"; };
 		9C792B082E18153300709CB2 /* PersonalInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalInfoView.swift; sourceTree = "<group>"; };
 		9C792B112E19538500709CB2 /* ValuePropositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValuePropositionView.swift; sourceTree = "<group>"; };
+		9C7D52BD2E3BE4DC005BC13B /* InAppPuchaseConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = InAppPuchaseConfiguration.storekit; sourceTree = "<group>"; };
 		9C8C93FC2D96F4B300B1DC00 /* WhichMovieTonight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhichMovieTonight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C9959B12E26FB3E0020586A /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		9C9959B22E26FB3E0020586A /* SparkleEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleEffect.swift; sourceTree = "<group>"; };
@@ -383,6 +385,7 @@
 				9C6EAED92DD3B10F00C2A6D2 /* ContentView.swift */,
 				9C6EAEDA2DD3B10F00C2A6D2 /* WhichMovieTonightApp.swift */,
 				9C4959712DDF70C900BD170D /* GoogleService-Info.plist */,
+				9C7D52BD2E3BE4DC005BC13B /* InAppPuchaseConfiguration.storekit */,
 			);
 			path = WhichMovieTonight;
 			sourceTree = "<group>";
@@ -727,6 +730,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C7D52BE2E3BE4DC005BC13B /* InAppPuchaseConfiguration.storekit in Resources */,
 				9C6EAEDC2DD3B10F00C2A6D2 /* Assets.xcassets in Resources */,
 				9CE050852DE5F5CD00A0EB8B /* APIKeys.plist in Resources */,
 				9C6EAEDD2DD3B10F00C2A6D2 /* Preview Assets.xcassets in Resources */,

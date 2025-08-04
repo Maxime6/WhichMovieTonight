@@ -317,11 +317,16 @@ struct WatchlistMovieCard: View {
                         .blur(radius: 0.5)
                 )
         )
-        .subtleShadow()
+        .primaryShadow()
     }
 }
 
 #Preview {
     WatchlistView()
         .environmentObject(AppStateManager(userProfileService: UserProfileService()))
+}
+
+#Preview {
+    @Previewable @Namespace var heroAnimation
+    WatchlistMovieCard(userMovie: UserMovie(userId: "", movie: MockMovie.sample), namespace: heroAnimation, onTap: {}, onLikeToggle: {}, onDislikeToggle: {}, onFavoriteToggle: {}, onMarkSeen: {})
 }

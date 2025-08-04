@@ -75,7 +75,7 @@ struct FavoriteMovieCard: View {
                                 Text(rating)
                                     .font(.caption2)
                                     .fontWeight(.medium)
-                                    .foregroundStyle(DesignSystem.primaryGradient)
+                                    .foregroundStyle(.primary)
                             }
                         }
                     }
@@ -109,7 +109,7 @@ struct FavoriteMovieCard: View {
                         .blur(radius: 0.5)
                 )
         )
-        .subtleShadow()
+        .primaryShadow()
     }
 }
 
